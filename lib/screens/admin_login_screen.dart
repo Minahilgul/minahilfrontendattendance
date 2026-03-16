@@ -1,7 +1,36 @@
 import 'package:flutter/material.dart';
 
-class AdminLoginScreen extends StatelessWidget {
+class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key});
+
+  @override
+  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
+}
+
+class _AdminLoginScreenState extends State<AdminLoginScreen> {
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  void login() {
+
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if(email == "admin@davs.com" && password == "123456"){
+
+      Navigator.pushNamed(context, "/dashboard");
+
+    }else{
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Invalid Admin Email or Password"),
+        ),
+      );
+
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +59,7 @@ class AdminLoginScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                /// Header
+                
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: const [
@@ -51,7 +80,7 @@ class AdminLoginScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                /// Title
+                
                 const Center(
                   child: Text(
                     "Admin Secure Login",
@@ -74,7 +103,7 @@ class AdminLoginScreen extends StatelessWidget {
 
                 const SizedBox(height: 30),
 
-                /// Email Label
+              
                 const Text(
                   "Admin Email",
                   style: TextStyle(fontWeight: FontWeight.w500),
@@ -83,6 +112,7 @@ class AdminLoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 TextField(
+                  controller: emailController,
                   decoration: InputDecoration(
                     hintText: "name@college.edu",
                     prefixIcon: const Icon(Icons.email_outlined),
@@ -97,7 +127,7 @@ class AdminLoginScreen extends StatelessWidget {
 
                 const SizedBox(height: 20),
 
-                /// Password Label
+              
                 const Text(
                   "Security Password",
                   style: TextStyle(fontWeight: FontWeight.w500),
@@ -106,6 +136,7 @@ class AdminLoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 TextField(
+                  controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outline),
@@ -131,7 +162,7 @@ class AdminLoginScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                /// Login Button
+                
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -143,9 +174,7 @@ class AdminLoginScreen extends StatelessWidget {
                       ),
                     ),
 
-                    onPressed: () {
-                      Navigator.pushNamed(context, "/dashboard");
-                    },
+                    onPressed: login,
 
                     icon: const Icon(Icons.security),
                     label: const Text(
@@ -158,7 +187,7 @@ class AdminLoginScreen extends StatelessWidget {
 
                 const SizedBox(height: 25),
 
-                /// Footer
+              
                 const Center(
                   child: Column(
                     children: [

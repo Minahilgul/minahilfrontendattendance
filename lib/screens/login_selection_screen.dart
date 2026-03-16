@@ -3,24 +3,85 @@ import 'package:flutter/material.dart';
 class LoginSelectionScreen extends StatelessWidget {
   const LoginSelectionScreen({super.key});
 
-  Widget loginButton(
-      BuildContext context, String text, Color color, String route) {
-    return SizedBox(
-      width: double.infinity,
-      height: 55,
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.pushNamed(context, route);
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+  Widget roleCard(
+      BuildContext context,
+      String title,
+      String subtitle,
+      IconData icon,
+      Color color,
+      String route) {
+
+    return InkWell(
+      onTap: () {
+        Navigator.pushNamed(context, route);
+      },
+
+      borderRadius: BorderRadius.circular(18),
+
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.07),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            )
+          ],
         ),
-        child: Text(
-          text,
-          style: const TextStyle(fontSize: 18),
+
+        child: Row(
+          children: [
+
+            Container(
+              padding: const EdgeInsets.all(14),
+
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+
+              child: Icon(
+                icon,
+                color: color,
+                size: 30,
+              ),
+            ),
+
+            const SizedBox(width: 18),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 4),
+
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Icon(Icons.arrow_forward_ios, size: 18)
+          ],
         ),
       ),
     );
@@ -29,76 +90,87 @@ class LoginSelectionScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff5f7fa),
 
-      body: SafeArea(
-        child: Center(
-          child: Container(
-            width: 380, // Card width control
-            padding: const EdgeInsets.all(30),
+      body: Container(
 
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xffe3f2fd),
+              Color(0xffffffff),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
 
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
+        child: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(25),
 
-                /// Title
-                const Text(
-                  "Login As",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+
+                  const Icon(
+                    Icons.lock,
+                    size: 55,
+                    color: Color(0xff1f4e79),
                   ),
-                ),
 
-                const SizedBox(height: 10),
+                  const SizedBox(height: 15),
 
-                const Text(
-                  "Select your role to continue",
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
-                ),
+                  const Text(
+                    "Login Portal",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xff1f4e79),
+                    ),
+                  ),
 
-                const SizedBox(height: 35),
+                  const SizedBox(height: 6),
 
-                /// Admin
-                loginButton(
-                  context,
-                  "Admin Login",
-                  const Color(0xff1d4f8c),
-                  "/adminLogin",
-                ),
+                  const Text(
+                    "Select your role to continue",
+                    style: TextStyle(color: Colors.grey),
+                  ),
 
-                const SizedBox(height: 18),
+                  const SizedBox(height: 40),
 
-                /// Teacher
-                loginButton(
-                  context,
-                  "Teacher Login",
-                  const Color(0xff2c7be5),
-                  "/teacherLogin",
-                ),
+                  roleCard(
+                    context,
+                    "Admin Login",
+                    "Manage system & attendance records",
+                    Icons.admin_panel_settings,
+                    const Color.fromARGB(255, 60, 132, 221),
+                    "/adminLogin",
+                  ),
 
-                const SizedBox(height: 18),
+                  const SizedBox(height: 20),
 
-                /// Student
-                loginButton(
-                  context,
-                  "Student Login",
-                  const Color.fromARGB(255, 118, 183, 226),
-                  "/studentLogin",
-                ),
-              ],
+                  roleCard(
+                    context,
+                    "Teacher Login",
+                    "Manage classes and student attendance",
+                    Icons.school,
+                    const Color(0xff2c7be5),
+                    "/teacherLogin",
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  roleCard(
+                    context,
+                    "Student Login",
+                    "View attendance and academic info",
+                    Icons.person,
+                    const Color.fromARGB(255, 62, 148, 206),
+                    "/studentLogin",
+                  ),
+                ],
+              ),
             ),
           ),
         ),

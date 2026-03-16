@@ -85,7 +85,7 @@ class AdminDashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              /// HEADER
+              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -120,7 +120,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              /// RESPONSIVE STATS
+              
               LayoutBuilder(
                 builder: (context, constraints) {
 
@@ -153,7 +153,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              /// ALERTS
+            
               const Text("Critical Alerts",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -186,7 +186,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              /// QUICK ACTIONS
+              
               const Text("Quick Actions",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -230,7 +230,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              /// RECENT ACTIVITY
+              
               const Text("Recent Activity",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -279,7 +279,7 @@ class AdminDashboardScreen extends StatelessWidget {
         ),
       ),
 
-      /// BOTTOM NAVIGATION
+      
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,

@@ -1,7 +1,37 @@
 import 'package:flutter/material.dart';
 
-class TeacherLoginScreen extends StatelessWidget {
+class TeacherLoginScreen extends StatefulWidget {
   const TeacherLoginScreen({super.key});
+
+  @override
+  State<TeacherLoginScreen> createState() => _TeacherLoginScreenState();
+}
+
+class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  void login() {
+
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+
+    if(email == "teacher@davs.com" && password == "123456"){
+
+      Navigator.pushNamed(context, "/dashboard");
+
+    }else{
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Invalid Teacher Email or Password"),
+        ),
+      );
+
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +107,7 @@ class TeacherLoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 TextField(
+                  controller: emailController,
                   decoration: InputDecoration(
                     hintText: "teacher@college.edu",
                     prefixIcon: const Icon(Icons.email_outlined),
@@ -97,6 +128,7 @@ class TeacherLoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 TextField(
+                  controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outline),
@@ -123,7 +155,7 @@ class TeacherLoginScreen extends StatelessWidget {
                       ),
                     ),
 
-                    onPressed: () {},
+                    onPressed: login,
 
                     icon: const Icon(Icons.login),
                     label: const Text(

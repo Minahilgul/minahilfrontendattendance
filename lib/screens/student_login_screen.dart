@@ -1,7 +1,37 @@
 import 'package:flutter/material.dart';
 
-class StudentLoginScreen extends StatelessWidget {
+class StudentLoginScreen extends StatefulWidget {
   const StudentLoginScreen({super.key});
+
+  @override
+  State<StudentLoginScreen> createState() => _StudentLoginScreenState();
+}
+
+class _StudentLoginScreenState extends State<StudentLoginScreen> {
+
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  void login() {
+
+    String id = idController.text.trim();
+    String password = passwordController.text.trim();
+
+    if(id == "ST123" && password == "123456"){
+
+      Navigator.pushNamed(context, "/dashboard");
+
+    }else{
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Invalid Student ID or Password"),
+        ),
+      );
+
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,6 +107,7 @@ class StudentLoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 TextField(
+                  controller: idController,
                   decoration: InputDecoration(
                     hintText: "Enter Student ID",
                     prefixIcon: const Icon(Icons.badge_outlined),
@@ -97,6 +128,7 @@ class StudentLoginScreen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 TextField(
+                  controller: passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outline),
@@ -123,7 +155,7 @@ class StudentLoginScreen extends StatelessWidget {
                       ),
                     ),
 
-                    onPressed: () {},
+                    onPressed: login,
 
                     icon: const Icon(Icons.login),
                     label: const Text(
