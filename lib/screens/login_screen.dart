@@ -1,49 +1,62 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import '../routes/app_routes.dart';
+import '../core/services/auth_service.dart';
 
-class TeacherLoginScreen extends StatefulWidget {
-  const TeacherLoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<TeacherLoginScreen> createState() => _TeacherLoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
-
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void login() {
-
+  void login() async {
     String email = emailController.text.trim();
     String password = passwordController.text.trim();
 
-    if(email == "teacher@davs.com" && password == "123456"){
+    bool isValid = await AuthService.login(email, password);
 
-      Navigator.pushNamed(context, "/dashboard");
+    if (isValid) {
+      
+      String? token = await AuthService.getToken();
+      print("Token after login: $token");
 
-    }else{
+      
+      await Future.delayed(const Duration(milliseconds: 300));
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Invalid Teacher Email or Password"),
-        ),
+    
+      Get.offNamed(AppRoutes.dashboard);
+    } else {
+      Get.snackbar(
+        "Error",
+        "Invalid Email or Password",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade100,
+        colorText: Colors.black,
       );
-
     }
+  }
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffeef2f6),
-
       body: Center(
         child: SingleChildScrollView(
           child: Container(
             width: 380,
             padding: const EdgeInsets.all(25),
-
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(20),
@@ -52,29 +65,29 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                   color: Colors.black.withOpacity(0.08),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
-                )
+                ),
               ],
             ),
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: const [
                     Row(
                       children: [
-                        Icon(Icons.school, color: Colors.blue),
+                        Icon(Icons.shield, color: Colors.blue),
                         SizedBox(width: 8),
                         Text(
-                          "Teacher Portal",
+                          "Login Portal",
                           style: TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 16),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
-                    Icon(Icons.info_outline, color: Colors.grey)
+                    Icon(Icons.info_outline, color: Colors.grey),
                   ],
                 ),
 
@@ -82,10 +95,12 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
                 const Center(
                   child: Text(
-                    "Teacher Login",
+                    "Login",
                     style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
                 ),
 
@@ -93,7 +108,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
                 const Center(
                   child: Text(
-                    "Login to manage your classes and\nattendance records.",
+                    "Enter your credentials to continue",
                     textAlign: TextAlign.center,
                     style: TextStyle(color: Colors.grey),
                   ),
@@ -101,15 +116,17 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
                 const SizedBox(height: 30),
 
-                const Text("Teacher Email",
-                    style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text(
+                  "Email",
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
 
                 const SizedBox(height: 8),
 
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
-                    hintText: "teacher@college.edu",
+                    hintText: "name@college.edu",
                     prefixIcon: const Icon(Icons.email_outlined),
                     filled: true,
                     fillColor: const Color(0xfff5f6f8),
@@ -122,8 +139,10 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
                 const SizedBox(height: 20),
 
-                const Text("Password",
-                    style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text(
+                  "Password",
+                  style: TextStyle(fontWeight: FontWeight.w500),
+                ),
 
                 const SizedBox(height: 8),
 
@@ -142,6 +161,16 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                   ),
                 ),
 
+                const SizedBox(height: 10),
+
+                const Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    "Forgot password?",
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+
                 const SizedBox(height: 25),
 
                 SizedBox(
@@ -154,15 +183,38 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-
                     onPressed: login,
-
-                    icon: const Icon(Icons.login),
+                    icon: const Icon(Icons.security),
                     label: const Text(
                       "Login",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                const Center(
+                  child: Column(
+                    children: [
+                      Text(
+                        "AUTHORIZED USERS ONLY",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      SizedBox(height: 6),
+                      Text(
+                        "This is a secure system. Activities are monitored.",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                      ),
+                    ],
                   ),
                 ),
               ],

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:get/get.dart';
+import '../routes/app_routes.dart';
+import '../core/services/auth_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,9 +33,21 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, "/loginSelection");
-    });
+
+    _checkLogin();
+  }
+
+  
+  void _checkLogin() async {
+    await Future.delayed(const Duration(seconds: 3));
+
+    String? token = await AuthService.getToken();
+
+    if (token != null) {
+      Get.offNamed(AppRoutes.dashboard);
+    } else {
+      Get.offNamed(AppRoutes.login);
+    }
   }
 
   @override
@@ -44,7 +59,6 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -67,7 +81,6 @@ class _SplashScreenState extends State<SplashScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
 
-              
               Container(
                 decoration: BoxDecoration(
                   boxShadow: [
@@ -86,7 +99,6 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 40),
 
-              
               const Text(
                 "DAVS",
                 style: TextStyle(

@@ -85,7 +85,6 @@ class AdminDashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -101,7 +100,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
                       SizedBox(height: 4),
 
-                      Text("Admin Portal",
+                      Text("Dashboard", 
                           style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold))
@@ -120,7 +119,6 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              
               LayoutBuilder(
                 builder: (context, constraints) {
 
@@ -153,7 +151,6 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-            
               const Text("Critical Alerts",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -186,7 +183,6 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              
               const Text("Quick Actions",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -230,7 +226,6 @@ class AdminDashboardScreen extends StatelessWidget {
 
               const SizedBox(height: 25),
 
-              
               const Text("Recent Activity",
                   style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -279,10 +274,10 @@ class AdminDashboardScreen extends StatelessWidget {
         ),
       ),
 
-      
       bottomNavigationBar: BottomNavigationBar(
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed, 
         items: const [
 
           BottomNavigationBarItem(
