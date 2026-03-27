@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../routes/app_routes.dart';
 import '../core/services/auth_service.dart';
+import 'package:get_storage/get_storage.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,30 +15,35 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
-  void login() async {
-    String email = emailController.text.trim();
-    String password = passwordController.text.trim();
+  bool _isLoading = false;
+  GetStorage storage = GetStorage();
 
-    bool isValid = await AuthService.login(email, password);
-
-    if (isValid) {
-      
-      String? token = await AuthService.getToken();
-      print("Token after login: $token");
-
-      
-      await Future.delayed(const Duration(milliseconds: 300));
-
-    
-      Get.offNamed(AppRoutes.dashboard);
-    } else {
+  Future<void> _login() async {
+    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
       Get.snackbar(
         "Error",
-        "Invalid Email or Password",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.black,
+        "Email and Password cannot be empty",
       );
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+    });
+
+    final result =
+        await AuthService.login(emailController.text, passwordController.text);
+  
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (result['success']) {
+      storage.write('isLoggedIn', true);
+      storage.write('userName', emailController.text);
+
+      Get.offAllNamed('/dashboard');
+    } else {
+      Get.snackbar("Error", result['message']);
     }
   }
 
@@ -90,9 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Icon(Icons.info_outline, color: Colors.grey),
                   ],
                 ),
-
                 const SizedBox(height: 25),
-
                 const Center(
                   child: Text(
                     "Login",
@@ -103,9 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 8),
-
                 const Center(
                   child: Text(
                     "Enter your credentials to continue",
@@ -113,16 +115,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: Colors.grey),
                   ),
                 ),
-
                 const SizedBox(height: 30),
-
                 const Text(
                   "Email",
                   style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-
                 const SizedBox(height: 8),
-
                 TextField(
                   controller: emailController,
                   decoration: InputDecoration(
@@ -136,16 +134,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
                 const Text(
                   "Password",
                   style: TextStyle(fontWeight: FontWeight.w500),
                 ),
-
                 const SizedBox(height: 8),
-
                 TextField(
                   controller: passwordController,
                   obscureText: true,
@@ -160,9 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 10),
-
                 const Align(
                   alignment: Alignment.centerRight,
                   child: Text(
@@ -170,33 +162,37 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(color: Colors.blue),
                   ),
                 ),
-
                 const SizedBox(height: 25),
-
                 SizedBox(
                   width: double.infinity,
                   height: 50,
-                  child: ElevatedButton.icon(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff1f4e79),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    onPressed: login,
-                    icon: const Icon(Icons.security),
-                    label: const Text(
-                      "Login",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            "Login",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
-
                 const SizedBox(height: 25),
-
                 const Center(
                   child: Column(
                     children: [
