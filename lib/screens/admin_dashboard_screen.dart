@@ -1,13 +1,26 @@
 import 'package:flutter/material.dart';
+import 'add_student_screen.dart';
+import 'add_teacher_screen.dart'; 
+import 'profile_screen.dart' as profile;
+import 'view_attendance_screen.dart';
 
-class AdminDashboardScreen extends StatelessWidget {
+
+class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
-  Widget statCard(String title, String value, IconData icon) {
+  @override
+  State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+}
+
+class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  int _currentIndex = 0;
+
+  Widget statCard(String title, String value, IconData icon,
+      {bool isHighlight = false}) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isHighlight ? const Color(0xff1f4e79) : Colors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
           BoxShadow(color: Colors.black12, blurRadius: 5)
@@ -18,30 +31,28 @@ class AdminDashboardScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.blue.shade50,
+              color: isHighlight ? Colors.white24 : Colors.blue.shade50,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(icon, color: Colors.blue),
+            child: Icon(icon,
+                color: isHighlight ? Colors.white : Colors.blue),
           ),
-
           const SizedBox(width: 12),
-
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(title,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 12,
-                      color: Colors.grey,
+                      color: isHighlight ? Colors.white70 : Colors.grey,
                       fontWeight: FontWeight.w500)),
-
               const SizedBox(height: 4),
-
               Text(value,
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.bold)),
+                      fontWeight: FontWeight.bold,
+                      color: isHighlight ? Colors.white : Colors.black)),
             ],
           )
         ],
@@ -88,7 +99,11 @@ class AdminDashboardScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-
+                    CircleAvatar(
+          radius: 22,
+          backgroundImage: AssetImage('assets/profile.jpg'),
+        ),
+        const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
@@ -100,7 +115,7 @@ class AdminDashboardScreen extends StatelessWidget {
 
                       SizedBox(height: 4),
 
-                      Text("Dashboard", 
+                      Text("Admin Portal", 
                           style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold))
@@ -137,14 +152,14 @@ class AdminDashboardScreen extends StatelessWidget {
                     mainAxisSpacing: 12,
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    children: [
+children: [
 
-                      statCard("TEACHERS", "124", Icons.school),
-                      statCard("STUDENTS", "3,450", Icons.people),
-                      statCard("CLASSES", "42", Icons.class_),
-                      statCard("ATTENDANCE", "94%", Icons.bar_chart),
+  statCard("TEACHERS", "124", Icons.school),
+  statCard("STUDENTS", "3,450", Icons.people),
+  statCard("CLASSES", "42", Icons.class_),
+  statCard("ATTENDANCE", "94%", Icons.bar_chart, isHighlight: true),
 
-                    ],
+],
                   );
                 },
               ),
@@ -176,10 +191,31 @@ class AdminDashboardScreen extends StatelessWidget {
                     Expanded(
                       child: Text(
                           "Suspicious GPS Login\n2 sessions detected outside campus"),
-                    )
+                    ),
                   ],
                 ),
               ),
+
+              const SizedBox(height: 10),
+
+Container(
+  padding: const EdgeInsets.all(14),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: Colors.orange),
+  ),
+  child: const Row(
+    children: [
+      Icon(Icons.warning_amber, color: Colors.orange),
+      SizedBox(width: 10),
+      Expanded(
+        child: Text(
+            "Unverified Attendance\n5 classes pending teacher verification"),
+      ),
+    ],
+  ),
+),
 
               const SizedBox(height: 20),
 
@@ -215,9 +251,9 @@ class AdminDashboardScreen extends StatelessWidget {
                       actionButton(Icons.map, "Campus Map"),
                       actionButton(Icons.settings, "Settings"),
                       actionButton(Icons.event, "Events"),
-                      actionButton(Icons.people, "Students"),
-                      actionButton(Icons.school, "Teachers"),
-                      actionButton(Icons.analytics, "Analytics"),
+                      // actionButton(Icons.people, "Students"),
+                      // actionButton(Icons.school, "Teachers"),
+                      // actionButton(Icons.analytics, "Analytics"),
 
                     ],
                   );
@@ -246,7 +282,7 @@ class AdminDashboardScreen extends StatelessWidget {
                       leading:
                           Icon(Icons.check_circle, color: Colors.green),
                       title: Text("Dr. Miller verified Physics 101"),
-                      subtitle: Text("10:45 AM"),
+                      subtitle: Text("10:45 AM + ROOM 302"),
                     ),
 
                     Divider(),
@@ -254,7 +290,7 @@ class AdminDashboardScreen extends StatelessWidget {
                     ListTile(
                       leading: Icon(Icons.download),
                       title: Text("Monthly Report Generated"),
-                      subtitle: Text("09:15 AM"),
+                      subtitle: Text("09:15 AM + Admin System"),
                     ),
 
                     Divider(),
@@ -262,7 +298,7 @@ class AdminDashboardScreen extends StatelessWidget {
                     ListTile(
                       leading: Icon(Icons.person),
                       title: Text("15 students registered for CS204"),
-                      subtitle: Text("08:30 AM"),
+                      subtitle: Text("08:30 AM + Web Portal"),
                     ),
                   ],
                 ),
@@ -274,29 +310,82 @@ class AdminDashboardScreen extends StatelessWidget {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed, 
-        items: const [
+bottomNavigationBar: BottomNavigationBar(
+  selectedItemColor: Colors.blue,
+  unselectedItemColor: Colors.grey,
+  type: BottomNavigationBarType.fixed,
+  currentIndex: _currentIndex,
+  onTap: (index) {
+    setState(() {
+      _currentIndex = index;
+    });
+    if (index == 0) {
+      // Already Dashboard (do nothing)
+    } 
+    else if (index == 1) {
+      // Teachers Screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const AddTeacherScreen(),
+        ),
+      );
+    } 
+    else if (index == 2) {
+       Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ViewAttendanceScreen(),
+        ),
+      );
+      // Attendance Screen (agar hai)
+    }
+    else if (index == 3) {
+      // Profile Screen (temporary)
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const profile.ProfileScreen(),
+        ),
+      );
+    }
+  },
+  items: const [
 
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
-              label: "Dash"),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.dashboard),
+        label: "Dashboard"),
 
-          BottomNavigationBarItem(
-              icon: Icon(Icons.people),
-              label: "People"),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.people),
+        label: "Teachers"),
 
-          BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart),
-              label: "Stats"),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.bar_chart),
+        label: "View Attendance"),
 
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: "Settings"),
-        ],
-      ),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.settings),
+        label: "Profile"),
+  ],
+),
+
+floatingActionButton: FloatingActionButton(
+  onPressed: () => navigateToAddStudent(context),
+ 
+  backgroundColor: const Color(0xff1f4e79),
+  child: const Icon(Icons.add, size: 30),
+),
+floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
+
+  void navigateToAddStudent(BuildContext context){
+    final route = MaterialPageRoute(
+      builder: (context) => const AddStudentScreen());
+    Navigator.push(context, route);
+  }
 }
+
+
+  
