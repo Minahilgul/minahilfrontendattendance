@@ -9,11 +9,28 @@ class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
   @override
+  
   State<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   int _currentIndex = 0;
+
+  // final List<ScrollController> scrollControllers = [
+  //   ScrollController(),
+  //   ScrollController(),
+  //   ScrollController(),
+  //   ScrollController(),
+  // ];
+
+  final List<Widget> screens = [
+  const AdminDashboardScreen(),
+  const AddTeacherScreen(),
+  const ViewAttendanceScreen(),
+  const profile.ProfileScreen(),
+];
+
+
 
   Widget statCard(String title, String value, IconData icon,
       {bool isHighlight = false}) {
@@ -88,13 +105,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xfff4f6f8),
 
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -306,48 +324,58 @@ Container(
 
               const SizedBox(height: 20),
             ],
-          ),
+        
+            ),
         ),
+        ]
       ),
+  
+    
 
 bottomNavigationBar: BottomNavigationBar(
   selectedItemColor: Colors.blue,
   unselectedItemColor: Colors.grey,
   type: BottomNavigationBarType.fixed,
-  currentIndex: _currentIndex,
+    currentIndex: _currentIndex,
   onTap: (index) {
     setState(() {
       _currentIndex = index;
     });
+  
+  // currentIndex: _currentIndex,
+  // onTap: (index) {
+  //   setState(() {
+  //     _currentIndex = index;
+  //   });
     if (index == 0) {
       // Already Dashboard (do nothing)
     } 
     else if (index == 1) {
       // Teachers Screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AddTeacherScreen(),
-        ),
-      );
+      // (
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => const AddTeacherScreen(),
+      //   ),
+      // );
     } 
     else if (index == 2) {
-       Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ViewAttendanceScreen(),
-        ),
-      );
+      //  Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => const ViewAttendanceScreen(),
+      //   ),
+      // );
       // Attendance Screen (agar hai)
     }
     else if (index == 3) {
       // Profile Screen (temporary)
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const profile.ProfileScreen(),
-        ),
-      );
+      // Navigator.push(
+      //   context,
+      //   MaterialPageRoute(
+      //     builder: (context) => const profile.ProfileScreen(),
+      //   ),
+      // );
     }
   },
   items: const [
