@@ -1,301 +1,203 @@
 import 'package:flutter/material.dart';
+import 'add_student_screen.dart';
+import 'add_teacher_screen.dart';
+import 'teacher_directory_screen.dart';
+import 'profile_screen.dart' as profile;
+import 'view_attendance_screen.dart';
+import 'classes_screen.dart';
+import 'pending_approvals_screen.dart';
+import 'reports_screen.dart';
+
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
 
-  Widget statCard(String title, String value, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: const [
-          BoxShadow(color: Colors.black12, blurRadius: 5)
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.blue.shade50,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(icon, color: Colors.blue),
-          ),
-
-          const SizedBox(width: 12),
-
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(title,
-                  style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500)),
-
-              const SizedBox(height: 4),
-
-              Text(value,
-                  style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold)),
-            ],
-          )
-        ],
-      ),
-    );
+  @override
+  Widget build(BuildContext context) {
+    return const AdminDashboard(); // ✅ FIX: MaterialApp remove
   }
+}
 
-  Widget actionButton(IconData icon, String text) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: const [
-              BoxShadow(color: Colors.black12, blurRadius: 4)
-            ],
-          ),
-          child: Icon(icon, color: Colors.blue),
-        ),
-
-        const SizedBox(height: 6),
-
-        Text(text, style: const TextStyle(fontSize: 12))
-      ],
-    );
-  }
+class AdminDashboard extends StatelessWidget {
+  const AdminDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff4f6f8),
-
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-
-                      Text("GOOD MORNING",
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey)),
-
-                      SizedBox(height: 4),
-
-                      Text("Dashboard", 
-                          style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold))
-                    ],
-                  ),
-
-                  Row(
-                    children: const [
-                      Icon(Icons.search),
-                      SizedBox(width: 12),
-                      Icon(Icons.notifications),
-                    ],
-                  )
+      body: Column(
+        children: [
+          // Header
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                colors: [
+                  Color(0xFF2979FF),
+                  Color(0xFF00BFA5),
                 ],
               ),
-
-              const SizedBox(height: 20),
-
-              LayoutBuilder(
-                builder: (context, constraints) {
-
-                  int crossAxisCount = 2;
-
-                  if (constraints.maxWidth > 900) {
-                    crossAxisCount = 4;
-                  } else if (constraints.maxWidth > 600) {
-                    crossAxisCount = 3;
-                  }
-
-                  return GridView.count(
-                    crossAxisCount: crossAxisCount,
-                    childAspectRatio: 2.2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    children: [
-
-                      statCard("TEACHERS", "124", Icons.school),
-                      statCard("STUDENTS", "3,450", Icons.people),
-                      statCard("CLASSES", "42", Icons.class_),
-                      statCard("ATTENDANCE", "94%", Icons.bar_chart),
-
-                    ],
-                  );
-                },
-              ),
-
-              const SizedBox(height: 25),
-
-              const Text("Critical Alerts",
+            ),
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top + 24,
+              bottom: 28,
+              left: 24,
+              right: 24,
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Admin Dashboard',
                   style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Welcome back, Administrator',
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
 
-              const SizedBox(height: 10),
+          // Grid Cards
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.1,
+                children: [
+                  // ✅ Manage Classes
+                  DashboardCard(
+                    title: 'Manage Classes',
+                    iconData: Icons.grid_view_rounded,
+                    iconBgColor: const Color(0xFF2979FF),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const ClassesScreen(),
+                      ),
+                    ),
+                  ),
 
+                  // ✅ Teacher Directory (FIXED CLICK)
+                  DashboardCard(
+                    title: 'Teacher Directory',
+                    iconData: Icons.shield_outlined,
+                    iconBgColor: const Color(0xFF00BFA5),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TeacherDirectoryScreen(),
+                      ),
+                    ),
+                  ),
+
+                  // Other cards
+                   DashboardCard(
+                    title: 'Pending Approvals',
+                    iconData: Icons.group_outlined,
+                    iconBgColor: Color(0xFF00BFA5),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>  PendingApprovalsScreen(),
+                      ),
+                    ),
+                  ),
+                   DashboardCard(
+                    title: 'Reports & Audit',
+                    iconData: Icons.description_outlined,
+                    iconBgColor: Color(0xFF9C27B0),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                       builder: (_) => const ReportsAuditScreen(),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      // Floating button
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: const Color(0xFF37474F),
+        mini: true,
+        child: const Icon(Icons.question_mark, color: Colors.white, size: 18),
+      ),
+    );
+  }
+}
+
+class DashboardCard extends StatelessWidget {
+  final String title;
+  final IconData iconData;
+  final Color iconBgColor;
+  final VoidCallback? onTap;
+
+  const DashboardCard({
+    super.key,
+    required this.title,
+    required this.iconData,
+    required this.iconBgColor,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
               Container(
-                padding: const EdgeInsets.all(14),
+                width: 62,
+                height: 62,
                 decoration: BoxDecoration(
+                  color: iconBgColor,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Icon(
+                  iconData,
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.red),
-                ),
-
-                child: const Row(
-                  children: [
-
-                    Icon(Icons.warning, color: Colors.red),
-
-                    SizedBox(width: 10),
-
-                    Expanded(
-                      child: Text(
-                          "Suspicious GPS Login\n2 sessions detected outside campus"),
-                    )
-                  ],
+                  size: 30,
                 ),
               ),
 
-              const SizedBox(height: 20),
-
-              const Text("Quick Actions",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
-
-              const SizedBox(height: 10),
-
-              LayoutBuilder(
-                builder: (context, constraints) {
-
-                  int crossAxisCount = 3;
-
-                  if (constraints.maxWidth > 900) {
-                    crossAxisCount = 6;
-                  } else if (constraints.maxWidth > 600) {
-                    crossAxisCount = 4;
-                  }
-
-                  return GridView.count(
-                    crossAxisCount: crossAxisCount,
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1,
-                    children: [
-
-                      actionButton(Icons.person_add, "Add Staff"),
-                      actionButton(Icons.insert_drive_file, "Reports"),
-                      actionButton(Icons.map, "Campus Map"),
-                      actionButton(Icons.settings, "Settings"),
-                      actionButton(Icons.event, "Events"),
-                      actionButton(Icons.people, "Students"),
-                      actionButton(Icons.school, "Teachers"),
-                      actionButton(Icons.analytics, "Analytics"),
-
-                    ],
-                  );
-                },
-              ),
-
-              const SizedBox(height: 25),
-
-              const Text("Recent Activity",
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16)),
-
-              const SizedBox(height: 10),
-
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-
-                child: Column(
-                  children: const [
-
-                    ListTile(
-                      leading:
-                          Icon(Icons.check_circle, color: Colors.green),
-                      title: Text("Dr. Miller verified Physics 101"),
-                      subtitle: Text("10:45 AM"),
-                    ),
-
-                    Divider(),
-
-                    ListTile(
-                      leading: Icon(Icons.download),
-                      title: Text("Monthly Report Generated"),
-                      subtitle: Text("09:15 AM"),
-                    ),
-
-                    Divider(),
-
-                    ListTile(
-                      leading: Icon(Icons.person),
-                      title: Text("15 students registered for CS204"),
-                      subtitle: Text("08:30 AM"),
-                    ),
-                  ],
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1A1A2E),
                 ),
               ),
-
-              const SizedBox(height: 20),
             ],
           ),
         ),
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        selectedItemColor: Colors.blue,
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed, 
-        items: const [
-
-          BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard),
-              label: "Dash"),
-
-          BottomNavigationBarItem(
-              icon: Icon(Icons.people),
-              label: "People"),
-
-          BottomNavigationBarItem(
-              icon: Icon(Icons.bar_chart),
-              label: "Stats"),
-
-          BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: "Settings"),
-        ],
       ),
     );
   }

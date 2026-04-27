@@ -2,7 +2,7 @@ import 'package:get/get.dart';
 import 'package:attendence_verification/screens/splash_screen.dart';
 import 'package:attendence_verification/screens/login_screen.dart';
 import 'package:attendence_verification/screens/admin_dashboard_screen.dart';
-import 'auth_middleware.dart';
+ import 'auth_middleware.dart';
 
 class AppRoutes {
   static const splash = "/";
@@ -15,6 +15,6 @@ class AppRoutes {
     GetPage(name: login, page: () => const LoginScreen()),
 
     GetPage(name: dashboard, page: () => const AdminDashboardScreen(), middlewares: [AuthMiddleware()],
-    ),
+     ),
   ];
 }
