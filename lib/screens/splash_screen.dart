@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:get/get.dart';
-import '../routes/app_routes.dart';
 import '../core/services/auth_service.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -44,9 +43,9 @@ class _SplashScreenState extends State<SplashScreen>
     String? token = await AuthService.getToken();
 
     if (token != null) {
-      Get.offNamed(AppRoutes.dashboard);
+      context.go('/dashboard');
     } else {
-      Get.offNamed(AppRoutes.login);
+     context.go('/login');
     }
   }
 

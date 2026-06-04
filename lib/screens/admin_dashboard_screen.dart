@@ -7,6 +7,7 @@ import 'view_attendance_screen.dart';
 import 'classes_screen.dart';
 import 'pending_approvals_screen.dart';
 import 'reports_screen.dart';
+import 'package:go_router/go_router.dart';
 
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -83,50 +84,42 @@ class AdminDashboard extends StatelessWidget {
                     title: 'Manage Classes',
                     iconData: Icons.grid_view_rounded,
                     iconBgColor: const Color(0xFF2979FF),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ClassesScreen(),
+                     onTap: () {
+                   context.push('/classes');
+                    },
                       ),
-                    ),
-                  ),
 
                   // ✅ Teacher Directory (FIXED CLICK)
                   DashboardCard(
                     title: 'Teacher Directory',
                     iconData: Icons.shield_outlined,
                     iconBgColor: const Color(0xFF00BFA5),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const TeacherDirectoryScreen(),
+                    onTap: () {
+                     context.push('/teachers');
+                   },
                       ),
-                    ),
-                  ),
+                    
+  
 
                   // Other cards
                    DashboardCard(
                     title: 'Pending Approvals',
                     iconData: Icons.group_outlined,
                     iconBgColor: Color(0xFF00BFA5),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>  PendingApprovalsScreen(),
-                      ),
+                   onTap: () {
+                     context.push('/pending');
+                  },      
                     ),
-                  ),
+                
                    DashboardCard(
                     title: 'Reports & Audit',
                     iconData: Icons.description_outlined,
                     iconBgColor: Color(0xFF9C27B0),
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                       builder: (_) => const ReportsAuditScreen(),
+                  onTap: () {
+  context.push('/reports');
+},
                       ),
-                    ),
-                  ),
+            
                 ],
               ),
             ),

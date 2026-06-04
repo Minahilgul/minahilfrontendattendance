@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../core/services/auth_service.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:go_router/go_router.dart';
 
 
 class LoginScreen extends StatefulWidget {
@@ -20,10 +20,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      Get.snackbar(
-        "Error",
-        "Email and Password cannot be empty",
-      );
+      ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text("password cannot be empty"),
+  ),
+);
       return;
     }
     setState(() {
@@ -41,9 +42,13 @@ class _LoginScreenState extends State<LoginScreen> {
       storage.write('isLoggedIn', true);
       storage.write('userName', emailController.text);
 
-      Get.offAllNamed('/dashboard');
+      context.go('/dashboard');
     } else {
-      Get.snackbar("Error", result['message']);
+      ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: Text(result['message']),
+  ),
+);
     }
   }
 

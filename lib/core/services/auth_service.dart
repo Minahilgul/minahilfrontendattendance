@@ -4,10 +4,11 @@ import 'package:get_storage/get_storage.dart';
 
 class AuthService {
   // 🔥 BASE URL (👇 YAHAN CHANGE KARNA HAI)
-  static const String baseUrl = 'https://wholesaleapp.sandbox.pk/api';
+  static const String baseUrl = 'http://localhost:8000/api';
 
   // ───────────────── LOGIN ─────────────────
-  static Future<Map<String, dynamic>> login(String email, String password) async {
+  static Future<Map<String, dynamic>> login(
+      String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/login'), // 👈 endpoint
@@ -23,16 +24,13 @@ class AuthService {
 
       final data = jsonDecode(response.body);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && data['success'] == true) {
         final box = GetStorage();
-        box.write('token', data['token']); // save token
+         box.write('token', data['result']['token']); // save token
 
         return {"success": true, "data": data};
       } else {
-        return {
-          "success": false,
-          "message": data['message'] ?? 'Login failed'
-        };
+        return {"success": false, "message": data['message'] ?? 'Login failed'};
       }
     } catch (e) {
       print("LOGIN ERROR: $e");
@@ -41,7 +39,8 @@ class AuthService {
   }
 
   // ───────────────── REGISTER ─────────────────
-  static Future<Map<String, dynamic>> register(Map<String, dynamic> body) async {
+  static Future<Map<String, dynamic>> register(
+      Map<String, dynamic> body) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/signup'), // 👈 endpoint
@@ -94,7 +93,6 @@ class AuthService {
       print("CREATE CLASS RESPONSE: ${response.body}");
 
       return response.statusCode == 200 || response.statusCode == 201;
-
     } catch (e) {
       print("CREATE CLASS ERROR: $e");
       return false;
@@ -129,7 +127,6 @@ class AuthService {
       print("ADD TEACHER RESPONSE: ${response.body}");
 
       return response.statusCode == 200 || response.statusCode == 201;
-
     } catch (e) {
       print("ADD TEACHER ERROR: $e");
       return false;

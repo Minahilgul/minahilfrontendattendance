@@ -286,7 +286,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                     ],
                   ),
                   const SizedBox(height: 14),
-                  // Audit logs heade
+                  // Audit logs header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
