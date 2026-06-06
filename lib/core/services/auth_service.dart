@@ -86,6 +86,7 @@ class AuthService {
           "name": name,
           "class_name": className,
           "students": students,
+          "status": "active"
         }),
       );
 

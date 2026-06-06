@@ -19,59 +19,112 @@ class AdminDashboardScreen extends StatelessWidget {
   }
 }
 
-class AdminDashboard extends StatelessWidget {
+class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
+ 
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
+  int _selectedIndex = 0;
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // Header
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Color(0xFF2979FF),
-                  Color(0xFF00BFA5),
-                ],
-              ),
-            ),
-            padding: EdgeInsets.only(
-              top: MediaQuery.of(context).padding.top + 24,
-              bottom: 28,
-              left: 24,
-              right: 24,
-            ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Admin Dashboard',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  'Welcome back, Administrator',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 15,
-                  ),
-                ),
+      appBar: AppBar(
+    title: const Text('Attendance Verification'),
+    backgroundColor: const Color(0xFF2979FF),
+    foregroundColor: Colors.white,
+    elevation: 0,
+  ),
+
+
+  drawer: Drawer(
+    child: ListView(
+      padding: EdgeInsets.zero,
+      children: [
+        const DrawerHeader(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF2979FF),
+                Color(0xFF00BFA5),
               ],
             ),
           ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 28,
+                child: Icon(Icons.admin_panel_settings),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'Administrator',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
 
-          // Grid Cards
-          Expanded(
-            child: Padding(
+        ListTile(
+          leading: const Icon(Icons.home),
+          title: const Text('Dashboard'),
+          onTap: () => Navigator.pop(context),
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.people),
+          title: const Text('Teacher Directory'),
+          onTap: () {
+            Navigator.pop(context);
+            context.push('/teachers');
+          },
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.pending_actions),
+          title: const Text('Pending Approvals'),
+          onTap: () {
+            Navigator.pop(context);
+            context.push('/pending');
+          },
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.bar_chart),
+          title: const Text('Reports'),
+          onTap: () {
+            Navigator.pop(context);
+            context.push('/reports');
+          },
+        ),
+
+        const Divider(),
+
+        ListTile(
+          leading: const Icon(Icons.person),
+          title: const Text('Profile'),
+          onTap: () {
+            Navigator.pop(context);
+            context.push('/profile');
+          },
+        ),
+      ],
+    ),
+  ),
+
+      body: Column(
+        children: [
+        Expanded(
+      child: Padding(
               padding: const EdgeInsets.all(16),
               child: GridView.count(
                 crossAxisCount: 2,
@@ -132,8 +185,53 @@ class AdminDashboard extends StatelessWidget {
         onPressed: () {},
         backgroundColor: const Color(0xFF37474F),
         mini: true,
-        child: const Icon(Icons.question_mark, color: Colors.white, size: 18),
+        child: const Icon(Icons.help_outline, color: Colors.white, size: 18),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+  currentIndex: _selectedIndex,
+  type: BottomNavigationBarType.fixed,
+  onTap: (index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    switch (index) {
+      case 0:
+        break;
+
+      case 1:
+        context.push('/classes');
+        break;
+
+      case 2:
+        context.push('/reports');
+        break;
+
+      case 3:
+        context.push('/profile');
+        break;
+    
+    }
+  },
+  items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.class_),
+      label: 'Manage Classes',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.bar_chart),
+      label: 'View Reports',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person),
+      label: 'Profile',
+    ),
+  ],
+),
     );
   }
 }

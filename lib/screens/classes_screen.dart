@@ -109,11 +109,13 @@ Future<bool> createClass(
       Uri.parse('${AuthService.baseUrl}/classes'), // 🔥 REAL API
       headers: {
         'Content-Type': 'application/json',
+         'Accept': 'application/json',
       },
       body: jsonEncode({
         'name': name,
-        'className': className,
-        'students': students,
+        'class_name': className,
+        'students_count': int.parse(students)?? 0,
+        'status': 'active',
       }),
     );
 
@@ -187,10 +189,10 @@ class _ClassesScreenState extends State<ClassesScreen>
 
     if (_searchQuery.isNotEmpty) {
       filtered = filtered
-          .where((c) =>
+         .where((c) =>
               c.name.toLowerCase().contains(_searchQuery) ||
               c.teacher.toLowerCase().contains(_searchQuery))
-          .toList();
+         .toList();
     }
 
     return filtered;
@@ -428,6 +430,23 @@ class ClassCard extends StatelessWidget {
     }
   }
 
+  IconData _getIconForClass(String name) {
+    if (name.contains('Calculus') || name.contains('Math')) {
+      return Icons.calculate_outlined;
+    } else if (name.contains('Psychology')) {
+      return Icons.psychology_outlined;
+    } else if (name.contains('Chemistry')) {
+      return Icons.science_outlined;
+    } else if (name.contains('Media') || name.contains('Art')) {
+      return Icons.palette_outlined;
+    } else if (name.contains('History')) {
+      return Icons.history_edu_outlined;
+    } else if (name.contains('Physical')) {
+      return Icons.sports_soccer_outlined;
+    }
+    return Icons.class_outlined;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -475,7 +494,7 @@ class ClassCard extends StatelessWidget {
                         label: _statusLabel,
                         color: _statusColor,
                       ),
-                      if (item.isPendingTerm) ...[
+                      if (item.isPendingTerm)...[
                         const SizedBox(width: 6),
                         _StatusBadge(
                           label: 'Pending Term',
@@ -523,6 +542,7 @@ class ClassCard extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(width: 4),
 
             // ── Three-dot Menu ──
             PopupMenuButton<String>(
@@ -543,23 +563,6 @@ class ClassCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  IconData _getIconForClass(String name) {
-    if (name.contains('Calculus') || name.contains('Math')) {
-      return Icons.calculate_outlined;
-    } else if (name.contains('Psychology')) {
-      return Icons.psychology_outlined;
-    } else if (name.contains('Chemistry')) {
-      return Icons.science_outlined;
-    } else if (name.contains('Media') || name.contains('Art')) {
-      return Icons.palette_outlined;
-    } else if (name.contains('History')) {
-      return Icons.history_edu_outlined;
-    } else if (name.contains('Physical')) {
-      return Icons.sports_soccer_outlined;
-    }
-    return Icons.class_outlined;
   }
 }
 
@@ -583,14 +586,14 @@ class _StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
       decoration: BoxDecoration(
-        color: isOutlined ? Colors.transparent : color.withOpacity(0.12),
-        border: isOutlined ? Border.all(color: color, width: 1) : null,
+        color: isOutlined? Colors.transparent : color.withOpacity(0.12),
+        border: isOutlined? Border.all(color: color, width: 1) : null,
         borderRadius: BorderRadius.circular(4),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (!isOutlined) ...[
+          if (!isOutlined)...[
             Container(
               width: 5,
               height: 5,
@@ -704,7 +707,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
                 label: 'Name',
                 hint: 'Enter teacher name',
                 validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Name is required' : null,
+                    (v == null || v.isEmpty)? 'Name is required' : null,
               ),
               const SizedBox(height: 14),
 
@@ -714,7 +717,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
                 label: 'Class',
                 hint: 'Enter class name',
                 validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Class is required' : null,
+                    (v == null || v.isEmpty)? 'Class is required' : null,
               ),
               const SizedBox(height: 14),
 
@@ -726,8 +729,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
                 keyboardType: TextInputType.number,
                 validator: (v) {
                   if (v == null || v.isEmpty) return 'Students is required';
-                  if (int.tryParse(v) == null)
-                    return 'Enter a valid number';
+                  if (int.tryParse(v) == null) return 'Enter a valid number';
                   return null;
                 },
               ),
@@ -740,7 +742,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
                   // Cancel
                   TextButton(
                     onPressed:
-                        _isLoading ? null : () => Navigator.of(context).pop(),
+                        _isLoading? null : () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.black54,
                       padding: const EdgeInsets.symmetric(
@@ -758,7 +760,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
 
                   // Save
                   ElevatedButton(
-                    onPressed: _isLoading ? null : _onSave,
+                    onPressed: _isLoading? null : _onSave,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF2196F3),
                       foregroundColor: Colors.white,
@@ -769,7 +771,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
                       elevation: 0,
                     ),
                     child: _isLoading
-                        ? const SizedBox(
+                       ? const SizedBox(
                             width: 18,
                             height: 18,
                             child: CircularProgressIndicator(
@@ -835,11 +837,11 @@ class _DialogTextField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle:
-                const TextStyle(fontSize: 14, color: Color(0xFFBDBDBD)),
+                const TextStyle(fontSize: 14, color: Color(0xFFBDBD)),
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             filled: true,
-            fillColor: const Color(0xFFFAFAFA),
+            fillColor: const Color(0xFFFA),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: Color(0xFFE0E0E0)),

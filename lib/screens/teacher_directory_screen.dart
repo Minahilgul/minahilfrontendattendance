@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:attendence_verification/core/services/auth_service.dart';
 
 void main() {
   runApp(const MyApp());
@@ -91,6 +94,41 @@ final List<TeacherModel> _allTeachers = [
 ];
 
 // ─────────────────────────────────────────────
+// API SERVICE
+// ─────────────────────────────────────────────
+
+Future<bool> addTeacher(
+    String username, String email, String password, String phone) async {
+  try {
+    final response = await http.post(
+      Uri.parse('${AuthService.baseUrl}/teachers'), // Laravel route
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+        'phone': phone,
+      }),
+    );
+
+    print("ADD TEACHER STATUS: ${response.statusCode}");
+    print("ADD TEACHER RESPONSE: ${response.body}");
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    print("ADD TEACHER ERROR: $e");
+    return false;
+  }
+}
+
+// ─────────────────────────────────────────────
 // STATUS BADGE WIDGET
 // ─────────────────────────────────────────────
 
@@ -143,11 +181,13 @@ class AddTeacherDialog extends StatefulWidget {
 }
 
 class _AddTeacherDialogState extends State<AddTeacherDialog> {
+  final _formKey = GlobalKey<FormState>();
   final _usernameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -158,6 +198,39 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     super.dispose();
   }
 
+  Future<void> _onSave() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    final success = await addTeacher(
+      _usernameCtrl.text.trim(),
+      _emailCtrl.text.trim(),
+      _passwordCtrl.text.trim(),
+      _phoneCtrl.text.trim(),
+    );
+
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Teacher added successfully!'),
+          backgroundColor: Color(0xFF2E7D32),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to add teacher. Please try again.'),
+          backgroundColor: Color(0xFFC62828),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -165,62 +238,76 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Add New Teacher',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Fill in the details to add a new faculty member',
-                style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-              ),
-              const SizedBox(height: 20),
-              _buildField('Username', _usernameCtrl, Icons.person_outline),
-              const SizedBox(height: 14),
-              _buildField('Email', _emailCtrl, Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress),
-              const SizedBox(height: 14),
-              _buildPasswordField(),
-              const SizedBox(height: 14),
-              _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined,
-                  keyboardType: TextInputType.phone),
-              const SizedBox(height: 24),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        side: BorderSide(color: Colors.grey[400]!),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Add New Teacher',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Fill in the details to add a new faculty member',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 20),
+                _buildField('Username', _usernameCtrl, Icons.person_outline,
+                    validator: (v) => v!.isEmpty? 'Username required' : null),
+                const SizedBox(height: 14),
+                _buildField('Email', _emailCtrl, Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (v) => v!.isEmpty? 'Email required' : null),
+                const SizedBox(height: 14),
+                _buildPasswordField(),
+                const SizedBox(height: 14),
+                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined,
+                    keyboardType: TextInputType.phone),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _isLoading? null : () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(color: Colors.grey[400]!),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: const Text('Cancel',
+                            style: TextStyle(color: Colors.black87)),
                       ),
-                      child: const Text('Cancel',
-                          style: TextStyle(color: Colors.black87)),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1565C0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _isLoading? null : _onSave,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF1565C0),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                        ),
+                        child: _isLoading
+                           ? const SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Save'),
                       ),
-                      child: const Text('Save'),
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -232,10 +319,12 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     TextEditingController ctrl,
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
-    return TextField(
+    return TextFormField(
       controller: ctrl,
       keyboardType: keyboardType,
+      validator: validator,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, size: 20),
@@ -248,18 +337,19 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   }
 
   Widget _buildPasswordField() {
-    return TextField(
+    return TextFormField(
       controller: _passwordCtrl,
       obscureText: _obscurePassword,
+      validator: (v) => v!.isEmpty? 'Password required' : null,
       decoration: InputDecoration(
         labelText: 'Password',
         prefixIcon: const Icon(Icons.lock_outline, size: 20),
         suffixIcon: IconButton(
           icon: Icon(
-              _obscurePassword ? Icons.visibility_off : Icons.visibility,
+              _obscurePassword? Icons.visibility_off : Icons.visibility,
               size: 20),
           onPressed: () =>
-              setState(() => _obscurePassword = !_obscurePassword),
+              setState(() => _obscurePassword =!_obscurePassword),
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding:
@@ -289,7 +379,7 @@ class TeacherCard extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: isAlert
-            ? Border.all(color: const Color(0xFFEF9A9A), width: 1.5)
+           ? Border.all(color: const Color(0xFFEF9A9A), width: 1.5)
             : Border.all(color: const Color(0xFFE0E0E0), width: 0.5),
         boxShadow: [
           BoxShadow(
@@ -353,7 +443,7 @@ class TeacherCard extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 12, color: Colors.grey[600]),
                           ),
-                          if (teacher.deviceInfo != null) ...[
+                          if (teacher.deviceInfo!= null)...[
                             const SizedBox(width: 12),
                             Icon(Icons.smartphone,
                                 size: 14, color: Colors.grey[500]),
@@ -364,7 +454,7 @@ class TeacherCard extends StatelessWidget {
                                   fontSize: 12, color: Colors.grey[600]),
                             ),
                           ],
-                          if (teacher.registeredInfo != null) ...[
+                          if (teacher.registeredInfo!= null)...[
                             const SizedBox(width: 12),
                             Icon(Icons.check_circle_outline,
                                 size: 14, color: Colors.grey[500]),
@@ -377,7 +467,7 @@ class TeacherCard extends StatelessWidget {
                           ],
                         ],
                       ),
-                      if (teacher.lastSeen != null) ...[
+                      if (teacher.lastSeen!= null)...[
                         const SizedBox(height: 4),
                         Text(
                           'LAST SEEN ${teacher.lastSeen}',
@@ -398,7 +488,7 @@ class TeacherCard extends StatelessWidget {
           ),
 
           // Security alert section
-          if (isAlert) ...[
+          if (isAlert)...[
             Container(
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -544,8 +634,8 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     // Filter by tab
     if (_selectedTab == 1) {
       list = list
-          .where((t) => t.status == TeacherStatus.verified || t.registeredInfo != null)
-          .toList();
+         .where((t) => t.status == TeacherStatus.verified || t.registeredInfo!= null)
+         .toList();
     } else if (_selectedTab == 2) {
       list = list.where((t) => t.status == TeacherStatus.securityAlert).toList();
     }
@@ -553,10 +643,10 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     // Filter by search
     if (_searchQuery.isNotEmpty) {
       list = list
-          .where((t) =>
+         .where((t) =>
               t.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
               t.department.toLowerCase().contains(_searchQuery.toLowerCase()))
-          .toList();
+         .toList();
     }
 
     return list;
@@ -674,7 +764,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                               horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
                             color: selected
-                                ? const Color(0xFF1565C0)
+                               ? const Color(0xFF1565C0)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(20),
                           ),
@@ -684,7 +774,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
                               color: selected
-                                  ? Colors.white
+                                 ? Colors.white
                                   : Colors.grey[600],
                             ),
                           ),
@@ -727,8 +817,8 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  ..._filteredTeachers
-                      .map((t) => TeacherCard(teacher: t)),
+                 ..._filteredTeachers
+                     .map((t) => TeacherCard(teacher: t)),
 
                   // ── Security Sync footer ──
                   Container(
@@ -809,7 +899,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                         _navIcons[i],
                         size: 22,
                         color: selected
-                            ? const Color(0xFF1565C0)
+                           ? const Color(0xFF1565C0)
                             : Colors.grey[400],
                       ),
                       const SizedBox(height: 3),
@@ -819,7 +909,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: selected
-                              ? const Color(0xFF1565C0)
+                             ? const Color(0xFF1565C0)
                               : Colors.grey[400],
                         ),
                       ),
