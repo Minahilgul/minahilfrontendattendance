@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:geolocator/geolocator.dart';
+import 'dart:convert';
+import 'settings_screen.dart'; // Settings screen import
 
 void main() {
   runApp(const TeacherDashboardApp());
@@ -34,35 +38,18 @@ class TeacherDashboardScreen extends StatefulWidget {
 
 class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   int _selectedIndex = 0;
+  int? activeSessionId;
+  bool isLoading = false;
+
+  final String baseUrl = "http://10.0.2.2:8000/api";
+  final int teacherId = 1;
+  final int classId = 5;
 
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
     _NavItem(icon: Icons.class_rounded, label: 'Classes'),
     _NavItem(icon: Icons.bar_chart_rounded, label: 'Reports'),
     _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
-  ];
-
-  final List<_DashboardCard> _cards = const [
-    _DashboardCard(
-      title: 'Start Session',
-      icon: Icons.calendar_today_rounded,
-      iconColor: Color(0xFF0F9D58),
-    ),
-    _DashboardCard(
-      title: 'Mark Attendance',
-      icon: Icons.group_rounded,
-      iconColor: Color(0xFF00897B),
-    ),
-    _DashboardCard(
-      title: 'Class Roster',
-      icon: Icons.description_rounded,
-      iconColor: Color(0xFF1565C0),
-    ),
-    _DashboardCard(
-      title: 'Reports',
-      icon: Icons.bar_chart_rounded,
-      iconColor: Color(0xFF7B1FA2),
-    ),
   ];
 
   @override
@@ -73,9 +60,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _buildHeader(),
-          Expanded(
-            child: _buildBody(),
-          ),
+          Expanded(child: _buildBody()),
         ],
       ),
       bottomNavigationBar: _buildBottomNavBar(),
@@ -88,10 +73,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF0F9D58),
-            Color(0xFF0A8F4C),
-          ],
+          colors: [Color(0xFF0F9D58), Color(0xFF0A8F4C)],
         ),
       ),
       child: SafeArea(
@@ -100,25 +82,16 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                'Teacher Dashboard',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.3,
-                ),
-              ),
-              SizedBox(height: 4),
-              Text(
-                'Miss Amina',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
+            children: [
+              const Text('Teacher Dashboard',
+                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              Text('Miss Amina', style: TextStyle(color: Colors.white70, fontSize: 15)),
+              if(activeSessionId!= null)...[
+                const SizedBox(height: 8),
+                Text('Active Session: $activeSessionId',
+                    style: const TextStyle(color: Colors.yellow, fontSize: 12))
+              ]
             ],
           ),
         ),
@@ -134,23 +107,79 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
         childAspectRatio: 1.05,
-        children: _cards.map((card) => _DashboardCardWidget(card: card)).toList(),
+        children: [
+          _DashboardCardWidget(
+            card: _DashboardCard(title: 'Start Session', icon: Icons.play_circle_fill, iconColor: Color(0xFF0F9D58)),
+            onTap: startSession,
+          ),
+          _DashboardCardWidget(
+            card: _DashboardCard(title: 'End Session', icon: Icons.stop_circle, iconColor: Colors.red),
+            onTap: endSession,
+          ),
+          _DashboardCardWidget(
+            card: _DashboardCard(title: 'Class Roster', icon: Icons.group_rounded, iconColor: Color(0xFF1565C0)),
+            onTap: () {},
+          ),
+          _DashboardCardWidget(
+            card: _DashboardCard(title: 'Reports', icon: Icons.bar_chart_rounded, iconColor: Color(0xFF7B1FA2)),
+            onTap: () {},
+          ),
+        ],
       ),
     );
   }
 
+  Future<void> startSession() async {
+    setState(() => isLoading = true);
+    try {
+      Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      final res = await http.post(
+        Uri.parse('$baseUrl/class-session/create'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'teacher_id': teacherId,
+          'class_id': classId,
+          'latitude': pos.latitude,
+          'longitude': pos.longitude,
+        }),
+      );
+      final data = jsonDecode(res.body);
+      if (res.statusCode == 201 && data['success'] == true) {
+        setState(() => activeSessionId = data['data']['id']);
+        _showSnack('Session start ho gayi! ID: ${data['data']['id']}');
+      } else {
+        _showSnack(data['message']?? 'Error');
+      }
+    } catch (e) {
+      _showSnack('Error: $e');
+    }
+    setState(() => isLoading = false);
+  }
+
+  Future<void> endSession() async {
+    if (activeSessionId == null) {
+      _showSnack('Pehle session start karo');
+      return;
+    }
+    final res = await http.post(Uri.parse('$baseUrl/class-session/end/$activeSessionId'));
+    final data = jsonDecode(res.body);
+    if (data['success'] == true) {
+      setState(() => activeSessionId = null);
+      _showSnack('Session khatam ho gayi');
+    } else {
+      _showSnack(data['message']);
+    }
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
+
   Widget _buildBottomNavBar() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
+      decoration: BoxDecoration(color: Colors.white, boxShadow: [
+        BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: Offset(0, -2)),
+      ]),
       child: SafeArea(
         top: false,
         child: SizedBox(
@@ -161,33 +190,22 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               final item = _navItems[index];
               final isActive = _selectedIndex == index;
               return GestureDetector(
-                onTap: () => setState(() => _selectedIndex = index),
-                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  setState(() => _selectedIndex = index);
+                  if(index == 3) { // Settings tab
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => SettingsScreen()),
+                    );
+                  }
+                },
                 child: SizedBox(
                   width: 72,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        item.icon,
-                        color: isActive
-                            ? const Color(0xFF0F9D58)
-                            : const Color(0xFF9E9E9E),
-                        size: 24,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.label,
-                        style: TextStyle(
-                          color: isActive
-                              ? const Color(0xFF0F9D58)
-                              : const Color(0xFF9E9E9E),
-                          fontSize: 11,
-                          fontWeight: isActive
-                              ? FontWeight.w600
-                              : FontWeight.w400,
-                        ),
-                      ),
+                      Icon(item.icon, color: isActive? Color(0xFF0F9D58) : Color(0xFF9E9E9E)),
+                      Text(item.label, style: TextStyle(color: isActive? Color(0xFF0F9D58) : Color(0xFF9E9E9E), fontSize: 11)),
                     ],
                   ),
                 ),
@@ -202,8 +220,9 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
 class _DashboardCardWidget extends StatelessWidget {
   final _DashboardCard card;
+  final VoidCallback onTap;
 
-  const _DashboardCardWidget({required this.card});
+  const _DashboardCardWidget({required this.card, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -211,20 +230,14 @@ class _DashboardCardWidget extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.07),
-            blurRadius: 12,
-            offset: const Offset(0, 3),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.07), blurRadius: 12, offset: Offset(0, 3))],
       ),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(18),
         child: InkWell(
           borderRadius: BorderRadius.circular(18),
-          onTap: () {},
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -234,26 +247,11 @@ class _DashboardCardWidget extends StatelessWidget {
                 Container(
                   width: 56,
                   height: 56,
-                  decoration: BoxDecoration(
-                    color: card.iconColor,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(
-                    card.icon,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                  decoration: BoxDecoration(color: card.iconColor, borderRadius: BorderRadius.circular(14)),
+                  child: Icon(card.icon, color: Colors.white, size: 28),
                 ),
                 const SizedBox(height: 16),
-                Text(
-                  card.title,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF212121),
-                    height: 1.3,
-                  ),
-                ),
+                Text(card.title, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF212121))),
               ],
             ),
           ),
@@ -267,17 +265,11 @@ class _DashboardCard {
   final String title;
   final IconData icon;
   final Color iconColor;
-
-  const _DashboardCard({
-    required this.title,
-    required this.icon,
-    required this.iconColor,
-  });
+  const _DashboardCard({required this.title, required this.icon, required this.iconColor});
 }
 
 class _NavItem {
   final IconData icon;
   final String label;
-
   const _NavItem({required this.icon, required this.label});
 }

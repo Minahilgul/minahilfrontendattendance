@@ -113,7 +113,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   }
 
   Future<void> submitStudent() async {
-    //Get the data from the form
+    
     final name = nameController.text;
     final studentClass = classController.text;
     final body = {

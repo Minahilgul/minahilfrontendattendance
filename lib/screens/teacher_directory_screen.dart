@@ -2,28 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:attendence_verification/core/services/auth_service.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Attendance Verification',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: const Color(0xFF1565C0),
-        scaffoldBackgroundColor: const Color(0xFFF5F7FA),
-      ),
-      home: const TeacherDirectoryScreen(),
-    );
-  }
-}
+import '../widgets/base_scaffold.dart';
 
 // ─────────────────────────────────────────────
 // DATA MODELS
@@ -32,6 +11,7 @@ class MyApp extends StatelessWidget {
 enum TeacherStatus { verified, inactive, securityAlert }
 
 class TeacherModel {
+  final int id;
   final String initials;
   final Color avatarColor;
   final String name;
@@ -43,8 +23,11 @@ class TeacherModel {
   final String? lastSeen;
   final String? securityMessage;
   final String? registeredInfo;
+  final String? email;
+  final String? phone;
 
   const TeacherModel({
+    required this.id,
     required this.initials,
     required this.avatarColor,
     required this.name,
@@ -56,74 +39,77 @@ class TeacherModel {
     this.lastSeen,
     this.securityMessage,
     this.registeredInfo,
+    this.email,
+    this.phone,
   });
-}
 
-final List<TeacherModel> _allTeachers = [
-  TeacherModel(
-    initials: 'SJ',
-    avatarColor: const Color(0xFF1565C0),
-    name: 'Dr. Sarah Jenkins',
-    department: 'Computer Science',
-    role: 'Senior Dean',
-    status: TeacherStatus.verified,
-    activeClasses: 6,
-    deviceInfo: 'iPhone 14 Pro',
-    lastSeen: '2M AGO',
-  ),
-  TeacherModel(
-    initials: 'MT',
-    avatarColor: const Color(0xFF6A1B9A),
-    name: 'Prof. Marcus Thorne',
-    department: 'Mathematics',
-    role: 'Associate Prof.',
-    status: TeacherStatus.securityAlert,
-    activeClasses: 5,
-    securityMessage: 'NEW LOGIN DETECTED\nUnknown Windows PC • Austin, TX',
-  ),
-  TeacherModel(
-    initials: 'ER',
-    avatarColor: const Color(0xFF00695C),
-    name: 'Elena Rodriguez',
-    department: 'Fine Arts',
-    role: 'Assistant',
-    status: TeacherStatus.inactive,
-    activeClasses: 0,
-    registeredInfo: 'Registered',
-  ),
-];
+  factory TeacherModel.fromJson(Map<String, dynamic> json) {
+    String name = json['username']?? 'Unknown';
+    String initials = name.split(' ').map((e) => e.isNotEmpty? e[0] : '').join().toUpperCase();
+    if (initials.length > 2) initials = initials.substring(0, 2);
+
+    return TeacherModel(
+      id: json['id']?? 0,
+      initials: initials,
+      avatarColor: const Color(0xFF1565C0),
+      name: name,
+      department: json['department']?? 'N/A',
+      role: json['role']?? 'Teacher',
+      status: TeacherStatus.verified,
+      activeClasses: json['active_classes']?? 0,
+      deviceInfo: json['device_info'],
+      lastSeen: json['last_seen'],
+      registeredInfo: json['created_at'],
+      email: json['email'],
+      phone: json['phone'],
+    );
+  }
+}
 
 // ─────────────────────────────────────────────
 // API SERVICE
 // ─────────────────────────────────────────────
 
-Future<bool> addTeacher(
-    String username, String email, String password, String phone) async {
+Future<bool> addTeacher(String username, String email, String password, String phone) async {
   try {
     final response = await http.post(
-      Uri.parse('${AuthService.baseUrl}/teachers'), // Laravel route
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: jsonEncode({
-        'username': username,
-        'email': email,
-        'password': password,
-        'phone': phone,
-      }),
+      Uri.parse('${AuthService.baseUrl}/teachers'),
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      body: jsonEncode({'username': username, 'email': email, 'password': password, 'phone': phone}),
     );
-
-    print("ADD TEACHER STATUS: ${response.statusCode}");
-    print("ADD TEACHER RESPONSE: ${response.body}");
-
-    if (response.statusCode == 200 || response.statusCode == 201) {
-      return true;
-    } else {
-      return false;
-    }
+    
+    
+    print("ADD STATUS: ${response.statusCode}");
+    print("ADD BODY: ${response.body}");
+    
+    return response.statusCode == 200 || response.statusCode == 201;
   } catch (e) {
     print("ADD TEACHER ERROR: $e");
+    return false;
+  }
+}
+
+// ✅ FIXED: Backend API call add kiya
+Future<bool> updateTeacher(int id, String username, String email, String phone) async {
+  try {
+    final response = await http.put(
+      Uri.parse('${AuthService.baseUrl}/teachers/$id'),
+      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+      body: jsonEncode({'username': username, 'email': email, 'phone': phone}),
+    );
+    return response.statusCode == 200;
+  } catch (e) {
+    print("UPDATE TEACHER ERROR: $e");
+    return false;
+  }
+}
+
+Future<bool> deleteTeacher(int id) async {
+  try {
+    final response = await http.delete(Uri.parse('${AuthService.baseUrl}/teachers/$id'));
+    return response.statusCode == 200;
+  } catch (e) {
+    print("DELETE TEACHER ERROR: $e");
     return false;
   }
 }
@@ -134,7 +120,6 @@ Future<bool> addTeacher(
 
 class StatusBadge extends StatelessWidget {
   final TeacherStatus status;
-
   const StatusBadge({super.key, required this.status});
 
   @override
@@ -152,19 +137,8 @@ class StatusBadge extends StatelessWidget {
   Widget _badge(String label, Color textColor, Color bgColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 10,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-        ),
-      ),
+      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(4)),
+      child: Text(label, style: TextStyle(color: textColor, fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 0.5)),
     );
   }
 }
@@ -175,7 +149,6 @@ class StatusBadge extends StatelessWidget {
 
 class AddTeacherDialog extends StatefulWidget {
   const AddTeacherDialog({super.key});
-
   @override
   State<AddTeacherDialog> createState() => _AddTeacherDialogState();
 }
@@ -200,34 +173,15 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
 
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
-    final success = await addTeacher(
-      _usernameCtrl.text.trim(),
-      _emailCtrl.text.trim(),
-      _passwordCtrl.text.trim(),
-      _phoneCtrl.text.trim(),
-    );
-
+    final success = await addTeacher(_usernameCtrl.text.trim(), _emailCtrl.text.trim(), _passwordCtrl.text.trim(), _phoneCtrl.text.trim());
     if (!mounted) return;
     setState(() => _isLoading = false);
-
     if (success) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Teacher added successfully!'),
-          backgroundColor: Color(0xFF2E7D32),
-        ),
-      );
+      Navigator.of(context).pop(true);
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Teacher added successfully!'), backgroundColor: Color(0xFF2E7D32)));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Failed to add teacher. Please try again.'),
-          backgroundColor: Color(0xFFC62828),
-        ),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to add teacher. Please try again.'), backgroundColor: Color(0xFFC62828)));
     }
   }
 
@@ -244,64 +198,33 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Add New Teacher',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                ),
+                const Text('Add New Teacher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text(
-                  'Fill in the details to add a new faculty member',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
-                ),
+                Text('Fill in the details to add a new faculty member', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
                 const SizedBox(height: 20),
-                _buildField('Username', _usernameCtrl, Icons.person_outline,
-                    validator: (v) => v!.isEmpty? 'Username required' : null),
+                _buildField('Username', _usernameCtrl, Icons.person_outline, validator: (v) => v!.isEmpty? 'Username required' : null),
                 const SizedBox(height: 14),
-                _buildField('Email', _emailCtrl, Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (v) => v!.isEmpty? 'Email required' : null),
+                _buildField('Email', _emailCtrl, Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) => v!.isEmpty? 'Email required' : null),
                 const SizedBox(height: 14),
                 _buildPasswordField(),
                 const SizedBox(height: 14),
-                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined,
-                    keyboardType: TextInputType.phone),
+                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
                 const SizedBox(height: 24),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _isLoading? null : () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          side: BorderSide(color: Colors.grey[400]!),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text('Cancel',
-                            style: TextStyle(color: Colors.black87)),
+                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: Colors.grey[400]!), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _isLoading? null : _onSave,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1565C0),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: _isLoading
-                           ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Save'),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Save'),
                       ),
                     ),
                   ],
@@ -314,25 +237,12 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     );
   }
 
-  Widget _buildField(
-    String label,
-    TextEditingController ctrl,
-    IconData icon, {
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-  }) {
+  Widget _buildField(String label, TextEditingController ctrl, IconData icon, {TextInputType keyboardType = TextInputType.text, String? Function(String?)? validator}) {
     return TextFormField(
       controller: ctrl,
       keyboardType: keyboardType,
       validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, size: 20),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-        isDense: true,
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon, size: 20), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14), isDense: true),
     );
   }
 
@@ -344,18 +254,125 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
       decoration: InputDecoration(
         labelText: 'Password',
         prefixIcon: const Icon(Icons.lock_outline, size: 20),
-        suffixIcon: IconButton(
-          icon: Icon(
-              _obscurePassword? Icons.visibility_off : Icons.visibility,
-              size: 20),
-          onPressed: () =>
-              setState(() => _obscurePassword =!_obscurePassword),
-        ),
+        suffixIcon: IconButton(icon: Icon(_obscurePassword? Icons.visibility_off : Icons.visibility, size: 20), onPressed: () => setState(() => _obscurePassword =!_obscurePassword)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         isDense: true,
       ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// EDIT TEACHER DIALOG - ALL ERRORS FIXED
+// ─────────────────────────────────────────────
+
+class EditTeacherDialog extends StatefulWidget {
+  final TeacherModel teacher;
+  const EditTeacherDialog({super.key, required this.teacher});
+
+  @override
+  State<EditTeacherDialog> createState() => _EditTeacherDialogState();
+}
+
+class _EditTeacherDialogState extends State<EditTeacherDialog> {
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _usernameCtrl;
+  late TextEditingController _emailCtrl;
+  late TextEditingController _phoneCtrl;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameCtrl = TextEditingController(text: widget.teacher.name);
+    _emailCtrl = TextEditingController(text: widget.teacher.email?? '');
+    _phoneCtrl = TextEditingController(text: widget.teacher.phone?? '');
+  }
+
+  @override
+  void dispose() {
+    _usernameCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onUpdate() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+    final success = await updateTeacher(widget.teacher.id, _usernameCtrl.text.trim(), _emailCtrl.text.trim(), _phoneCtrl.text.trim());
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+
+    if (success) {
+      Navigator.of(context).pop(true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${widget.teacher.name} updated successfully!'), backgroundColor: const Color(0xFF2E7D32))
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to update teacher'), backgroundColor: Color(0xFFC62828))
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Edit Teacher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 4),
+            Text('Update faculty details', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+            const SizedBox(height: 20),
+            _buildField('Username', _usernameCtrl, Icons.person_outline, validator: (v) => v!.isEmpty? 'Username required' : null),
+            const SizedBox(height: 14),
+            _buildField('Email', _emailCtrl, Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) => v!.isEmpty? 'Email required' : null),
+            const SizedBox(height: 14),
+            _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isLoading? null : () => Navigator.of(context).pop(),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: Colors.grey[400]!), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isLoading? null : _onUpdate,
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Update'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+);
+  }
+
+  Widget _buildField(String label, TextEditingController ctrl, IconData icon, {TextInputType keyboardType = TextInputType.text, String? Function(String?)? validator}) {
+    return TextFormField(
+      controller: ctrl,
+      keyboardType: keyboardType,
+      validator: validator,
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon, size: 20), border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14), isDense: true),
     );
   }
 }
@@ -366,28 +383,21 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
 
 class TeacherCard extends StatelessWidget {
   final TeacherModel teacher;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
-  const TeacherCard({super.key, required this.teacher});
+  const TeacherCard({super.key, required this.teacher, this.onEdit, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
     final isAlert = teacher.status == TeacherStatus.securityAlert;
-
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: isAlert
-           ? Border.all(color: const Color(0xFFEF9A9A), width: 1.5)
-            : Border.all(color: const Color(0xFFE0E0E0), width: 0.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: isAlert? Border.all(color: const Color(0xFFEF9A9A), width: 1.5) : Border.all(color: const Color(0xFFE0E0E0), width: 0.5),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         children: [
@@ -396,204 +406,73 @@ class TeacherCard extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Avatar
-                CircleAvatar(
-                  radius: 22,
-                  backgroundColor: teacher.avatarColor,
-                  child: Text(
-                    teacher.initials,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
+                CircleAvatar(radius: 22, backgroundColor: teacher.avatarColor, child: Text(teacher.initials, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14))),
                 const SizedBox(width: 12),
-                // Info
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       StatusBadge(status: teacher.status),
                       const SizedBox(height: 4),
-                      Text(
-                        teacher.name,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A2E),
-                        ),
-                      ),
-                      Text(
-                        '${teacher.department} • ${teacher.role}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[600],
-                        ),
-                      ),
+                      Text(teacher.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E))),
+                      Text('${teacher.department} • ${teacher.role}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                       const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(Icons.class_outlined,
-                              size: 14, color: Colors.grey[500]),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${teacher.activeClasses} Active Classes',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey[600]),
-                          ),
-                          if (teacher.deviceInfo!= null)...[
-                            const SizedBox(width: 12),
-                            Icon(Icons.smartphone,
-                                size: 14, color: Colors.grey[500]),
-                            const SizedBox(width: 4),
-                            Text(
-                              teacher.deviceInfo!,
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
-                            ),
-                          ],
-                          if (teacher.registeredInfo!= null)...[
-                            const SizedBox(width: 12),
-                            Icon(Icons.check_circle_outline,
-                                size: 14, color: Colors.grey[500]),
-                            const SizedBox(width: 4),
-                            Text(
-                              teacher.registeredInfo!,
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[600]),
-                            ),
-                          ],
-                        ],
-                      ),
-                      if (teacher.lastSeen!= null)...[
-                        const SizedBox(height: 4),
-                        Text(
-                          'LAST SEEN ${teacher.lastSeen}',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[400],
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                      ],
+                      Row(children: [
+                        Icon(Icons.class_outlined, size: 14, color: Colors.grey[500]),
+                        const SizedBox(width: 4),
+                        Text('${teacher.activeClasses} Active Classes', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                        if (teacher.deviceInfo!= null)...[const SizedBox(width: 12), Icon(Icons.smartphone, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.deviceInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
+                        if (teacher.registeredInfo!= null)...[const SizedBox(width: 12), Icon(Icons.check_circle_outline, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.registeredInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
+                      ]),
+                      if (teacher.lastSeen!= null)...[const SizedBox(height: 4), Text('LAST SEEN ${teacher.lastSeen}', style: TextStyle(fontSize: 10, color: Colors.grey[400], letterSpacing: 0.3))],
                     ],
                   ),
                 ),
-                // More icon
-                Icon(Icons.more_vert, color: Colors.grey[400], size: 20),
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: Colors.grey[400], size: 20),
+                  padding: EdgeInsets.zero,
+                  onSelected: (value) {
+                    if (value == 'edit') onEdit?.call();
+                    if (value == 'delete') onDelete?.call();
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 8), Text('Edit')])),
+                    const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
+                  ],
+                ),
               ],
             ),
           ),
-
-          // Security alert section
           if (isAlert)...[
             Container(
               margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFF8F8),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFFFCDD2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.warning_amber_rounded,
-                      color: Color(0xFFE53935), size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'NEW LOGIN DETECTED',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFFE53935),
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        Text(
-                          'Unknown Windows PC • Austin, TX',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              decoration: BoxDecoration(color: const Color(0xFFFFF8F8), borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFFFCDD2))),
+              child: Row(children: [
+                const Icon(Icons.warning_amber_rounded, color: Color(0xFFE53935), size: 16),
+                const SizedBox(width: 8),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Text('NEW LOGIN DETECTED', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE53935), letterSpacing: 0.3)),
+                  Text('Unknown Windows PC • Austin, TX', style: TextStyle(fontSize: 11, color: Colors.grey[700])),
+                ])),
+              ]),
             ),
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE53935)),
-                        foregroundColor: const Color(0xFFE53935),
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text('LOCK ACCOUNT',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF1565C0),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text('VERIFY ID',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w700)),
-                    ),
-                  ),
-                ],
-              ),
+              child: Row(children: [
+                Expanded(child: OutlinedButton(onPressed: () {}, style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFFE53935)), foregroundColor: const Color(0xFFE53935), padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('LOCK ACCOUNT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)))),
+                const SizedBox(width: 10),
+                Expanded(child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('VERIFY ID', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)))),
+              ]),
             ),
           ],
-
-          // View logs for verified
           if (teacher.status == TeacherStatus.verified)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Align(
                 alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF1565C0),
-                    padding: EdgeInsets.zero,
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text('VIEW LOGS',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w600)),
-                      SizedBox(width: 4),
-                      Icon(Icons.arrow_forward, size: 14),
-                    ],
-                  ),
-                ),
+                child: TextButton(onPressed: () {}, style: TextButton.styleFrom(foregroundColor: const Color(0xFF1565C0), padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap), child: const Row(mainAxisSize: MainAxisSize.min, children: [Text('VIEW LOGS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)), SizedBox(width: 4), Icon(Icons.arrow_forward, size: 14)])),
               ),
             ),
         ],
@@ -608,55 +487,92 @@ class TeacherCard extends StatelessWidget {
 
 class TeacherDirectoryScreen extends StatefulWidget {
   const TeacherDirectoryScreen({super.key});
-
   @override
   State<TeacherDirectoryScreen> createState() => _TeacherDirectoryScreenState();
 }
 
 class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
   int _selectedTab = 0;
-  int _selectedNavIndex = 0;
   final _searchCtrl = TextEditingController();
   String _searchQuery = '';
+  List<TeacherModel> _allTeachers = [];
+  bool _isLoading = true;
 
   final List<String> _tabs = ['All Faculty', 'Registered', 'Security Alerts'];
-  final List<String> _navLabels = ['Faculty', 'Classes', 'Security', 'Settings'];
-  final List<IconData> _navIcons = [
-    Icons.people_outline,
-    Icons.class_outlined,
-    Icons.security_outlined,
-    Icons.settings_outlined,
-  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchTeachers();
+  }
+
+  Future<void> _fetchTeachers() async {
+    setState(() => _isLoading = true);
+    try {
+      final response = await http.get(Uri.parse('${AuthService.baseUrl}/teachers'), headers: {'Accept': 'application/json'});
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final List data = jsonData['data'];
+        setState(() {
+          _allTeachers = data.map((e) => TeacherModel.fromJson(e)).toList();
+          _isLoading = false;
+        });
+      } else {
+        setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      print('Fetch Error: $e');
+      setState(() => _isLoading = false);
+    }
+  }
 
   List<TeacherModel> get _filteredTeachers {
     List<TeacherModel> list = _allTeachers;
-
-    // Filter by tab
     if (_selectedTab == 1) {
-      list = list
-         .where((t) => t.status == TeacherStatus.verified || t.registeredInfo!= null)
-         .toList();
+      list = list.where((t) => t.status == TeacherStatus.verified || t.registeredInfo!= null).toList();
     } else if (_selectedTab == 2) {
       list = list.where((t) => t.status == TeacherStatus.securityAlert).toList();
     }
-
-    // Filter by search
     if (_searchQuery.isNotEmpty) {
-      list = list
-         .where((t) =>
-              t.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              t.department.toLowerCase().contains(_searchQuery.toLowerCase()))
-         .toList();
+      list = list.where((t) => t.name.toLowerCase().contains(_searchQuery.toLowerCase()) || t.department.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
     }
-
     return list;
   }
 
-  void _openAddTeacherDialog() {
-    showDialog(
+  void _openAddTeacherDialog() async {
+    final result = await showDialog<bool>(context: context, builder: (_) => const AddTeacherDialog());
+    if (result == true) _fetchTeachers();
+  }
+
+  void _showDeleteDialog(TeacherModel teacher) async {
+    final confirm = await showDialog<bool>(
       context: context,
-      builder: (_) => const AddTeacherDialog(),
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Teacher'),
+        content: Text('Are you sure you want to delete ${teacher.name}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE53935)),
+            child: const Text('Delete', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
     );
+
+    if (confirm == true) {
+      final success = await deleteTeacher(teacher.id);
+      if (success) {
+        setState(() {
+          _allTeachers.removeWhere((t) => t.id == teacher.id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${teacher.name} deleted'), backgroundColor: const Color(0xFFC62828)));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete'), backgroundColor: Color(0xFFC62828)));
+      }
+    }
   }
 
   @override
@@ -667,258 +583,104 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F7FA),
-      body: SafeArea(
+    return BaseScaffold(
+      title: 'Teacher Directory',
+      actions: [
+        Container(
+          margin: const EdgeInsets.only(right: 16),
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(color: const Color(0xFF1565C0), borderRadius: BorderRadius.circular(10)),
+          child: IconButton(icon: const Icon(Icons.add, color: Colors.white, size: 20), onPressed: _openAddTeacherDialog, padding: EdgeInsets.zero),
+        ),
+      ],
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddTeacherDialog,
+        backgroundColor: const Color(0xFF1565C0),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add),
+      ),
+      body: Container(
+        color: const Color(0xFFF5F7FA),
         child: Column(
           children: [
-            // ── HEADER ──
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: () {},
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Teacher Directory',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF1A1A2E),
-                              ),
-                            ),
-                            Text(
-                              'Manage faculty and security',
-                              style: TextStyle(
-                                  fontSize: 12, color: Colors.grey[500]),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: 36,
-                        height: 36,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1565C0),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.add,
-                              color: Colors.white, size: 20),
-                          onPressed: _openAddTeacherDialog,
-                          padding: EdgeInsets.zero,
-                        ),
-                      ),
-                    ],
-                  ),
+                  Text('Manage faculty and security', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                   const SizedBox(height: 12),
-
-                  // Search bar
                   Container(
                     height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF0F2F5),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    decoration: BoxDecoration(color: const Color(0xFFF0F2F5), borderRadius: BorderRadius.circular(10)),
                     child: TextField(
                       controller: _searchCtrl,
                       onChanged: (v) => setState(() => _searchQuery = v),
-                      decoration: InputDecoration(
-                        hintText: 'Search by name or department',
-                        hintStyle:
-                            TextStyle(color: Colors.grey[400], fontSize: 13),
-                        prefixIcon: Icon(Icons.search,
-                            color: Colors.grey[400], size: 20),
-                        suffixIcon: Icon(Icons.tune,
-                            color: Colors.grey[400], size: 18),
-                        border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 12),
-                      ),
+                      decoration: InputDecoration(hintText: 'Search by name or department', hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13), prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20), suffixIcon: Icon(Icons.tune, color: Colors.grey[400], size: 18), border: InputBorder.none, contentPadding: const EdgeInsets.symmetric(vertical: 12)),
                     ),
                   ),
                   const SizedBox(height: 12),
-
-                  // Tab bar
-                  Row(
-                    children: List.generate(_tabs.length, (i) {
-                      final selected = _selectedTab == i;
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedTab = i),
-                        child: Container(
-                          margin: const EdgeInsets.only(right: 8),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: selected
-                               ? const Color(0xFF1565C0)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            _tabs[i],
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: selected
-                                 ? Colors.white
-                                  : Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  ),
+                  Row(children: List.generate(_tabs.length, (i) {
+                    final selected = _selectedTab == i;
+                    return GestureDetector(
+                      onTap: () => setState(() => _selectedTab = i),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(color: selected? const Color(0xFF1565C0) : Colors.transparent, borderRadius: BorderRadius.circular(20)),
+                        child: Text(_tabs[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected? Colors.white : Colors.grey[600])),
+                      ),
+                    );
+                  })),
                   const SizedBox(height: 4),
                 ],
               ),
             ),
-
-            // ── LIST ──
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                children: [
-                  // Active staff header
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 4),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: _isLoading
+                 ? const Center(child: CircularProgressIndicator())
+                  : ListView(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       children: [
-                        Text(
-                          'ACTIVE STAFF (${_filteredTeachers.length})',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.grey[500],
-                            letterSpacing: 0.5,
-                          ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            Text('ACTIVE STAFF (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)),
+                            Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: const Color(0xFF1565C0))),
+                          ]),
                         ),
-                        Text(
-                          'Sort by: Recent',
-                          style: TextStyle(
-                              fontSize: 11, color: const Color(0xFF1565C0)),
+                        const SizedBox(height: 4),
+                       ..._filteredTeachers.map((t) => TeacherCard(
+                              teacher: t,
+                              onEdit: () async {
+                                final result = await showDialog<bool>(context: context, builder: (_) => EditTeacherDialog(teacher: t));
+                                if (result == true) _fetchTeachers();
+                              },
+                              onDelete: () => _showDeleteDialog(t),
+                            )),
+                        Container(
+                          margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          decoration: BoxDecoration(color: const Color(0xFF1565C0), borderRadius: BorderRadius.circular(12)),
+                          child: Row(children: [
+                            const Icon(Icons.sync, color: Colors.white, size: 18),
+                            const SizedBox(width: 10),
+                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+                              Text('Security Sync', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                              Text('Last synced 5 mins ago', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                            ]),
+                            const Spacer(),
+                            const Text('Details', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                          ]),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                 ..._filteredTeachers
-                     .map((t) => TeacherCard(teacher: t)),
-
-                  // ── Security Sync footer ──
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1565C0),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.sync, color: Colors.white, size: 18),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
-                            Text(
-                              'Security Sync',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                              ),
-                            ),
-                            Text(
-                              'Last synced 5 mins ago',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Spacer(),
-                        const Text(
-                          'Details',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
           ],
-        ),
-      ),
-
-      // ── BOTTOM NAV ──
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.07),
-                blurRadius: 12,
-                offset: const Offset(0, -2))
-          ],
-        ),
-        child: SafeArea(
-          child: SizedBox(
-            height: 60,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(_navLabels.length, (i) {
-                final selected = _selectedNavIndex == i;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedNavIndex = i),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        _navIcons[i],
-                        size: 22,
-                        color: selected
-                           ? const Color(0xFF1565C0)
-                            : Colors.grey[400],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        _navLabels[i],
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: selected
-                             ? const Color(0xFF1565C0)
-                              : Colors.grey[400],
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ),
-          ),
         ),
       ),
     );

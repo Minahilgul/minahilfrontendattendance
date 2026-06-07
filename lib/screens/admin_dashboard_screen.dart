@@ -8,14 +8,14 @@ import 'classes_screen.dart';
 import 'pending_approvals_screen.dart';
 import 'reports_screen.dart';
 import 'package:go_router/go_router.dart';
-
+import '../widgets/base_scaffold.dart'; 
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const AdminDashboard(); // ✅ FIX: MaterialApp remove
+    return const AdminDashboard();
   }
 }
 
@@ -29,102 +29,49 @@ class AdminDashboard extends StatefulWidget {
 class _AdminDashboardState extends State<AdminDashboard> {
   int _selectedIndex = 0;
 
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-    title: const Text('Attendance Verification'),
-    backgroundColor: const Color(0xFF2979FF),
-    foregroundColor: Colors.white,
-    elevation: 0,
-  ),
+    return BaseScaffold(
+      title: 'Attendance Verification', 
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: const Color(0xFF37474F),
+        mini: true,
+        child: const Icon(Icons.help_outline, color: Colors.white, size: 18),
+      ),
+      bottomNav: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
 
-
-  drawer: Drawer(
-    child: ListView(
-      padding: EdgeInsets.zero,
-      children: [
-        const DrawerHeader(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFF2979FF),
-                Color(0xFF00BFA5),
-              ],
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: 28,
-                child: Icon(Icons.admin_panel_settings),
-              ),
-              SizedBox(height: 12),
-              Text(
-                'Administrator',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        ListTile(
-          leading: const Icon(Icons.home),
-          title: const Text('Dashboard'),
-          onTap: () => Navigator.pop(context),
-        ),
-
-        ListTile(
-          leading: const Icon(Icons.people),
-          title: const Text('Teacher Directory'),
-          onTap: () {
-            Navigator.pop(context);
-            context.push('/teachers');
-          },
-        ),
-
-        ListTile(
-          leading: const Icon(Icons.pending_actions),
-          title: const Text('Pending Approvals'),
-          onTap: () {
-            Navigator.pop(context);
-            context.push('/pending');
-          },
-        ),
-
-        ListTile(
-          leading: const Icon(Icons.bar_chart),
-          title: const Text('Reports'),
-          onTap: () {
-            Navigator.pop(context);
-            context.push('/reports');
-          },
-        ),
-
-        const Divider(),
-
-        ListTile(
-          leading: const Icon(Icons.person),
-          title: const Text('Profile'),
-          onTap: () {
-            Navigator.pop(context);
-            context.push('/profile');
-          },
-        ),
-      ],
-    ),
-  ),
-
+          switch (index) {
+            case 0:
+              break;
+            case 1:
+              context.push('/classes');
+              break;
+            case 2:
+              context.push('/reports');
+              break;
+            case 3:
+              context.push('/profile');
+              break;
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.class_), label: 'Manage Classes'),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'View Reports'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
+      ),
       body: Column(
         children: [
-        Expanded(
-      child: Padding(
+          Expanded(
+            child: Padding(
               padding: const EdgeInsets.all(16),
               child: GridView.count(
                 crossAxisCount: 2,
@@ -132,106 +79,44 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 mainAxisSpacing: 16,
                 childAspectRatio: 1.1,
                 children: [
-                  // ✅ Manage Classes
                   DashboardCard(
                     title: 'Manage Classes',
                     iconData: Icons.grid_view_rounded,
                     iconBgColor: const Color(0xFF2979FF),
-                     onTap: () {
-                   context.push('/classes');
+                    onTap: () {
+                      context.push('/classes');
                     },
-                      ),
-
-                  // ✅ Teacher Directory (FIXED CLICK)
+                  ),
                   DashboardCard(
                     title: 'Teacher Directory',
                     iconData: Icons.shield_outlined,
                     iconBgColor: const Color(0xFF00BFA5),
                     onTap: () {
-                     context.push('/teachers');
-                   },
-                      ),
-                    
-  
-
-                  // Other cards
-                   DashboardCard(
+                      context.push('/teachers');
+                    },
+                  ),
+                  DashboardCard(
                     title: 'Pending Approvals',
                     iconData: Icons.group_outlined,
                     iconBgColor: Color(0xFF00BFA5),
-                   onTap: () {
-                     context.push('/pending');
-                  },      
-                    ),
-                
-                   DashboardCard(
+                    onTap: () {
+                      context.push('/pending');
+                    },
+                  ),
+                  DashboardCard(
                     title: 'Reports & Audit',
                     iconData: Icons.description_outlined,
                     iconBgColor: Color(0xFF9C27B0),
-                  onTap: () {
-  context.push('/reports');
-},
-                      ),
-            
+                    onTap: () {
+                      context.push('/reports');
+                    },
+                  ),
                 ],
               ),
             ),
           ),
         ],
       ),
-
-      // Floating button
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: const Color(0xFF37474F),
-        mini: true,
-        child: const Icon(Icons.help_outline, color: Colors.white, size: 18),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-  currentIndex: _selectedIndex,
-  type: BottomNavigationBarType.fixed,
-  onTap: (index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    switch (index) {
-      case 0:
-        break;
-
-      case 1:
-        context.push('/classes');
-        break;
-
-      case 2:
-        context.push('/reports');
-        break;
-
-      case 3:
-        context.push('/profile');
-        break;
-    
-    }
-  },
-  items: const [
-    BottomNavigationBarItem(
-      icon: Icon(Icons.home),
-      label: 'Home',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.class_),
-      label: 'Manage Classes',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.bar_chart),
-      label: 'View Reports',
-    ),
-    BottomNavigationBarItem(
-      icon: Icon(Icons.person),
-      label: 'Profile',
-    ),
-  ],
-),
     );
   }
 }
@@ -277,7 +162,6 @@ class DashboardCard extends StatelessWidget {
                   size: 30,
                 ),
               ),
-
               Text(
                 title,
                 style: const TextStyle(
