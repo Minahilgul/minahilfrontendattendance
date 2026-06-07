@@ -1,36 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart'; 
 import 'dart:convert';
-import 'settings_screen.dart'; // Settings screen import
+import 'settings_screen.dart';
 
-void main() {
-  runApp(const TeacherDashboardApp());
-}
 
-class TeacherDashboardApp extends StatelessWidget {
-  const TeacherDashboardApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Teacher Dashboard',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF0F9D58),
-          brightness: Brightness.light,
-        ),
-        fontFamily: 'Roboto',
-      ),
-      home: const TeacherDashboardScreen(),
-    );
-  }
-}
 
 class TeacherDashboardScreen extends StatefulWidget {
-  const TeacherDashboardScreen({super.key});
+  final int userId; 
+  final String role; 
+
+  const TeacherDashboardScreen({
+    super.key,
+    required this.userId,
+    required this.role, 
+  });
 
   @override
   State<TeacherDashboardScreen> createState() => _TeacherDashboardScreenState();
@@ -42,8 +27,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   bool isLoading = false;
 
   final String baseUrl = "http://10.0.2.2:8000/api";
-  final int teacherId = 1;
-  final int classId = 5;
+  int get teacherId => widget.userId; 
+  final int classId = 5; 
 
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
@@ -86,7 +71,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               const Text('Teacher Dashboard',
                   style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text('Miss Amina', style: TextStyle(color: Colors.white70, fontSize: 15)),
+              Text('Teacher ID: ${widget.userId}', style: TextStyle(color: Colors.white70, fontSize: 15)), // 👈 Miss Amina ki jagah ID dikha do
               if(activeSessionId!= null)...[
                 const SizedBox(height: 8),
                 Text('Active Session: $activeSessionId',
@@ -137,7 +122,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         Uri.parse('$baseUrl/class-session/create'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'teacher_id': teacherId,
+          'teacher_id': teacherId, 
           'class_id': classId,
           'latitude': pos.latitude,
           'longitude': pos.longitude,

@@ -29,7 +29,7 @@ class ClassItem {
     required this.iconColor,
   });
 
-  // 👇 NAYA: JSON se object banane ke liye
+  
   factory ClassItem.fromJson(Map<String, dynamic> json) {
     return ClassItem(
       id: json['id']?? 0,
@@ -48,7 +48,7 @@ class ClassItem {
 // API SERVICE - API SE DATA LOAD HOGA
 // ─────────────────────────────────────────────
 
-List<ClassItem> allClasses = []; // 👈 Dummy list hata di
+List<ClassItem> allClasses = []; 
 
 Future<void> fetchClasses() async {
   try {
@@ -90,7 +90,7 @@ Future<bool> createClass(String name, String className, String students) async {
   }
 }
 
-// 👇 UPDATE API REAL BAN GAYI
+
 Future<bool> updateClass(int id, String name, String className, String students) async {
   try {
     final response = await http.put(
@@ -137,13 +137,13 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _isLoading = true; // 👈 Loading state
+  bool _isLoading = true; 
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadData(); // 👈 Screen open hote hi data load
+    _loadData(); 
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.toLowerCase();

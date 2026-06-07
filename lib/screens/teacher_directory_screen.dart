@@ -77,11 +77,10 @@ Future<bool> addTeacher(String username, String email, String password, String p
       headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
       body: jsonEncode({'username': username, 'email': email, 'password': password, 'phone': phone}),
     );
-    
-    
+
     print("ADD STATUS: ${response.statusCode}");
     print("ADD BODY: ${response.body}");
-    
+
     return response.statusCode == 200 || response.statusCode == 201;
   } catch (e) {
     print("ADD TEACHER ERROR: $e");
@@ -89,7 +88,7 @@ Future<bool> addTeacher(String username, String email, String password, String p
   }
 }
 
-// ✅ FIXED: Backend API call add kiya
+
 Future<bool> updateTeacher(int id, String username, String email, String phone) async {
   try {
     final response = await http.put(
@@ -482,11 +481,19 @@ class TeacherCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// MAIN SCREEN
+// MAIN SCREEN - SIRF CONSTRUCTOR UPDATE KIYA
 // ─────────────────────────────────────────────
 
 class TeacherDirectoryScreen extends StatefulWidget {
-  const TeacherDirectoryScreen({super.key});
+  final int userId; 
+  final String role; 
+
+  const TeacherDirectoryScreen({
+    super.key,
+    required this.userId, 
+    required this.role, 
+  });
+
   @override
   State<TeacherDirectoryScreen> createState() => _TeacherDirectoryScreenState();
 }
@@ -642,7 +649,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
             ),
             Expanded(
               child: _isLoading
-                 ? const Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                   : ListView(
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       children: [
@@ -654,7 +661,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                           ]),
                         ),
                         const SizedBox(height: 4),
-                       ..._filteredTeachers.map((t) => TeacherCard(
+                      ..._filteredTeachers.map((t) => TeacherCard(
                               teacher: t,
                               onEdit: () async {
                                 final result = await showDialog<bool>(context: context, builder: (_) => EditTeacherDialog(teacher: t));

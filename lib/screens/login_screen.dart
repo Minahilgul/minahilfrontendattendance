@@ -3,7 +3,6 @@ import '../core/services/auth_service.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
 
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -21,34 +20,48 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    content: Text("password cannot be empty"),
-  ),
-);
+        SnackBar(content: Text("Email and password cannot be empty")),
+      );
       return;
     }
     setState(() {
       _isLoading = true;
     });
 
-    final result =
-        await AuthService.login(emailController.text, passwordController.text);
+    final result = await AuthService.login(emailController.text, passwordController.text);
   
     setState(() {
       _isLoading = false;
     });
 
     if (result['success']) {
+      
+      final user = result['result'];
+      int userId = user['id'] ?? 0; 
+      String role = user['role'] ?? 'student';
+      String userName = user['username'] ?? emailController.text;
+      print("FULL RESPONSE: $result"); 
+      print("USER DATA: $user");
+      print("Final UserID: $userId"); 
+      
       storage.write('isLoggedIn', true);
-      storage.write('userName', emailController.text);
+      storage.write('userName', userName);
+      storage.write('role', role);
+      storage.write('userId', userId);
 
-      context.go('/dashboard');
+      
+      if (role == 'admin') {
+        context.go('/admin-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+      } else if (role == 'teacher') {
+        context.go('/teacher-dashboard', extra: {'userId': userId, 'role': role, 'name': userName}); // 👈 extra add
+      } else {
+        context.go('/student-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+      }
+      
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-  SnackBar(
-    content: Text(result['message']),
-  ),
-);
+        SnackBar(content: Text(result['message'])),
+      );
     }
   }
 
@@ -225,4 +238,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}
+}  

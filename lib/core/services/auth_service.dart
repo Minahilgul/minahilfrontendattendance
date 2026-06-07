@@ -26,9 +26,9 @@ class AuthService {
 
       if (response.statusCode == 200 && data['success'] == true) {
         final box = GetStorage();
-         box.write('token', data['result']['token']); // save token
+         box.write('token', data['result']['token']); 
 
-        return {"success": true, "data": data};
+        return data;
       } else {
         return {"success": false, "message": data['message'] ?? 'Login failed'};
       }
