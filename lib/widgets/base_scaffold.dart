@@ -61,11 +61,14 @@ class BaseScaffold extends StatelessWidget {
               Navigator.pop(context);
               context.push('/pending');
             }),
-            ListTile(leading: const Icon(Icons.admin_panel_settings), title: const Text('Role Management'), onTap: () {
-              Navigator.pop(context);
-              context.push('/roles');
-            }),
-            ], // 👇 Teacher menu  
+            ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('System Settings'),
+            onTap: () {
+           Navigator.pop(context);
+           context.push('/settings');
+        }),
+            ], 
       if(role == 'teacher') ...[
         ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
           Navigator.pop(context);

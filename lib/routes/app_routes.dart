@@ -9,6 +9,7 @@ import '../screens/teacher_directory_screen.dart';
 import '../screens/pending_approvals_screen.dart';
 import '../screens/reports_screen.dart';
 import '../screens/role_screen.dart'; 
+import '../screens/settings_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -21,6 +22,10 @@ final GoRouter appRouter = GoRouter(
     GoRoute(
       path: '/admin-dashboard', 
       builder: (context, state) => const AdminDashboardScreen()
+    ),
+    GoRoute(
+  path: '/settings',
+  builder: (context, state) => const SettingsScreen(),
     ),
     
     
