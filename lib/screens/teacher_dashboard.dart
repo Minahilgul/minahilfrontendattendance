@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart'; 
 import 'dart:convert';
 import 'settings_screen.dart';
+import '../widgets/base_scaffold.dart'; 
 
 
 
@@ -26,7 +27,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   int? activeSessionId;
   bool isLoading = false;
 
-  final String baseUrl = "http://10.0.2.2:8000/api";
+  final String baseUrl = "http://localhost:8000/api";
   int get teacherId => widget.userId; 
   final int classId = 5; 
 
@@ -39,16 +40,19 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _buildHeader(),
-          Expanded(child: _buildBody()),
-        ],
-      ),
-      bottomNavigationBar: _buildBottomNavBar(),
+    return BaseScaffold(
+      title: 'Teacher Dashboard',
+      role: widget.role,
+      floatingActionButton: isLoading 
+      ? const CircularProgressIndicator() 
+      : FloatingActionButton(
+          onPressed: () {},
+      backgroundColor: const Color(0xFF0F9DF8),
+       mini: true,
+          child: const Icon(Icons.help_outline, color: Colors.white, size: 18),
+        ),
+    bottomNav: _buildBottomNavBar(),
+      body: _buildBody(),
     );
   }
 
@@ -71,7 +75,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               const Text('Teacher Dashboard',
                   style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 4),
-              Text('Teacher ID: ${widget.userId}', style: TextStyle(color: Colors.white70, fontSize: 15)), // 👈 Miss Amina ki jagah ID dikha do
+              Text('Role: ${widget.role} | ID:${widget.userId}', style: TextStyle(color: Colors.white70, fontSize: 15)), // 👈 Miss Amina ki jagah ID dikha do
               if(activeSessionId!= null)...[
                 const SizedBox(height: 8),
                 Text('Active Session: $activeSessionId',
@@ -128,6 +132,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           'longitude': pos.longitude,
         }),
       );
+       print("Response: ${res.body}");
       final data = jsonDecode(res.body);
       if (res.statusCode == 201 && data['success'] == true) {
         setState(() => activeSessionId = data['data']['id']);
@@ -143,14 +148,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   Future<void> endSession() async {
     if (activeSessionId == null) {
-      _showSnack('Pehle session start karo');
+      _showSnack('Start Session First');
       return;
     }
     final res = await http.post(Uri.parse('$baseUrl/class-session/end/$activeSessionId'));
     final data = jsonDecode(res.body);
     if (data['success'] == true) {
       setState(() => activeSessionId = null);
-      _showSnack('Session khatam ho gayi');
+      _showSnack('Session Ended');
     } else {
       _showSnack(data['message']);
     }

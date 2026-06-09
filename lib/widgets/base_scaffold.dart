@@ -7,11 +7,13 @@ class BaseScaffold extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? bottomNav;
   final Widget? floatingActionButton;
+  final String role;
 
   const BaseScaffold({
     super.key,
     required this.title,
     required this.body,
+    required this.role,
     this.actions,
     this.bottomNav,
     this.floatingActionButton,
@@ -37,14 +39,17 @@ class BaseScaffold extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
-                children: const [
+                children:  [
                   CircleAvatar(radius: 28, child: Icon(Icons.admin_panel_settings)),
                   SizedBox(height: 12),
-                  Text('Administrator', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text( role == 'admin' ? 'Administrator': 'Teacher', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
-            ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
+            if (role == 'admin') ... [
+               ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), 
+           
+            onTap: () {
               Navigator.pop(context);
               context.push('/');
             }),
@@ -56,26 +61,35 @@ class BaseScaffold extends StatelessWidget {
               Navigator.pop(context);
               context.push('/pending');
             }),
-            ListTile(leading: const Icon(Icons.bar_chart), title: const Text('Reports'), onTap: () {
+            ListTile(leading: const Icon(Icons.admin_panel_settings), title: const Text('Role Management'), onTap: () {
               Navigator.pop(context);
-              context.push('/reports');
+              context.push('/roles');
             }),
-            ListTile(
-            leading: Icon(Icons.admin_panel_settings, color: Color(0xFF37474F)),
-            title: Text('Role Management', style: TextStyle(fontWeight: FontWeight.w600)),
-            onTap: () {
-            Navigator.pop(context); // drawer close
-            context.push('/roles'); // Role screen pe le jao
-             },
-             ),
-            const Divider(),
-            ListTile(leading: const Icon(Icons.person), title: const Text('Profile'), onTap: () {
-              Navigator.pop(context);
-              context.push('/profile');
-            }),
-          ],
-        ),
-      ),
+            ], // 👇 Teacher menu  
+      if(role == 'teacher') ...[
+        ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
+          Navigator.pop(context);
+          context.push('/teacher-dashboard');
+        }),
+        ListTile(leading: const Icon(Icons.class_), title: const Text('My Classes'), onTap: () {
+          Navigator.pop(context);
+          context.push('/my-classes');
+        }),
+        ListTile(leading: const Icon(Icons.checklist), title: const Text('Attendance'), onTap: () {
+          Navigator.pop(context);
+          context.push('/attendance');
+        }),
+      ],
+      
+      const Divider(),
+      ListTile(leading: const Icon(Icons.person), title: const Text('Profile'), onTap: () {
+        Navigator.pop(context);
+        context.push('/profile');
+      }),
+    ],
+  ),
+),
+           
       body: body,
       bottomNavigationBar: bottomNav,
       floatingActionButton: floatingActionButton,

@@ -592,6 +592,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: 'Teacher Directory',
+      role: 'admin',
       actions: [
         Container(
           margin: const EdgeInsets.only(right: 16),

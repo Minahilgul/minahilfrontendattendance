@@ -228,6 +228,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: 'Classes',
+      role: 'admin',
       actions: [
         IconButton(icon: const Icon(Icons.add, color: Colors.white, size: 26), onPressed: _showAddClassDialog),
       ],

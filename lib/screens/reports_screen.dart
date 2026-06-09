@@ -265,6 +265,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: 'Reports & Audit',
+      role: 'admin',
       actions: [
         IconButton(icon: const Icon(Icons.share_outlined, color: Colors.white, size: 20), onPressed: () {}),
       ],

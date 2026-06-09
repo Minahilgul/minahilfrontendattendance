@@ -168,7 +168,8 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
     final filtered = _filteredRequests;
 
     return BaseScaffold(
-      title: 'Approvals', // ← Sirf title yahan
+      title: 'Approvals',
+      role : 'admin', // ← Sirf title yahan
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),

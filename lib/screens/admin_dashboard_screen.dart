@@ -33,6 +33,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: 'Attendance Verification', 
+      role: 'admin',
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: const Color(0xFF37474F),
