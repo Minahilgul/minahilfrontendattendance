@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 👈 ye add karo
+import '../widgets/base_scaffold.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -93,14 +94,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
-      appBar: AppBar(
-        title: Text('System Settings'),
-        backgroundColor: Color(0xFF0F9D58),
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
+    return BaseScaffold(
+      title: 'System Settings',
+      role: 'admin',
       body: isLoading
       ? Center(child: CircularProgressIndicator(color: Color(0xFF0F9D58)))
         : settings.isEmpty
