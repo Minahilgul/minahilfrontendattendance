@@ -12,8 +12,8 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final String baseUrl = "http://localhost:8000/api"; // 👈 localhost → 127.0.0.1
-  final storage = FlutterSecureStorage(); // 👈 ye add karo
+  final String baseUrl = "http://localhost:8000/api";
+  final storage = FlutterSecureStorage(); 
   String token = ""; // 👈 hardcoded token hata diya
 
   List<dynamic> settings = [];
@@ -46,7 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': 'Bearer $token', // 👈 same rahega
+          'Authorization': 'Bearer $token', 
         }
       );
 
@@ -74,7 +74,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $token' // 👈 same rahega
+        'Authorization': 'Bearer $token' 
       },
       body: jsonEncode({'value': value}),
     );
