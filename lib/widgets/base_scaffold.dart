@@ -68,6 +68,14 @@ class BaseScaffold extends StatelessWidget {
            Navigator.pop(context);
            context.push('/settings');
         }),
+            ListTile(
+             leading: const Icon(Icons.location_on),
+             title: const Text('Create Session'),
+            onTap: () {
+             Navigator.pop(context);
+             context.push('/create-session');
+  },
+),
             ], 
       if(role == 'teacher') ...[
         ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
