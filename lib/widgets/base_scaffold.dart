@@ -61,10 +61,13 @@ class BaseScaffold extends StatelessWidget {
               Navigator.pop(context);
               context.push('/pending');
             }),
-            ListTile(leading: const Icon(Icons.admin_panel_settings), title: const Text('Role Management'), onTap: () {
-              Navigator.pop(context);
-              context.push('/roles');
-            }),
+            ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('System Settings'),
+            onTap: () {
+           Navigator.pop(context);
+           context.push('/settings');
+        }),
             ListTile(
              leading: const Icon(Icons.location_on),
              title: const Text('Create Session'),
@@ -73,7 +76,7 @@ class BaseScaffold extends StatelessWidget {
              context.push('/create-session');
   },
 ),
-            ], // 👇 Teacher menu  
+            ], 
       if(role == 'teacher') ...[
         ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
           Navigator.pop(context);

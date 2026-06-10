@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/auth_service.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 👈 GetStorage hatao
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,12 +15,12 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
-  GetStorage storage = GetStorage();
+  final storage = FlutterSecureStorage(); // 👈 GetStorage ki jagah ye
 
   Future<void> _login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Email and password cannot be empty")),
+        const SnackBar(content: Text("Email and password cannot be empty")),
       );
       return;
     }
@@ -40,20 +40,25 @@ class _LoginScreenState extends State<LoginScreen> {
       int userId = user['id'] ?? 0; 
       String role = user['role'] ?? 'student';
       String userName = user['username'] ?? emailController.text;
+      String token = result['result']['token'] ?? ''; // 👈 token variable me lo
       print("FULL RESPONSE: $result"); 
       print("USER DATA: $user");
       print("Final UserID: $userId"); 
       
-      storage.write('isLoggedIn', true);
-      storage.write('userName', userName);
-      storage.write('role', role);
-      storage.write('userId', userId);
+      // 👇 Bas ye 5 line change - await lagao + .toString()
+      await storage.write(key: 'isLoggedIn', value: 'true');
+      await storage.write(key: 'userName', value: userName);
+      await storage.write(key: 'role', value: role);
+      await storage.write(key: 'userId', value: userId.toString());
+      await storage.write(key: 'token', value: token);
+      
+      print("Token saved securely");
 
       
       if (role == 'admin') {
         context.go('/admin-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
       } else if (role == 'teacher') {
-        context.go('/teacher-dashboard', extra: {'userId': userId, 'role': role, 'name': userName}); // 👈 extra add
+        context.go('/teacher-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
       } else {
         context.go('/student-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
       }
@@ -238,4 +243,4 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
     );
   }
-}  
+}
