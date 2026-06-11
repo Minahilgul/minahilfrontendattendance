@@ -4,7 +4,7 @@ import 'package:get_storage/get_storage.dart';
 
 class AuthService {
   // 🔥 BASE URL (👇 YAHAN CHANGE KARNA HAI)
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://attia.ddev.site/api';
 
   // ───────────────── LOGIN ─────────────────
   static Future<Map<String, dynamic>> login(
