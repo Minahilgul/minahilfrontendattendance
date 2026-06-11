@@ -97,49 +97,54 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     children: [
                       TextField(controller: nameController, decoration: const InputDecoration(labelText: 'Name', border: OutlineInputBorder())),
                       const SizedBox(height: 12),
-               DropdownButtonFormField<String>(
-  value: selectedClass.isEmpty ? null : selectedClass,
-  items: classes.map<DropdownMenuItem<String>>((c) {
-    return DropdownMenuItem<String>(
-      value: c['name'].toString(),
-      child: Text(c['name'].toString()),
-    );
-  }).toList(),
-  onChanged: (String? val) {
-    setState(() {
-      selectedClass = val!;
-    });
-  },
-  decoration: const InputDecoration(
-    labelText: 'Class',
-    border: OutlineInputBorder(),
-  ),
-),      
-                       
-              
+                      DropdownButtonFormField<String>(
+                        value: selectedClass.isEmpty ? null : selectedClass,
+                        items: classes.map<DropdownMenuItem<String>>((c) {
+                          return DropdownMenuItem<String>(
+                            value: c['name'].toString(),
+                            child: Text(c['name'].toString()),
+                          );
+                        }).toList(),
+                        onChanged: (String? val) {
+                          setState(() {
+                            selectedClass = val!;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Class',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      TextField(controller: rollController, decoration: const InputDecoration(labelText: 'Roll No', border: OutlineInputBorder())),
+                      TextField(
+                        controller: rollController,
+                        decoration: const InputDecoration(
+                          labelText: 'Roll No',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-  value: selectedStatus,
-  items: ['Active', 'Inactive', 'Struck Out', 'On Leave']
-      .map((s) => DropdownMenuItem<String>(
-            value: s,
-            child: Text(s),
-          ))
-      .toList(),
-  onChanged: (String? val) {
-    setState(() {
-      selectedStatus = val!;
-    });
-  },
-  decoration: const InputDecoration(
-    labelText: 'Status',
-    border: OutlineInputBorder(),
-   ]
-  ),
-),
-
+                      DropdownButtonFormField<String>(
+                        value: selectedStatus,
+                        items: ['Active', 'Inactive', 'Struck Out', 'On Leave']
+                            .map((s) => DropdownMenuItem<String>(
+                                  value: s,
+                                  child: Text(s),
+                                ))
+                            .toList(),
+                        onChanged: (String? val) {
+                          setState(() {
+                            selectedStatus = val!;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Status',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 actions: [
                   TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
                   ElevatedButton(

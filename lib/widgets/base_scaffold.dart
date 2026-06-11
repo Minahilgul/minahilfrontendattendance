@@ -104,8 +104,7 @@ ListTile(
     title: const Text('Add Student'),
     onTap: () {
       Navigator.pop(context);
-      // Yahan popup khulega
-      _showAddStudentDialog(context);
+      context.push('/add-student');
     }),
       ],
       
