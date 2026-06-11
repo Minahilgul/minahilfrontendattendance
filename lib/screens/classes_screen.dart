@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:attendence_verification/core/services/auth_service.dart';
+import '../core/services/class_service.dart';
 import '../widgets/base_scaffold.dart';
 
 // ─────────────────────────────────────────────
@@ -45,82 +44,35 @@ class ClassItem {
 }
 
 // ─────────────────────────────────────────────
-// API SERVICE - API SE DATA LOAD HOGA
+// API SERVICE - API SE DATA LOAD HOGA VIA CLASS SERVICE
 // ─────────────────────────────────────────────
 
 List<ClassItem> allClasses = []; 
 
 Future<void> fetchClasses() async {
-  try {
-    final response = await http.get(
-      Uri.parse('${AuthService.baseUrl}/classes'),
-      headers: {'Accept': 'application/json'},
-    );
-    if (response.statusCode == 200) {
-      final jsonData = jsonDecode(response.body);
-      final List data = jsonData['data'] ?? jsonData;
-      print("CLASSES RESPONSE: $jsonData"); 
-      allClasses = data.map((e) => ClassItem.fromJson(e)).toList();
-    }
-  } catch (e) {
-    print("FETCH CLASSES ERROR: $e");
-  }
+  final data = await ClassService.fetchClasses();
+  allClasses = data.map((e) => ClassItem.fromJson(e)).toList();
 }
 
 Future<bool> createClass(String name, String className, String students) async {
-  try {
-    final response = await http.post(
-      Uri.parse('${AuthService.baseUrl}/classes'),
-      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      body: jsonEncode({
-        'name': name, 
-        'class_name': className, 
-        'students_count': int.parse(students), 
-        'status': 'active'
-      }),
-    );
-    
-    print("CREATE STATUS: ${response.statusCode}");
-    print("CREATE BODY: ${response.body}");
-    
-    return response.statusCode == 200 || response.statusCode == 201;
-  } catch (e) {
-    print("CREATE CLASS ERROR: $e");
-    return false;
-  }
+  return await ClassService.createClass(
+    name: name,
+    className: className,
+    students: students,
+  );
 }
 
-
 Future<bool> updateClass(int id, String name, String className, String students) async {
-  try {
-    final response = await http.put(
-      Uri.parse('${AuthService.baseUrl}/classes/$id'),
-      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      body: jsonEncode({
-        'name': name, 
-        'class_name': className, 
-        'students_count': int.parse(students)
-      }),
-    );
-    
-    print("UPDATE STATUS: ${response.statusCode}");
-    print("UPDATE BODY: ${response.body}");
-    
-    return response.statusCode == 200;
-  } catch (e) {
-    print("UPDATE CLASS ERROR: $e");
-    return false;
-  }
+  return await ClassService.updateClass(
+    id: id,
+    name: name,
+    className: className,
+    students: students,
+  );
 }
 
 Future<bool> deleteClass(int id) async {
-  try {
-    final response = await http.delete(Uri.parse('${AuthService.baseUrl}/classes/$id'));
-    return response.statusCode == 200;
-  } catch (e) {
-    print("DELETE CLASS ERROR: $e");
-    return false;
-  }
+  return await ClassService.deleteClass(id);
 }
 
 // ─────────────────────────────────────────────

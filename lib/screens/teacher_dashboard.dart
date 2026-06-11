@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'package:go_router/go_router.dart'; 
-import 'dart:convert';
 import 'settings_screen.dart';
 import '../widgets/base_scaffold.dart'; 
+import '../core/services/session_service.dart';
 
 
 
@@ -27,7 +25,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   int? activeSessionId;
   bool isLoading = false;
 
-  final String baseUrl = "http://localhost:8000/api";
   int get teacherId => widget.userId; 
   final int classId = 5; 
 
@@ -122,23 +119,18 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     setState(() => isLoading = true);
     try {
       Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      final res = await http.post(
-        Uri.parse('$baseUrl/class-session/create'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'teacher_id': teacherId, 
-          'class_id': classId,
-          'latitude': pos.latitude,
-          'longitude': pos.longitude,
-        }),
+      final result = await SessionService.createSession(
+        teacherId: teacherId,
+        classId: classId,
+        latitude: pos.latitude,
+        longitude: pos.longitude,
       );
-       print("Response: ${res.body}");
-      final data = jsonDecode(res.body);
-      if (res.statusCode == 201 && data['success'] == true) {
-        setState(() => activeSessionId = data['data']['id']);
-        _showSnack('Session start ho gayi! ID: ${data['data']['id']}');
+      if (result['success']) {
+        final id = result['data']['id'];
+        setState(() => activeSessionId = id);
+        _showSnack('Session start ho gayi! ID: $id');
       } else {
-        _showSnack(data['message']?? 'Error');
+        _showSnack(result['message'] ?? 'Error');
       }
     } catch (e) {
       _showSnack('Error: $e');
@@ -151,13 +143,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       _showSnack('Start Session First');
       return;
     }
-    final res = await http.post(Uri.parse('$baseUrl/class-session/end/$activeSessionId'));
-    final data = jsonDecode(res.body);
-    if (data['success'] == true) {
+    final result = await SessionService.endSession(activeSessionId!);
+    if (result['success']) {
       setState(() => activeSessionId = null);
       _showSnack('Session Ended');
     } else {
-      _showSnack(data['message']);
+      _showSnack(result['message'] ?? 'Error ending session');
     }
   }
 

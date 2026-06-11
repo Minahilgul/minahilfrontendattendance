@@ -1,7 +1,5 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../core/services/student_service.dart';
 
 class AddTeacherScreen extends StatefulWidget {
   const AddTeacherScreen({super.key});
@@ -113,36 +111,18 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
   }
 
   Future<void> submitStudent() async {
-    //Get the data from the form
-    final name = nameController.text;
-    final studentClass = classController.text;
-    final body = {
-      "name": name,
-      "class": studentClass,
-      "is_present": false,
-    };
-
-    //Submit data to the server
-
-    final url = "http://localhost:8000/api/students/";
-    final uri = Uri.parse(url);
-    final response = await http.post(
-      uri,
-       body: jsonEncode(body),
-       
-       headers: {
-        "Content-Type": "application/json"},
-        );
-
-    //Show success message or fail message based on status
-    if(response.statusCode == 200){
-      print("Student added successfully");
-    }
-    else{
-     print("Failed to add student");
-     print(response.body);
-    }
-      
+    final name = nameController.text.trim();
+    final studentClass = classController.text.trim();
     
+    final success = await StudentService.addStudent(
+      name: name,
+      cls: studentClass,
+    );
+
+    if (success) {
+      print("Student added successfully");
+    } else {
+      print("Failed to add student");
+    }
   }
 }

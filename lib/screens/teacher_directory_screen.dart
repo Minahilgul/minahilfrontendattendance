@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:attendence_verification/core/services/auth_service.dart';
+import '../core/services/teacher_service.dart';
 import '../widgets/base_scaffold.dart';
 
 // ─────────────────────────────────────────────
@@ -71,46 +70,25 @@ class TeacherModel {
 // ─────────────────────────────────────────────
 
 Future<bool> addTeacher(String username, String email, String password, String phone) async {
-  try {
-    final response = await http.post(
-      Uri.parse('${AuthService.baseUrl}/teachers'),
-      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      body: jsonEncode({'username': username, 'email': email, 'password': password, 'phone': phone}),
-    );
-
-    print("ADD STATUS: ${response.statusCode}");
-    print("ADD BODY: ${response.body}");
-
-    return response.statusCode == 200 || response.statusCode == 201;
-  } catch (e) {
-    print("ADD TEACHER ERROR: $e");
-    return false;
-  }
+  return await TeacherService.addTeacher(
+    username: username,
+    email: email,
+    password: password,
+    phone: phone,
+  );
 }
 
-
 Future<bool> updateTeacher(int id, String username, String email, String phone) async {
-  try {
-    final response = await http.put(
-      Uri.parse('${AuthService.baseUrl}/teachers/$id'),
-      headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
-      body: jsonEncode({'username': username, 'email': email, 'phone': phone}),
-    );
-    return response.statusCode == 200;
-  } catch (e) {
-    print("UPDATE TEACHER ERROR: $e");
-    return false;
-  }
+  return await TeacherService.updateTeacher(
+    id: id,
+    username: username,
+    email: email,
+    phone: phone,
+  );
 }
 
 Future<bool> deleteTeacher(int id) async {
-  try {
-    final response = await http.delete(Uri.parse('${AuthService.baseUrl}/teachers/$id'));
-    return response.statusCode == 200;
-  } catch (e) {
-    print("DELETE TEACHER ERROR: $e");
-    return false;
-  }
+  return await TeacherService.deleteTeacher(id);
 }
 
 // ─────────────────────────────────────────────
@@ -516,17 +494,11 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
   Future<void> _fetchTeachers() async {
     setState(() => _isLoading = true);
     try {
-      final response = await http.get(Uri.parse('${AuthService.baseUrl}/teachers'), headers: {'Accept': 'application/json'});
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        final List data = jsonData['data'];
-        setState(() {
-          _allTeachers = data.map((e) => TeacherModel.fromJson(e)).toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() => _isLoading = false);
-      }
+      final list = await TeacherService.fetchTeachers();
+      setState(() {
+        _allTeachers = list.map((e) => TeacherModel.fromJson(e)).toList();
+        _isLoading = false;
+      });
     } catch (e) {
       print('Fetch Error: $e');
       setState(() => _isLoading = false);

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 👈 ye add karo
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../widgets/base_scaffold.dart';
+import '../core/services/system_setting_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -12,7 +11,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final String baseUrl = "http://localhost:8000/api";
   final storage = FlutterSecureStorage(); 
   String token = ""; // 👈 hardcoded token hata diya
 
@@ -30,7 +28,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? savedToken = await storage.read(key: 'token'); // 👈 secure storage se lo
     print("Secure Token Loaded: $savedToken");
 
-    if (savedToken!= null && savedToken.isNotEmpty) {
+    if (savedToken != null && savedToken.isNotEmpty) {
       setState(() => token = savedToken);
       fetchSettings(); // 👈 token milne ke baad call karo
     } else {
@@ -40,28 +38,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> fetchSettings() async {
+    setState(() => isLoading = true);
     try {
-      final res = await http.get(
-        Uri.parse('$baseUrl/settings'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token', 
-        }
-      );
-
-      print("Status Code: ${res.statusCode}");
-      print("Response Body: ${res.body}");
-
-      if (res.statusCode == 200) {
-        setState(() {
-          settings = jsonDecode(res.body)['data'];
-          isLoading = false;
-        });
-      } else {
-        _showSnack('Error ${res.statusCode}');
-        setState(() => isLoading = false);
-      }
+      final fetchedSettings = await SystemSettingService.fetchSettings(token);
+      setState(() {
+        settings = fetchedSettings;
+        isLoading = false;
+      });
     } catch (e) {
       setState(() => isLoading = false);
       _showSnack('Error: $e');
@@ -69,20 +52,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> updateSetting(int id, String value) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl/settings/$id'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token' 
-      },
-      body: jsonEncode({'value': value}),
+    final success = await SystemSettingService.updateSetting(
+      id: id,
+      value: value,
+      token: token,
     );
-    if (res.statusCode == 200) {
+    if (success) {
       fetchSettings();
       _showSnack('Setting updated');
     } else {
-      _showSnack('Update failed: ${res.statusCode}');
+      _showSnack('Update failed');
     }
   }
 

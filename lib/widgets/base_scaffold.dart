@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class BaseScaffold extends StatelessWidget {
   final String title;
@@ -40,82 +41,90 @@ class BaseScaffold extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children:  [
-                  CircleAvatar(radius: 28, child: Icon(Icons.admin_panel_settings)),
-                  SizedBox(height: 12),
-                  Text( role == 'admin' ? 'Administrator': 'Teacher', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  const CircleAvatar(radius: 28, child: Icon(Icons.admin_panel_settings)),
+                  const SizedBox(height: 12),
+                  Text(role == 'admin' ? 'Administrator' : role == 'teacher' ? 'Teacher' : 'Student', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
             if (role == 'admin') ... [
-               ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), 
-           
-            onTap: () {
-              Navigator.pop(context);
-              context.push('/');
-            }),
-            ListTile(leading: const Icon(Icons.people), title: const Text('Teacher Directory'), onTap: () {
-              Navigator.pop(context);
-              context.push('/teachers');
-            }),
-            ListTile(leading: const Icon(Icons.pending_actions), title: const Text('Pending Approvals'), onTap: () {
-              Navigator.pop(context);
-              context.push('/pending');
-            }),
-            ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('System Settings'),
-            onTap: () {
-           Navigator.pop(context);
-           context.push('/settings');
-        }),
-            ListTile(
-             leading: const Icon(Icons.location_on),
-             title: const Text('Create Session'),
-            onTap: () {
-             Navigator.pop(context);
-             context.push('/create-session');
-  },
-),
-
-ListTile(
-             leading: const Icon(Icons.location_on),
-             title: const Text('Create Session'),
-            onTap: () {
-             Navigator.pop(context);
-             context.push('/create-session');
-  },
-),
+              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), 
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/');
+              }),
+              ListTile(leading: const Icon(Icons.people), title: const Text('Teacher Directory'), onTap: () {
+                Navigator.pop(context);
+                context.push('/teachers');
+              }),
+              ListTile(leading: const Icon(Icons.pending_actions), title: const Text('Pending Approvals'), onTap: () {
+                Navigator.pop(context);
+                context.push('/pending');
+              }),
+              ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('System Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('/settings');
+              }),
+              ListTile(
+                leading: const Icon(Icons.location_on),
+                title: const Text('Create Session'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/create-session');
+                },
+              ),
             ], 
-      if(role == 'teacher') ...[
-        ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
-          Navigator.pop(context);
-          context.push('/teacher-dashboard');
-        }),
-        ListTile(leading: const Icon(Icons.class_), title: const Text('My Classes'), onTap: () {
-          Navigator.pop(context);
-          context.push('/my-classes');
-        }),
-        ListTile(leading: const Icon(Icons.checklist), title: const Text('Attendance'), onTap: () {
-          Navigator.pop(context);
-          context.push('/attendance');
-        }),
-        ListTile(
-         leading: const Icon(Icons.person_add, color: Color(0xFF0F9D58)),
-    title: const Text('Add Student'),
-    onTap: () {
-      Navigator.pop(context);
-      context.push('/add-student');
-    }),
-      ],
-      
-      const Divider(),
-      ListTile(leading: const Icon(Icons.person), title: const Text('Profile'), onTap: () {
-        Navigator.pop(context);
-        context.push('/profile');
-      }),
-    ],
-  ),
-),
+            if (role == 'teacher') ...[
+              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
+                Navigator.pop(context);
+                context.push('/teacher-dashboard');
+              }),
+              ListTile(leading: const Icon(Icons.class_), title: const Text('My Classes'), onTap: () {
+                Navigator.pop(context);
+                context.push('/my-classes');
+              }),
+              ListTile(leading: const Icon(Icons.checklist), title: const Text('Attendance'), onTap: () {
+                Navigator.pop(context);
+                context.push('/attendance');
+              }),
+              ListTile(
+                leading: const Icon(Icons.person_add, color: Color(0xFF0F9D58)),
+                title: const Text('Add Student'),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/add-student');
+                },
+              ),
+            ],
+            if (role == 'student') ...[
+              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
+                Navigator.pop(context);
+                context.push('/student-dashboard');
+              }),
+            ],
+            const Divider(),
+            ListTile(leading: const Icon(Icons.person), title: const Text('Profile'), onTap: () {
+              Navigator.pop(context);
+              context.push('/profile');
+            }),
+            ListTile(
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              onTap: () async {
+                final storage = const FlutterSecureStorage();
+                await storage.deleteAll();
+                if (context.mounted) {
+                  Navigator.pop(context);
+                  context.go('/login');
+                }
+              },
+            ),
+          ],
+        ),
+      ),
            
       body: body,
       bottomNavigationBar: bottomNav,

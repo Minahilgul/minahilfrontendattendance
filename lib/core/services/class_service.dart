@@ -1,0 +1,97 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'auth_service.dart';
+
+class ClassService {
+  static Future<List<Map<String, dynamic>>> fetchClasses() async {
+    try {
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/classes'),
+        headers: {'Accept': 'application/json'},
+      );
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final List data = jsonData['data'] ?? jsonData;
+        return List<Map<String, dynamic>>.from(data);
+      }
+      return [];
+    } catch (e) {
+      print("FETCH CLASSES SERVICE ERROR: $e");
+      return [];
+    }
+  }
+
+  static Future<bool> createClass({
+    required String name,
+    required String className,
+    required String students,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/classes'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'name': name,
+          'class_name': className,
+          'students_count': int.tryParse(students) ?? 0,
+          'status': 'active',
+        }),
+      );
+
+      print("CREATE CLASS STATUS: ${response.statusCode}");
+      print("CREATE CLASS RESPONSE: ${response.body}");
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print("CREATE CLASS SERVICE ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> updateClass({
+    required int id,
+    required String name,
+    required String className,
+    required String students,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('${AuthService.baseUrl}/classes/$id'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'name': name,
+          'class_name': className,
+          'students_count': int.tryParse(students) ?? 0,
+        }),
+      );
+
+      print("UPDATE CLASS STATUS: ${response.statusCode}");
+      print("UPDATE CLASS RESPONSE: ${response.body}");
+
+      return response.statusCode == 200;
+    } catch (e) {
+      print("UPDATE CLASS SERVICE ERROR: $e");
+      return false;
+    }
+  }
+
+  static Future<bool> deleteClass(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('${AuthService.baseUrl}/classes/$id'),
+        headers: {'Accept': 'application/json'},
+      );
+      print("DELETE CLASS STATUS: ${response.statusCode}");
+      return response.statusCode == 200;
+    } catch (e) {
+      print("DELETE CLASS SERVICE ERROR: $e");
+      return false;
+    }
+  }
+}

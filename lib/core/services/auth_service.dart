@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:get_storage/get_storage.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   // 🔥 BASE URL (👇 YAHAN CHANGE KARNA HAI)
@@ -25,8 +25,8 @@ class AuthService {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['success'] == true) {
-        final box = GetStorage();
-         box.write('token', data['result']['token']); 
+        const storage = FlutterSecureStorage();
+        await storage.write(key: 'token', value: data['result']['token']); 
 
         return data;
       } else {
@@ -67,76 +67,9 @@ class AuthService {
     }
   }
 
-  // ───────────────── CREATE CLASS ─────────────────
-  static Future<bool> createClass({
-    required String name,
-    required String className,
-    required String students,
-  }) async {
-    try {
-      final token = await getToken();
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/classes'), // 👈 🔥 YAHAN REAL API ENDPOINT DALNA
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({
-          "name": name,
-          "class_name": className,
-          "students": students,
-          "status": "active"
-        }),
-      );
-
-      print("CREATE CLASS STATUS: ${response.statusCode}");
-      print("CREATE CLASS RESPONSE: ${response.body}");
-
-      return response.statusCode == 200 || response.statusCode == 201;
-    } catch (e) {
-      print("CREATE CLASS ERROR: $e");
-      return false;
-    }
-  }
-
-  // ───────────────── ADD TEACHER ─────────────────
-  static Future<bool> addTeacher({
-    required String username,
-    required String email,
-    required String password,
-    required String phone,
-  }) async {
-    try {
-      final token = await getToken();
-
-      final response = await http.post(
-        Uri.parse('$baseUrl/teachers'), // 👈 🔥 YAHAN REAL API ENDPOINT DALNA
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({
-          "username": username,
-          "email": email,
-          "password": password,
-          "phone": phone,
-        }),
-      );
-
-      print("ADD TEACHER STATUS: ${response.statusCode}");
-      print("ADD TEACHER RESPONSE: ${response.body}");
-
-      return response.statusCode == 200 || response.statusCode == 201;
-    } catch (e) {
-      print("ADD TEACHER ERROR: $e");
-      return false;
-    }
-  }
-
   // ───────────────── TOKEN ─────────────────
   static Future<String?> getToken() async {
-    final box = GetStorage();
-    return box.read('token');
+    const storage = FlutterSecureStorage();
+    return await storage.read(key: 'token');
   }
 }

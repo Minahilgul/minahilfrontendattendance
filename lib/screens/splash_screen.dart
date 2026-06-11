@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -40,12 +41,23 @@ class _SplashScreenState extends State<SplashScreen>
   void _checkLogin() async {
     await Future.delayed(const Duration(seconds: 3));
 
-    String? token = await AuthService.getToken();
+    const storage = FlutterSecureStorage();
+    String? token = await storage.read(key: 'token');
+    String? role = await storage.read(key: 'role');
+    String? userIdStr = await storage.read(key: 'userId');
+    String? userName = await storage.read(key: 'userName');
 
-    if (token != null) {
-      context.go('/dashboard');
+    if (token != null && role != null) {
+      int userId = int.tryParse(userIdStr ?? '') ?? 0;
+      if (role == 'admin') {
+        context.go('/admin-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+      } else if (role == 'teacher') {
+        context.go('/teacher-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+      } else {
+        context.go('/student-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+      }
     } else {
-     context.go('/login');
+      context.go('/login');
     }
   }
 

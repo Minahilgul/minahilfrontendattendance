@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
+import '../core/services/student_service.dart';
 
 class AddStudentScreen extends StatefulWidget {
   const AddStudentScreen({super.key});
@@ -12,7 +11,6 @@ class AddStudentScreen extends StatefulWidget {
 
 class _AddStudentScreenState extends State<AddStudentScreen> {
   final teacherId = FirebaseAuth.instance.currentUser!.uid;
-  final baseUrl = "http://localhost:8000/api";
 
   @override
   Widget build(BuildContext context) {
@@ -39,11 +37,11 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder(
-              future: http.get(Uri.parse('$baseUrl/teacher/$teacherId/approved-students')),
+            child: FutureBuilder<Map<String, dynamic>>(
+              future: StudentService.fetchApprovedStudents(teacherId),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-                var data = jsonDecode(snapshot.data!.body);
+                var data = snapshot.data!;
                 if (data['students'] == null || data['students'].isEmpty) {
                   return const Center(child: Text('Abhi koi approved student nahi hai'));
                 }
@@ -81,12 +79,12 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       builder: (context) {
         return StatefulBuilder(builder: (context, setState) {
           return FutureBuilder(
-            future: http.get(Uri.parse('$baseUrl/classes')),
+            future: StudentService.fetchClasses(),
             builder: (context, snap) {
               if (snap.hasData) {
-                classes = jsonDecode(snap.data!.body)['classes'];
+                classes = snap.data!;
                 if (selectedClass == '' && classes.isNotEmpty) {
-                  selectedClass = classes[0]['name'];
+                  selectedClass = classes[0]['name'] ?? '';
                 }
               }
               return AlertDialog(
@@ -162,26 +160,19 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
 
   Future<void> _submitForApproval(String name, String cls, String roll, String status) async {
     Navigator.pop(context);
-    final body = {
-      "name": name,
-      "class": cls,
-      "roll_no": roll,
-      "student_status": status,
-      "teacher_id": teacherId,
-      "approval_status": "pending"
-    };
-
-    final response = await http.post(
-      Uri.parse('$baseUrl/pending-students/'),
-      body: jsonEncode(body),
-      headers: {"Content-Type": "application/json"},
+    final result = await StudentService.submitForApproval(
+      name: name,
+      cls: cls,
+      roll: roll,
+      status: status,
+      teacherId: teacherId,
     );
 
-    if (response.statusCode == 200) {
+    if (result['success']) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Student sent for admin approval')));
       setState(() {}); // list refresh
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${response.body}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${result['message']}')));
     }
   }
 }

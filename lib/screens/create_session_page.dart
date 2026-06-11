@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
 import '../core/services/auth_service.dart';
-import '../services/session_service.dart';
+import '../core/services/session_service.dart';
+import '../core/services/class_service.dart';
 import '../widgets/base_scaffold.dart';
 
 class CreateSessionPage extends StatefulWidget {
@@ -57,29 +56,14 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
     });
 
     try {
-      final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/classes'),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
-        final List data = jsonData['data'] ?? jsonData;
-        setState(() {
-          _classes = List<Map<String, dynamic>>.from(data);
-          if (_classes.isNotEmpty) {
-            _selectedClassId = _classes.first['id'];
-          }
-          _isLoadingClasses = false;
-        });
-      } else {
-        setState(() {
-          _classesError = "Server returned code ${response.statusCode}";
-          _isLoadingClasses = false;
-        });
-      }
+      final List<Map<String, dynamic>> data = await ClassService.fetchClasses();
+      setState(() {
+        _classes = data;
+        if (_classes.isNotEmpty) {
+          _selectedClassId = _classes.first['id'];
+        }
+        _isLoadingClasses = false;
+      });
     } catch (e) {
       setState(() {
         _classesError = "Failed to load classes: $e";

@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import '../widgets/base_scaffold.dart';
+import '../core/services/student_service.dart';
 
 // ─────────────────────────────────────────────
 // DATA MODEL
@@ -117,7 +116,6 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
   String _searchQuery = '';
   List<ApprovalRequest> _requests = [];
   bool isLoading = true;
-  final String baseUrl = "http://localhost:8000/api";
 
   @override
   void initState() {
@@ -136,28 +134,25 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
   Future<void> _loadRequests() async {
     setState(() => isLoading = true);
     try {
-      final response = await http.get(Uri.parse('$baseUrl/pending-students'));
-      if (response.statusCode == 200) {
-        var data = jsonDecode(response.body)['pending_students'];
-        List<ApprovalRequest> list = data.map<ApprovalRequest>((s) {
-          String name = s['name']?? '';
-          String initials = name.split(' ').map((e) => e.isNotEmpty? e[0] : '').take(2).join().toUpperCase();
-          return ApprovalRequest(
-            id: s['id'].toString(),
-            initials: initials.isEmpty? 'ST' : initials,
-            avatarColor: Colors.primaries[s['id'].hashCode % Colors.primaries.length],
-            name: name,
-            studentId: '#${s['id']}',
-            classInfo: s['class']?? '',
-            requestedBy: s['teacher_name']?? 'Teacher',
-            timeAgo: s['created_at']?? 'Just Now',
-          );
-        }).toList();
-        setState(() {
-          _requests = list;
-          isLoading = false;
-        });
-      }
+      final data = await StudentService.fetchPendingStudents();
+      List<ApprovalRequest> list = data.map<ApprovalRequest>((s) {
+        String name = s['name'] ?? '';
+        String initials = name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase();
+        return ApprovalRequest(
+          id: s['id'].toString(),
+          initials: initials.isEmpty ? 'ST' : initials,
+          avatarColor: Colors.primaries[s['id'].hashCode % Colors.primaries.length],
+          name: name,
+          studentId: '#${s['id']}',
+          classInfo: s['class'] ?? '',
+          requestedBy: s['teacher_name'] ?? 'Teacher',
+          timeAgo: s['created_at'] ?? 'Just Now',
+        );
+      }).toList();
+      setState(() {
+        _requests = list;
+        isLoading = false;
+      });
     } catch (e) {
       setState(() => isLoading = false);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
@@ -171,22 +166,34 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
   }
 
   Future<void> _handleApprove(ApprovalRequest req) async {
-    await http.post(Uri.parse('$baseUrl/pending-students/approve/${req.id}'));
-    setState(() => _requests.remove(req));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name} approved'), backgroundColor: const Color(0xFF2E7D32), duration: const Duration(seconds: 2)));
+    final success = await StudentService.approveStudent(req.id);
+    if (success) {
+      setState(() => _requests.remove(req));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name} approved'), backgroundColor: const Color(0xFF2E7D32), duration: const Duration(seconds: 2)));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to approve student'), backgroundColor: Colors.red));
+    }
   }
 
   Future<void> _handleReject(ApprovalRequest req) async {
-    await http.post(Uri.parse('$baseUrl/pending-students/reject/${req.id}'));
-    setState(() => _requests.remove(req));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name} rejected'), backgroundColor: const Color(0xFFC62828), duration: const Duration(seconds: 2)));
+    final success = await StudentService.rejectStudent(req.id);
+    if (success) {
+      setState(() => _requests.remove(req));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name} rejected'), backgroundColor: const Color(0xFFC62828), duration: const Duration(seconds: 2)));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to reject student'), backgroundColor: Colors.red));
+    }
   }
 
   Future<void> _approveAll() async {
     final ids = _filteredRequests.map((e) => e.id).toList();
-    await http.post(Uri.parse('$baseUrl/pending-students/approve-all'), body: jsonEncode({'ids': ids}), headers: {'Content-Type': 'application/json'});
-    setState(() => _requests.clear());
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${ids.length} requests approved'), backgroundColor: const Color(0xFF2E7D32)));
+    final success = await StudentService.approveAllStudents(ids);
+    if (success) {
+      setState(() => _requests.clear());
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${ids.length} requests approved'), backgroundColor: const Color(0xFF2E7D32)));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to approve all students'), backgroundColor: Colors.red));
+    }
   }
 
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
-import 'dart:convert';
+import '../core/services/attendance_service.dart';
 
 void main() {
   runApp(const MarkAttendanceApp());
@@ -58,7 +57,6 @@ class MarkAttendanceScreen extends StatefulWidget {
 }
 
 class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
-  final String baseUrl = "http://10.0.2.2:8000/api"; // Emulator IP
   final int sessionId = 1; // Teacher se mili session_id yahan set karo
 
   final List<StudentModel> _students = [
@@ -98,9 +96,9 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
   ];
 
   int get _markedCount =>
-      _students.where((s) => s.status!= AttendanceStatus.none).length;
+      _students.where((s) => s.status != AttendanceStatus.none).length;
 
-  double get _progress => _students.isEmpty? 0 : _markedCount / _students.length;
+  double get _progress => _students.isEmpty ? 0 : _markedCount / _students.length;
 
   void _setStatus(int index, AttendanceStatus status) {
     setState(() {
@@ -128,19 +126,15 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
       for (final student in _students) {
         if (student.status == AttendanceStatus.none) continue;
 
-        final res = await http.post(
-          Uri.parse('$baseUrl/attendance/mark'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'session_id': sessionId,
-            'student_id': student.studentId,
-            'latitude': pos.latitude,
-            'longitude': pos.longitude,
-            'status': student.status.name, // present/late/absent
-          }),
+        final success = await AttendanceService.saveAttendance(
+          sessionId: sessionId,
+          studentId: student.studentId,
+          latitude: pos.latitude,
+          longitude: pos.longitude,
+          status: student.status.name, // present/late/absent
         );
 
-        if (res.statusCode == 201) successCount++;
+        if (success) successCount++;
       }
 
       ScaffoldMessenger.of(context).showSnackBar(

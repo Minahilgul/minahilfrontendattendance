@@ -11,7 +11,8 @@ import '../screens/reports_screen.dart';
 import '../screens/role_screen.dart'; 
 import '../screens/create_session_page.dart';
 import '../screens/settings_screen.dart';
-import '../screens/add_student_screen.dart';
+import '../screens/student_directory_screen.dart';
+import '../screens/student_dashboard_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -64,6 +65,17 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/roles', builder: (context, state) => const RoleScreen()), 
 
     GoRoute(path: '/create-session', builder: (context, state) => const CreateSessionPage()),
-    GoRoute(path: '/add-student', builder: (context, state) => const AddStudentScreen()),
+    GoRoute(path: '/add-student', builder: (context, state) => const StudentDirectoryScreen()),
+    GoRoute(
+      path: '/student-dashboard',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>? ?? {};
+        return StudentDashboardScreen(
+          userId: extra['userId'] ?? 1,
+          role: extra['role'] ?? 'student',
+          name: extra['name'] ?? 'Student',
+        );
+      },
+    ),
   ],
 );
