@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/student_service.dart';
+import '../screens/add_student_screen.dart'; // Teacher wala dialog use karne ke liye
 
 // ─────────────────────────────────────────────
 // DATA MODEL
