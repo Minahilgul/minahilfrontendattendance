@@ -1,24 +1,43 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter/material.dart';
+import '../core/services/auth_service.dart';
 
 class SessionService {
-  static Future<void> createSession(
-    double latitude,
-    double longitude,
-  ) async {
+  static Future<Map<String, dynamic>> createSession({
+    required int teacherId,
+    required int classId,
+    required double latitude,
+    required double longitude,
+  }) async {
     final response = await http.post(
-      Uri.parse('http://localhost:8000/api/create-session'),
+      Uri.parse('${AuthService.baseUrl}/create-session'),
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: jsonEncode({
-        'user_id': 1,
+        'teacher_id': teacherId,
+        'class_id': classId,
         'latitude': latitude,
         'longitude': longitude,
       }),
     );
 
-    print(response.body);
+    print("CREATE SESSION STATUS: ${response.statusCode}");
+    print("CREATE SESSION RESPONSE: ${response.body}");
+
+    final data = jsonDecode(response.body);
+    if (response.statusCode == 201 && data['success'] == true) {
+      return {
+        'success': true,
+        'message': data['message'],
+        'data': data['data']
+      };
+    } else {
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Failed to create session'
+      };
+    }
   }
 }
