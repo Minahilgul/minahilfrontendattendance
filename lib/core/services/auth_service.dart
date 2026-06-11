@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   // 🔥 BASE URL (👇 YAHAN CHANGE KARNA HAI)
-  static const String baseUrl = 'http://attia.ddev.site/api';
+  static const String baseUrl = 'http://localhost:8000/api';
 
   // ───────────────── LOGIN ─────────────────
   static Future<Map<String, dynamic>> login(
