@@ -1,12 +1,14 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../widgets/base_scaffold.dart'; 
-
+import 'package:http/http.dart' as http;
+import '../widgets/base_scaffold.dart';
 
 // ─────────────────────────────────────────────
 // DATA MODEL
 // ─────────────────────────────────────────────
 
 class ApprovalRequest {
+  final String id;
   final String initials;
   final Color avatarColor;
   final String name;
@@ -16,6 +18,7 @@ class ApprovalRequest {
   final String timeAgo;
 
   const ApprovalRequest({
+    required this.id,
     required this.initials,
     required this.avatarColor,
     required this.name,
@@ -26,21 +29,8 @@ class ApprovalRequest {
   });
 }
 
-final List<ApprovalRequest> _allRequests = [
-  ApprovalRequest(initials: 'AS', avatarColor: const Color(0xFF1565C0), name: 'Arjun Sharma', studentId: '#18342', classInfo: 'Class 12 B', requestedBy: 'Mr. Vikram Singh', timeAgo: '3M AGO'),
-  ApprovalRequest(initials: 'MK', avatarColor: const Color(0xFF00695C), name: 'Meera Kapur', studentId: '#19101', classInfo: 'CS Dept', requestedBy: 'Dr. Anjali Rao', timeAgo: '7M AGO'),
-  ApprovalRequest(initials: 'KL', avatarColor: const Color(0xFF6A1B9A), name: 'Karan Luthra', studentId: '#17162', classInfo: 'B.Arch III', requestedBy: 'Prof. Samuel', timeAgo: '1H AGO'),
-  ApprovalRequest(initials: 'PR', avatarColor: const Color(0xFFAD1457), name: 'Priya Reddy', studentId: '#20345', classInfo: 'Class 11 A', requestedBy: 'Ms. Nisha Patel', timeAgo: '2H AGO'),
-  ApprovalRequest(initials: 'RK', avatarColor: const Color(0xFFE65100), name: 'Rahul Kumar', studentId: '#16789', classInfo: 'MBA II', requestedBy: 'Dr. Ramesh Iyer', timeAgo: '3H AGO'),
-  ApprovalRequest(initials: 'SM', avatarColor: const Color(0xFF01579B), name: 'Sneha Mishra', studentId: '#22001', classInfo: 'Class 9 C', requestedBy: 'Mr. Ajay Verma', timeAgo: '4H AGO'),
-  ApprovalRequest(initials: 'VT', avatarColor: const Color(0xFF33691E), name: 'Vikram Tiwari', studentId: '#21456', classInfo: 'BCA I', requestedBy: 'Ms. Pooja Gupta', timeAgo: '5H AGO'),
-  ApprovalRequest(initials: 'DG', avatarColor: const Color(0xFF4A148C), name: 'Divya Gupta', studentId: '#23678', classInfo: 'Class 10 B', requestedBy: 'Mr. Suresh Rao', timeAgo: '6H AGO'),
-  ApprovalRequest(initials: 'NK', avatarColor: const Color(0xFF880E4F), name: 'Nikhil Khanna', studentId: '#24901', classInfo: 'M.Tech I', requestedBy: 'Dr. Priya Nair', timeAgo: '7H AGO'),
-  ApprovalRequest(initials: 'AS', avatarColor: const Color(0xFF1B5E20), name: 'Anita Singh', studentId: '#25112', classInfo: 'Class 8 A', requestedBy: 'Ms. Rekha Sharma', timeAgo: '8H AGO'),
-];
-
 // ─────────────────────────────────────────────
-// APPROVAL CARD WIDGET
+// APPROVAL CARD WIDGET - Same as before
 // ─────────────────────────────────────────────
 
 class ApprovalCard extends StatelessWidget {
@@ -112,7 +102,7 @@ class ApprovalCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// APPROVALS SCREEN
+// APPROVALS SCREEN - API Connected
 // ─────────────────────────────────────────────
 
 class ApprovalsScreen extends StatefulWidget {
@@ -125,13 +115,15 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
   late TabController _tabController;
   final TextEditingController _searchCtrl = TextEditingController();
   String _searchQuery = '';
-  late List<ApprovalRequest> _requests;
+  List<ApprovalRequest> _requests = [];
+  bool isLoading = true;
+  final String baseUrl = "http://localhost:8000/api";
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    _requests = List.from(_allRequests);
+    _loadRequests();
   }
 
   @override
@@ -141,26 +133,60 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
     super.dispose();
   }
 
+  Future<void> _loadRequests() async {
+    setState(() => isLoading = true);
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/pending-students'));
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body)['pending_students'];
+        List<ApprovalRequest> list = data.map<ApprovalRequest>((s) {
+          String name = s['name']?? '';
+          String initials = name.split(' ').map((e) => e.isNotEmpty? e[0] : '').take(2).join().toUpperCase();
+          return ApprovalRequest(
+            id: s['id'].toString(),
+            initials: initials.isEmpty? 'ST' : initials,
+            avatarColor: Colors.primaries[s['id'].hashCode % Colors.primaries.length],
+            name: name,
+            studentId: '#${s['id']}',
+            classInfo: s['class']?? '',
+            requestedBy: s['teacher_name']?? 'Teacher',
+            timeAgo: s['created_at']?? 'Just Now',
+          );
+        }).toList();
+        setState(() {
+          _requests = list;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+    }
+  }
+
   List<ApprovalRequest> get _filteredRequests {
     if (_searchQuery.isEmpty) return _requests;
     final q = _searchQuery.toLowerCase();
     return _requests.where((r) => r.name.toLowerCase().contains(q) || r.studentId.toLowerCase().contains(q) || r.classInfo.toLowerCase().contains(q) || r.requestedBy.toLowerCase().contains(q)).toList();
   }
 
-  void _handleApprove(ApprovalRequest req) {
+  Future<void> _handleApprove(ApprovalRequest req) async {
+    await http.post(Uri.parse('$baseUrl/pending-students/approve/${req.id}'));
     setState(() => _requests.remove(req));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name} approved successfully'), backgroundColor: const Color(0xFF2E7D32), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), duration: const Duration(seconds: 2)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name} approved'), backgroundColor: const Color(0xFF2E7D32), duration: const Duration(seconds: 2)));
   }
 
-  void _handleReject(ApprovalRequest req) {
+  Future<void> _handleReject(ApprovalRequest req) async {
+    await http.post(Uri.parse('$baseUrl/pending-students/reject/${req.id}'));
     setState(() => _requests.remove(req));
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name}\'s request rejected'), backgroundColor: const Color(0xFFC62828), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), duration: const Duration(seconds: 2)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${req.name} rejected'), backgroundColor: const Color(0xFFC62828), duration: const Duration(seconds: 2)));
   }
 
-  void _approveAll() {
-    final count = _filteredRequests.length;
+  Future<void> _approveAll() async {
+    final ids = _filteredRequests.map((e) => e.id).toList();
+    await http.post(Uri.parse('$baseUrl/pending-students/approve-all'), body: jsonEncode({'ids': ids}), headers: {'Content-Type': 'application/json'});
     setState(() => _requests.clear());
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$count requests approved'), backgroundColor: const Color(0xFF2E7D32), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), duration: const Duration(seconds: 2)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${ids.length} requests approved'), backgroundColor: const Color(0xFF2E7D32)));
   }
 
   @override
@@ -169,7 +195,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
 
     return BaseScaffold(
       title: 'Approvals',
-      role : 'admin', // ← Sirf title yahan
+      role: 'admin',
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
@@ -186,7 +212,6 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Search bar ──
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
@@ -208,8 +233,6 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
                 ),
               ),
             ),
-
-            // ── Tab bar ──
             Container(
               color: Colors.white,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -233,36 +256,39 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
                 ],
               ),
             ),
-
-            // ── LIST ──
             Expanded(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                      const Text('QUEUE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF9E9E9E), letterSpacing: 0.8)),
-                      if (filtered.isNotEmpty)
-                        GestureDetector(
-                          onTap: _approveAll,
-                          child: const Text('✓ Approve All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1565C0))),
-                        ),
-                    ]),
+              child: isLoading
+               ? const Center(child: CircularProgressIndicator())
+                : Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          const Text('QUEUE', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF9E9E9E), letterSpacing: 0.8)),
+                          if (filtered.isNotEmpty)
+                            GestureDetector(
+                              onTap: _approveAll,
+                              child: const Text('✓ Approve All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF1565C0))),
+                            ),
+                        ]),
+                      ),
+                      Expanded(
+                        child: filtered.isEmpty
+                          ? _buildEmptyState()
+                            : RefreshIndicator(
+                                onRefresh: _loadRequests,
+                                child: ListView.builder(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  itemCount: filtered.length,
+                                  itemBuilder: (context, index) {
+                                    final req = filtered[index];
+                                    return ApprovalCard(key: ValueKey(req.id), request: req, onApprove: () => _handleApprove(req), onReject: () => _handleReject(req));
+                                  },
+                                ),
+                              ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: filtered.isEmpty
-                       ? _buildEmptyState()
-                        : ListView.builder(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            itemCount: filtered.length,
-                            itemBuilder: (context, index) {
-                              final req = filtered[index];
-                              return ApprovalCard(key: ValueKey(req.studentId + req.name), request: req, onApprove: () => _handleApprove(req), onReject: () => _handleReject(req));
-                            },
-                          ),
-                  ),
-                ],
-              ),
             ),
           ],
         ),

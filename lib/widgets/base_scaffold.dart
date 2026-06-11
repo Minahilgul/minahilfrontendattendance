@@ -76,6 +76,15 @@ class BaseScaffold extends StatelessWidget {
              context.push('/create-session');
   },
 ),
+
+ListTile(
+             leading: const Icon(Icons.location_on),
+             title: const Text('Create Session'),
+            onTap: () {
+             Navigator.pop(context);
+             context.push('/create-session');
+  },
+),
             ], 
       if(role == 'teacher') ...[
         ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
@@ -90,6 +99,14 @@ class BaseScaffold extends StatelessWidget {
           Navigator.pop(context);
           context.push('/attendance');
         }),
+        ListTile(
+         leading: const Icon(Icons.person_add, color: Color(0xFF0F9D58)),
+    title: const Text('Add Student'),
+    onTap: () {
+      Navigator.pop(context);
+      // Yahan popup khulega
+      _showAddStudentDialog(context);
+    }),
       ],
       
       const Divider(),
