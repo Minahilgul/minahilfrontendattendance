@@ -276,7 +276,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                     Text(
                       "Make sure you are inside the campus range to establish a session.",
                       style: TextStyle(
-                        color: Colors.white90,
+                        color: Colors.white,
                         fontSize: 13,
                       ),
                     ),

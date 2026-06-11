@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../core/services/auth_service.dart';
+
 
 class SessionService {
   static Future<Map<String, dynamic>> createSession({
@@ -10,7 +10,7 @@ class SessionService {
     required double longitude,
   }) async {
     final response = await http.post(
-      Uri.parse('${AuthService.baseUrl}/create-session'),
+      Uri.parse('http://localhost:8000/api/create-session'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
