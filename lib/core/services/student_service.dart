@@ -3,27 +3,37 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class StudentService {
+  // AuthService.baseUrl = 'http://127.0.0.1:8000/api' rakho Flutter Web ke liye
+
   static Future<Map<String, dynamic>> fetchApprovedStudents(String teacherId) async {
     try {
+      final token = await AuthService.getToken();
       final response = await http.get(
         Uri.parse('${AuthService.baseUrl}/teacher/$teacherId/approved-students'),
-        headers: {'Accept': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
       if (response.statusCode == 200) {
         return jsonDecode(response.body);
       }
       return {'students': []};
     } catch (e) {
-      print("FETCH APPROVED STUDENTS SERVICE ERROR: $e");
+      print("FETCH APPROVED STUDENTS SERVICE ERROR: ${e.toString()}");
       return {'students': []};
     }
   }
 
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
     try {
+      final token = await AuthService.getToken();
       final response = await http.get(
         Uri.parse('${AuthService.baseUrl}/classes'),
-        headers: {'Accept': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -31,8 +41,9 @@ class StudentService {
         return List<Map<String, dynamic>>.from(data);
       }
       return [];
-    } catch (e) {
-      print("FETCH CLASSES SERVICE ERROR: $e");
+    } catch (e, stackTrace) {
+      print('FETCH CLASSES SERVICE ERROR: ${e.toString()}'); 
+      print(stackTrace);
       return [];
     }
   }
@@ -45,19 +56,24 @@ class StudentService {
     required String teacherId,
   }) async {
     try {
+      final token = await AuthService.getToken();
       final body = {
         "name": name,
         "class": cls,
         "roll_no": roll,
         "student_status": status,
-        "teacher_id": teacherId,
+        "teacher_id": teacherId == 'null' ? null : teacherId, // ✅ teacher_id sahi key, null handle
         "approval_status": "pending"
       };
 
       final response = await http.post(
-        Uri.parse('${AuthService.baseUrl}/pending-students/'),
+        Uri.parse('${AuthService.baseUrl}/admin/pending-students'),
         body: jsonEncode(body),
-        headers: {"Content-Type": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json", // ✅ Accept add kiya
+          "Authorization": "Bearer $token",
+        },
       );
 
       print("SUBMIT STUDENT STATUS: ${response.statusCode}");
@@ -69,84 +85,99 @@ class StudentService {
         return {'success': false, 'message': response.body};
       }
     } catch (e) {
-      print("SUBMIT STUDENT SERVICE ERROR: $e");
+      print("SUBMIT STUDENT SERVICE ERROR: ${e.toString()}");
       return {'success': false, 'message': e.toString()};
-    }
-  }
-
-  static Future<bool> addStudent({
-    required String name,
-    required String cls,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('${AuthService.baseUrl}/students/'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          "name": name,
-          "class": cls,
-          "is_present": false,
-        }),
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      print("ADD STUDENT SERVICE ERROR: $e");
-      return false;
     }
   }
 
   static Future<List<dynamic>> fetchPendingStudents() async {
     try {
-      final response = await http.get(Uri.parse('${AuthService.baseUrl}/pending-students'));
+      final token = await AuthService.getToken();
+      print("Token sending: $token"); // Debug
+      
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/admin/pending-students'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token', // ✅ 403 fix
+        },
+      );
+      print("FETCH PENDING STATUS: ${response.statusCode}");
+      print("FETCH PENDING BODY: ${response.body}"); // Debug
+      
       if (response.statusCode == 200) {
-        return jsonDecode(response.body)['pending_students'] ?? [];
+        final data = jsonDecode(response.body);
+        return data is List ? data : [];
       }
       return [];
     } catch (e) {
-      print("FETCH PENDING STUDENTS SERVICE ERROR: $e");
+      print("FETCH PENDING STUDENTS SERVICE ERROR: ${e.toString()}");
       return [];
     }
   }
 
   static Future<bool> approveStudent(String id) async {
     try {
-      final response = await http.post(Uri.parse('${AuthService.baseUrl}/pending-students/approve/$id'));
+      final token = await AuthService.getToken();
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/admin/pending-students/approve/$id'),
+        headers: {
+          'Accept': 'application/json', // ✅ Accept add
+          'Authorization': 'Bearer $token',
+        },
+      );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print("APPROVE STUDENT SERVICE ERROR: $e");
+      print("APPROVE STUDENT SERVICE ERROR: ${e.toString()}");
       return false;
     }
   }
 
   static Future<bool> rejectStudent(String id) async {
     try {
-      final response = await http.post(Uri.parse('${AuthService.baseUrl}/pending-students/reject/$id'));
+      final token = await AuthService.getToken();
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/admin/pending-students/reject/$id'),
+        headers: {
+          'Accept': 'application/json', // ✅ Accept add
+          'Authorization': 'Bearer $token',
+        },
+      );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print("REJECT STUDENT SERVICE ERROR: $e");
+      print("REJECT STUDENT SERVICE ERROR: ${e.toString()}");
       return false;
     }
   }
 
   static Future<bool> approveAllStudents(List<String> ids) async {
     try {
+      final token = await AuthService.getToken();
       final response = await http.post(
-        Uri.parse('${AuthService.baseUrl}/pending-students/approve-all'),
+        Uri.parse('${AuthService.baseUrl}/admin/pending-students/approve-all'),
         body: jsonEncode({'ids': ids}),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json', // ✅ Accept add
+          'Authorization': 'Bearer $token',
+        },
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print("APPROVE ALL STUDENTS SERVICE ERROR: $e");
+      print("APPROVE ALL STUDENTS SERVICE ERROR: ${e.toString()}");
       return false;
     }
   }
 
   static Future<List<Map<String, dynamic>>> fetchStudents() async {
     try {
+      final token = await AuthService.getToken();
       final response = await http.get(
         Uri.parse('${AuthService.baseUrl}/students'),
-        headers: {'Accept': 'application/json'},
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
       );
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -155,8 +186,34 @@ class StudentService {
       }
       return [];
     } catch (e) {
-      print("FETCH STUDENTS SERVICE ERROR: $e");
+      print("FETCH STUDENTS SERVICE ERROR: ${e.toString()}");
       return [];
+    }
+  }
+
+  static Future<bool> addStudent({
+    required String name,
+    required String cls,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/students/'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          "name": name,
+          "class": cls,
+          "is_present": false,
+        }),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print("ADD STUDENT SERVICE ERROR: ${e.toString()}");
+      return false;
     }
   }
 
@@ -184,7 +241,7 @@ class StudentService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print("CREATE STUDENT SERVICE ERROR: $e");
+      print("CREATE STUDENT SERVICE ERROR: ${e.toString()}");
       return false;
     }
   }
@@ -212,7 +269,7 @@ class StudentService {
       );
       return response.statusCode == 200;
     } catch (e) {
-      print("UPDATE STUDENT SERVICE ERROR: $e");
+      print("UPDATE STUDENT SERVICE ERROR: ${e.toString()}");
       return false;
     }
   }
@@ -229,7 +286,7 @@ class StudentService {
       );
       return response.statusCode == 200;
     } catch (e) {
-      print("DELETE STUDENT SERVICE ERROR: $e");
+      print("DELETE STUDENT SERVICE ERROR: ${e.toString()}");
       return false;
     }
   }

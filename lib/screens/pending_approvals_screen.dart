@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/student_service.dart';
-import '../screens/add_student_screen.dart'; // Teacher wala dialog use karne ke liye
+import '../screens/add_student_screen.dart';
 
 // ─────────────────────────────────────────────
 // DATA MODEL
@@ -102,7 +102,7 @@ class ApprovalCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// APPROVALS SCREEN - API Connected
+// APPROVALS SCREEN - API Connected + FAB Added
 // ─────────────────────────────────────────────
 
 class ApprovalsScreen extends StatefulWidget {
@@ -137,17 +137,17 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
     try {
       final data = await StudentService.fetchPendingStudents();
       List<ApprovalRequest> list = data.map<ApprovalRequest>((s) {
-        String name = s['name'] ?? '';
-        String initials = name.split(' ').map((e) => e.isNotEmpty ? e[0] : '').take(2).join().toUpperCase();
+        String name = s['name']?? '';
+        String initials = name.split(' ').map((e) => e.isNotEmpty? e[0] : '').take(2).join().toUpperCase();
         return ApprovalRequest(
           id: s['id'].toString(),
-          initials: initials.isEmpty ? 'ST' : initials,
+          initials: initials.isEmpty? 'ST' : initials,
           avatarColor: Colors.primaries[s['id'].hashCode % Colors.primaries.length],
           name: name,
           studentId: '#${s['id']}',
-          classInfo: s['class'] ?? '',
-          requestedBy: s['teacher_name'] ?? 'Teacher',
-          timeAgo: s['created_at'] ?? 'Just Now',
+          classInfo: s['class']?? '',
+          requestedBy: s['teacher_name']?? 'Teacher',
+          timeAgo: s['created_at']?? 'Just Now',
         );
       }).toList();
       setState(() {
@@ -195,6 +195,15 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to approve all students'), backgroundColor: Colors.red));
     }
+  }
+
+  // ✅ NAYA FUNCTION ADD KIYA
+  void _openAddStudentDialog() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AddStudentScreen(),
+    );
+    _loadRequests();
   }
 
   @override
@@ -266,7 +275,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
             ),
             Expanded(
               child: isLoading
-               ? const Center(child: CircularProgressIndicator())
+             ? const Center(child: CircularProgressIndicator())
                 : Column(
                     children: [
                       Padding(
@@ -282,24 +291,34 @@ class _ApprovalsScreenState extends State<ApprovalsScreen> with SingleTickerProv
                       ),
                       Expanded(
                         child: filtered.isEmpty
-                          ? _buildEmptyState()
-                            : RefreshIndicator(
-                                onRefresh: _loadRequests,
-                                child: ListView.builder(
-                                  padding: const EdgeInsets.only(bottom: 16),
-                                  itemCount: filtered.length,
-                                  itemBuilder: (context, index) {
-                                    final req = filtered[index];
-                                    return ApprovalCard(key: ValueKey(req.id), request: req, onApprove: () => _handleApprove(req), onReject: () => _handleReject(req));
-                                  },
-                                ),
+                       ? _buildEmptyState()
+                          : RefreshIndicator(
+                              onRefresh: _loadRequests,
+                              child: ListView.builder(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                itemCount: filtered.length,
+                                itemBuilder: (context, index) {
+                                  final req = filtered[index];
+                                  return ApprovalCard(key: ValueKey(req.id), request: req, onApprove: () => _handleApprove(req), onReject: () => _handleReject(req));
+                                },
                               ),
+                            ),
                       ),
                     ],
                   ),
             ),
           ],
         ),
+      ),
+
+      // ✅ FAB YAHAN ADD KIYA - body ke baad
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openAddStudentDialog,
+        backgroundColor: const Color(0xFF1565C0),
+        foregroundColor: Colors.white,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add),
       ),
     );
   }

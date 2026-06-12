@@ -36,11 +36,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (result['success']) {
       
-      final user = result['result'];
+      final user = result['result'] ??{};
       int userId = user['id'] ?? 0; 
       String role = user['role'] ?? 'student';
       String userName = user['username'] ?? emailController.text;
-      String token = result['result']['token'] ?? ''; // 👈 token variable me lo
+      String token = user['token'] ?? ''; // 👈 token variable me lo
       print("FULL RESPONSE: $result"); 
       print("USER DATA: $user");
       print("Final UserID: $userId"); 
