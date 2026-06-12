@@ -56,8 +56,10 @@ class ClassService {
     required String name,
     required String className,
     required String students,
+    String status = 'active',  
   }) async {
     try {
+      final token = await AuthService.getToken();
       final response = await http.put(
         Uri.parse('${AuthService.baseUrl}/classes/$id'),
         headers: {
@@ -68,6 +70,7 @@ class ClassService {
           'name': name,
           'class_name': className,
           'students_count': int.tryParse(students) ?? 0,
+          'status': status, 
         }),
       );
 
