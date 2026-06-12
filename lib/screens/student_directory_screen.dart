@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/services/student_service.dart';
 import '../widgets/base_scaffold.dart';
 
@@ -15,6 +16,8 @@ class StudentModel {
   final String? email;
   final String? phone;
   final String? createdInfo;
+  final String? className;
+  final String? rollNo;
 
   const StudentModel({
     required this.id,
@@ -25,6 +28,8 @@ class StudentModel {
     this.email,
     this.phone,
     this.createdInfo,
+    this.className,
+    this.rollNo,
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
@@ -41,21 +46,10 @@ class StudentModel {
       email: json['email'],
       phone: json['phone'],
       createdInfo: json['created_at'],
+      className: json['class'],
+      rollNo: json['roll_no'],
     );
   }
-}
-
-// ─────────────────────────────────────────────
-// API SERVICE
-// ─────────────────────────────────────────────
-
-Future<bool> addStudent(String username, String email, String password, String phone) async {
-  return await StudentService.createStudent(
-    username: username,
-    email: email,
-    password: password,
-    phone: phone,
-  );
 }
 
 Future<bool> updateStudent(int id, String username, String email, String phone) async {
@@ -87,8 +81,32 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _rollNoCtrl = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
+
+  List<Map<String, dynamic>> _classes = [];
+  bool _loadingClasses = true;
+  String _selectedClass = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClasses();
+  }
+
+  Future<void> _loadClasses() async {
+    final list = await StudentService.fetchClasses();
+    if (mounted) {
+      setState(() {
+        _classes = list;
+        if (list.isNotEmpty) {
+          _selectedClass = list[0]['name']?.toString() ?? '';
+        }
+        _loadingClasses = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -96,20 +114,38 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _phoneCtrl.dispose();
+    _rollNoCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedClass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a class'), backgroundColor: Color(0xFFC62828))
+      );
+      return;
+    }
     setState(() => _isLoading = true);
-    final success = await addStudent(_usernameCtrl.text.trim(), _emailCtrl.text.trim(), _passwordCtrl.text.trim(), _phoneCtrl.text.trim());
+    final result = await StudentService.createStudent(
+      username: _usernameCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      password: _passwordCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim(),
+      cls: _selectedClass,
+      rollNo: _rollNoCtrl.text.trim(),
+    );
     if (!mounted) return;
     setState(() => _isLoading = false);
-    if (success) {
+    if (result['success'] == true) {
       Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Student added successfully!'), backgroundColor: Color(0xFF2E7D32)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Student added successfully!'), backgroundColor: const Color(0xFF2E7D32))
+      );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to add student. Please try again.'), backgroundColor: Color(0xFFC62828)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Failed to add student. Please try again.'), backgroundColor: const Color(0xFFC62828))
+      );
     }
   }
 
@@ -137,6 +173,32 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                 _buildPasswordField(),
                 const SizedBox(height: 14),
                 _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
+                const SizedBox(height: 14),
+                _loadingClasses
+                    ? const Center(child: CircularProgressIndicator())
+                    : DropdownButtonFormField<String>(
+                        value: _selectedClass.isEmpty ? null : _selectedClass,
+                        items: _classes.map((c) {
+                          return DropdownMenuItem<String>(
+                            value: c['name']?.toString() ?? '',
+                            child: Text(c['name']?.toString() ?? ''),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedClass = val ?? '';
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Class',
+                          prefixIcon: const Icon(Icons.class_outlined, size: 20),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                          isDense: true,
+                        ),
+                      ),
+                const SizedBox(height: 14),
+                _buildField('Roll Number', _rollNoCtrl, Icons.format_list_numbered, validator: (v) => v!.isEmpty ? 'Roll number required' : null),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -341,6 +403,7 @@ class StudentCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   if (student.email != null) Text(student.email!, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                   if (student.phone != null && student.phone!.isNotEmpty) Text('Phone: ${student.phone}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                  if (student.className != null || student.rollNo != null) Text('Class: ${student.className ?? 'N/A'} | Roll No: ${student.rollNo ?? 'N/A'}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                   const SizedBox(height: 4),
                   Text('Role: ${student.role}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0F9D58))),
                 ],
@@ -381,11 +444,23 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
   String _searchQuery = '';
   List<StudentModel> _allStudents = [];
   bool _isLoading = true;
+  String _currentRole = 'teacher';
 
   @override
   void initState() {
     super.initState();
+    _loadUserRole();
     _fetchStudents();
+  }
+
+  Future<void> _loadUserRole() async {
+    const storage = FlutterSecureStorage();
+    final role = await storage.read(key: 'role');
+    if (role != null && mounted) {
+      setState(() {
+        _currentRole = role;
+      });
+    }
   }
 
   @override
@@ -456,7 +531,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: 'Student Directory',
-      role: 'teacher',
+      role: _currentRole,
       actions: [
         Container(
           margin: const EdgeInsets.only(right: 16),

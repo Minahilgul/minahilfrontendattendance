@@ -67,7 +67,7 @@ class StudentService {
       };
 
       final response = await http.post(
-        Uri.parse('${AuthService.baseUrl}/admin/pending-students'),
+        Uri.parse('${AuthService.baseUrl}/pending-students'),
         body: jsonEncode(body),
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ class StudentService {
       print("Token sending: $token"); // Debug
       
       final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/admin/pending-students'),
+        Uri.parse('${AuthService.baseUrl}/pending-students'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token', // ✅ 403 fix
@@ -120,7 +120,7 @@ class StudentService {
     try {
       final token = await AuthService.getToken();
       final response = await http.post(
-        Uri.parse('${AuthService.baseUrl}/admin/pending-students/approve/$id'),
+        Uri.parse('${AuthService.baseUrl}/pending-students/approve/$id'),
         headers: {
           'Accept': 'application/json', // ✅ Accept add
           'Authorization': 'Bearer $token',
@@ -137,7 +137,7 @@ class StudentService {
     try {
       final token = await AuthService.getToken();
       final response = await http.post(
-        Uri.parse('${AuthService.baseUrl}/admin/pending-students/reject/$id'),
+        Uri.parse('${AuthService.baseUrl}/pending-students/reject/$id'),
         headers: {
           'Accept': 'application/json', // ✅ Accept add
           'Authorization': 'Bearer $token',
@@ -154,7 +154,7 @@ class StudentService {
     try {
       final token = await AuthService.getToken();
       final response = await http.post(
-        Uri.parse('${AuthService.baseUrl}/admin/pending-students/approve-all'),
+        Uri.parse('${AuthService.baseUrl}/pending-students/approve-all'),
         body: jsonEncode({'ids': ids}),
         headers: {
           'Content-Type': 'application/json',
@@ -217,11 +217,13 @@ class StudentService {
     }
   }
 
-  static Future<bool> createStudent({
+  static Future<Map<String, dynamic>> createStudent({
     required String username,
     required String email,
     required String password,
     required String phone,
+    required String cls,
+    required String rollNo,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -237,12 +239,18 @@ class StudentService {
           'email': email,
           'password': password,
           'phone': phone,
+          'class': cls,
+          'roll_no': rollNo,
         }),
       );
-      return response.statusCode == 200 || response.statusCode == 201;
+      final data = jsonDecode(response.body);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': data['success'] ?? true, 'message': data['message'] ?? 'Success'};
+      }
+      return {'success': false, 'message': data['message'] ?? 'Failed to add student'};
     } catch (e) {
       print("CREATE STUDENT SERVICE ERROR: ${e.toString()}");
-      return false;
+      return {'success': false, 'message': e.toString()};
     }
   }
 

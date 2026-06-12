@@ -57,6 +57,10 @@ class BaseScaffold extends StatelessWidget {
                 Navigator.pop(context);
                 context.push('/teachers');
               }),
+              ListTile(leading: const Icon(Icons.person_outline), title: const Text('Student Directory'), onTap: () {
+                Navigator.pop(context);
+                context.push('/add-student');
+              }),
               ListTile(leading: const Icon(Icons.pending_actions), title: const Text('Pending Approvals'), onTap: () {
                 Navigator.pop(context);
                 context.push('/pending');
@@ -83,8 +87,8 @@ class BaseScaffold extends StatelessWidget {
                 context.push('/attendance');
               }),
               ListTile(
-                leading: const Icon(Icons.person_add, color: Color(0xFF0F9D58)),
-                title: const Text('Add Student'),
+                leading: const Icon(Icons.person_outline, color: Color(0xFF0F9D58)),
+                title: const Text('Student Directory'),
                 onTap: () {
                   Navigator.pop(context);
                   context.push('/add-student');
