@@ -4,8 +4,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   // 🔥 BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakho
-  static const String baseUrl = 'http://localhost:8000/api';
-  // static const String baseUrl = 'http://attia.ddev.site/api';
+  // static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = 'http://attia.ddev.site/api';
 
   static Map<String, dynamic>? currentUser;
   static String? token;
