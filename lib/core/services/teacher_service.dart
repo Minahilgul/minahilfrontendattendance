@@ -5,6 +5,7 @@ import 'auth_service.dart';
 class TeacherService {
   static Future<List<Map<String, dynamic>>> fetchTeachers() async {
     try {
+      final token = await AuthService.getToken();
       final response = await http.get(
         Uri.parse('${AuthService.baseUrl}/teachers'),
         headers: {'Accept': 'application/json'},
@@ -26,6 +27,7 @@ class TeacherService {
     required String email,
     required String password,
     required String phone,
+    String? deviceMacAddress,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -41,6 +43,8 @@ class TeacherService {
           'email': email,
           'password': password,
           'phone': phone,
+          if (deviceMacAddress != null && deviceMacAddress.isNotEmpty)
+            'device_mac_address': deviceMacAddress,
         }),
       );
 
@@ -59,6 +63,7 @@ class TeacherService {
     required String username,
     required String email,
     required String phone,
+    String? deviceMacAddress,
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -73,6 +78,7 @@ class TeacherService {
           'username': username,
           'email': email,
           'phone': phone,
+          'device_mac_address': deviceMacAddress ?? '',
         }),
       );
 
