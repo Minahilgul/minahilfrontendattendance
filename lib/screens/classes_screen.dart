@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:attendence_verification/core/services/auth_service.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../core/services/class_service.dart';
 import '../widgets/base_scaffold.dart';
 
@@ -90,17 +91,29 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   bool _isLoading = true; 
+  String _currentRole = 'admin';
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _loadData(); 
+    _loadRole();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.toLowerCase();
       });
     });
+  }
+
+  Future<void> _loadRole() async {
+    const storage = FlutterSecureStorage();
+    final role = await storage.read(key: 'role');
+    if (role != null && mounted) {
+      setState(() {
+        _currentRole = role;
+      });
+    }
   }
 
   Future<void> _loadData() async {
@@ -180,7 +193,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return BaseScaffold(
       title: 'Classes',
-      role: 'admin',
+      role: _currentRole,
       actions: [
         IconButton(icon: const Icon(Icons.add, color: Colors.white, size: 26), onPressed: _showAddClassDialog),
       ],
