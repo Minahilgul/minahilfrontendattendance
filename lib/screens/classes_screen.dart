@@ -14,6 +14,7 @@ class ClassItem {
   final int id;
   final String name;
   final String teacher;
+  final int? teacherId;
   final int studentCount;
   final ClassStatus status;
   final bool isPendingTerm;
@@ -23,32 +24,35 @@ class ClassItem {
     required this.id,
     required this.name,
     required this.teacher,
+    this.teacherId,   
     required this.studentCount,
     required this.status,
     this.isPendingTerm = false,
     required this.iconColor,
   });
 
-  
   factory ClassItem.fromJson(Map<String, dynamic> json) {
     return ClassItem(
       id: json['id']?? 0,
-      name: json['name']?? '',
-      teacher: json['class_name']?? '',
+      name: json['class_name']?? '',
+      teacher: json['name']?? '',
+      teacherId: json['teacher_id'],
       studentCount: json['students_count']?? 0,
-      status: json['status'] == 'active'? ClassStatus.active :
-              json['status'] == 'inactive'? ClassStatus.inactive :
-              ClassStatus.scheduled,
+      status: json['status'] == 'active'
+         ? ClassStatus.active
+          : json['status'] == 'inactive'
+             ? ClassStatus.inactive
+              : ClassStatus.scheduled,
       iconColor: const Color(0xFF2196F3),
     );
   }
 }
 
 // ─────────────────────────────────────────────
-// API SERVICE - API SE DATA LOAD HOGA VIA CLASS SERVICE
+// API SERVICE
 // ─────────────────────────────────────────────
 
-List<ClassItem> allClasses = []; 
+List<ClassItem> allClasses = [];
 
 Future<void> fetchClasses() async {
   final data = await ClassService.fetchClasses();
@@ -90,15 +94,17 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _isLoading = true; 
+  bool _isLoading = true;
   String _currentRole = 'admin';
+  List<Map<String, dynamic>> _teachersList = [];
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    _loadData(); 
+    _loadData();
     _loadRole();
+    _loadTeachers();
     _searchController.addListener(() {
       setState(() {
         _searchQuery = _searchController.text.toLowerCase();
@@ -106,10 +112,17 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
     });
   }
 
+  Future<void> _loadTeachers() async {
+    final teachers = await ClassService.fetchTeachers();
+    setState(() {
+      _teachersList = teachers;
+    });
+  }
+
   Future<void> _loadRole() async {
     const storage = FlutterSecureStorage();
     final role = await storage.read(key: 'role');
-    if (role != null && mounted) {
+    if (role!= null && mounted) {
       setState(() {
         _currentRole = role;
       });
@@ -151,13 +164,15 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
   }
 
   void _showAddClassDialog() async {
-    final result = await showDialog<bool>(context: context, builder: (context) => const AddClassDialog());
-    if (result == true) _loadData(); // 👈 Refresh
+    final result = await showDialog<bool>(
+        context: context, builder: (context) => AddClassDialog(teachers: _teachersList));
+    if (result == true) _loadData();
   }
 
   void _showEditClassDialog(ClassItem item) async {
-    final result = await showDialog<bool>(context: context, builder: (context) => EditClassDialog(item: item));
-    if (result == true) _loadData(); // 👈 Refresh
+    final result = await showDialog<bool>(
+        context: context, builder: (context) => EditClassDialog(item: item, teachers: _teachersList));
+    if (result == true) _loadData();
   }
 
   void _showDeleteClassDialog(ClassItem item) async {
@@ -181,7 +196,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
     if (confirm == true) {
       final success = await deleteClass(item.id);
       if (success) {
-        await _loadData(); // 👈 Refresh
+        await _loadData();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${item.name} deleted'), backgroundColor: const Color(0xFFC62828)));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete'), backgroundColor: Color(0xFFC62828)));
@@ -249,26 +264,26 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
             ),
             Expanded(
               child: _isLoading
-             ? const Center(child: CircularProgressIndicator())
-              : AnimatedBuilder(
-                animation: _tabController,
-                builder: (context, _) {
-                  final classes = _getFilteredClasses(_tabController.index);
-                  if (classes.isEmpty) {
-                    return const Center(child: Text('No classes found', style: TextStyle(color: Colors.black38, fontSize: 14)));
-                  }
-                  return ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: classes.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) => ClassCard(
-                      item: classes[index],
-                      onEdit: () => _showEditClassDialog(classes[index]),
-                      onDelete: () => _showDeleteClassDialog(classes[index]),
+                 ? const Center(child: CircularProgressIndicator())
+                  : AnimatedBuilder(
+                      animation: _tabController,
+                      builder: (context, _) {
+                        final classes = _getFilteredClasses(_tabController.index);
+                        if (classes.isEmpty) {
+                          return const Center(child: Text('No classes found', style: TextStyle(color: Colors.black38, fontSize: 14)));
+                        }
+                        return ListView.separated(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: classes.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 12),
+                          itemBuilder: (context, index) => ClassCard(
+                            item: classes[index],
+                            onEdit: () => _showEditClassDialog(classes[index]),
+                            onDelete: () => _showDeleteClassDialog(classes[index]),
+                          ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
           ],
         ),
@@ -295,17 +310,23 @@ class ClassCard extends StatelessWidget {
 
   Color get _statusColor {
     switch (item.status) {
-      case ClassStatus.active: return const Color(0xFF4CAF50);
-      case ClassStatus.inactive: return const Color(0xFF9E9E9E);
-      case ClassStatus.scheduled: return const Color(0xFF2196F3);
+      case ClassStatus.active:
+        return const Color(0xFF4CAF50);
+      case ClassStatus.inactive:
+        return const Color(0xFF9E9E9E);
+      case ClassStatus.scheduled:
+        return const Color(0xFF2196F3);
     }
   }
 
   String get _statusLabel {
     switch (item.status) {
-      case ClassStatus.active: return 'ACTIVE';
-      case ClassStatus.inactive: return 'INACTIVE';
-      case ClassStatus.scheduled: return 'SCHEDULED';
+      case ClassStatus.active:
+        return 'ACTIVE';
+      case ClassStatus.inactive:
+        return 'INACTIVE';
+      case ClassStatus.scheduled:
+        return 'SCHEDULED';
     }
   }
 
@@ -391,30 +412,36 @@ class _StatusBadge extends StatelessWidget {
 }
 
 class AddClassDialog extends StatefulWidget {
-  const AddClassDialog({super.key});
+  final List<Map<String, dynamic>> teachers;
+  const AddClassDialog({super.key, required this.teachers});
   @override
   State<AddClassDialog> createState() => _AddClassDialogState();
 }
 
 class _AddClassDialogState extends State<AddClassDialog> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
-  final TextEditingController _studentsController = TextEditingController();
+  String? _selectedTeacherId;
   bool _isLoading = false;
 
   @override
   void dispose() {
-    _nameController.dispose();
     _classController.dispose();
-    _studentsController.dispose();
     super.dispose();
   }
 
   Future<void> _onSave() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate() || _selectedTeacherId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select teacher'), backgroundColor: Color(0xFFF44336))
+      );
+      return;
+    }
     setState(() => _isLoading = true);
-    final success = await createClass(_nameController.text.trim(), _classController.text.trim(), _studentsController.text.trim());
+
+    final teacherName = widget.teachers.firstWhere((t) => t['id'].toString() == _selectedTeacherId)['name'];
+
+    final success = await createClass(teacherName, _classController.text.trim(), "0");
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
@@ -440,12 +467,35 @@ class _AddClassDialogState extends State<AddClassDialog> {
             children: [
               const Text('Add Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87)),
               const SizedBox(height: 20),
-              _DialogTextField(controller: _nameController, label: 'Name', hint: 'Enter teacher name', validator: (v) => (v == null || v.isEmpty)? 'Name is required' : null),
+
+              DropdownButtonFormField<String>(
+                value: _selectedTeacherId,
+                decoration: InputDecoration(
+                  labelText: 'Teacher Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2196F3), width: 1.5)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                items: widget.teachers.map((teacher) {
+                  return DropdownMenuItem<String>(
+                    value: teacher['id'].toString(),
+                    child: Text(teacher['name'], style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() => _selectedTeacherId = value),
+                validator: (v) => v == null? 'Teacher Name is required' : null,
+              ),
               const SizedBox(height: 14),
-              _DialogTextField(controller: _classController, label: 'Class', hint: 'Enter class name', validator: (v) => (v == null || v.isEmpty)? 'Class is required' : null),
-              const SizedBox(height: 14),
-              _DialogTextField(controller: _studentsController, label: 'Roll No', hint: 'Enter number of students', keyboardType: TextInputType.number, validator: (v) {if (v == null || v.isEmpty) return 'Students is required'; if (int.tryParse(v) == null) return 'Enter a valid number'; return null;}),
+
+              _DialogTextField(
+                controller: _classController,
+                label: 'Class Name',
+                hint: 'Enter class name',
+                validator: (v) => (v == null || v.isEmpty)? 'Class Name is required' : null,
+              ),
               const SizedBox(height: 24),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -464,7 +514,8 @@ class _AddClassDialogState extends State<AddClassDialog> {
 
 class EditClassDialog extends StatefulWidget {
   final ClassItem item;
-  const EditClassDialog({super.key, required this.item});
+  final List<Map<String, dynamic>> teachers;
+  const EditClassDialog({super.key, required this.item, required this.teachers});
 
   @override
   State<EditClassDialog> createState() => _EditClassDialogState();
@@ -472,31 +523,41 @@ class EditClassDialog extends StatefulWidget {
 
 class _EditClassDialogState extends State<EditClassDialog> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _nameController;
   late TextEditingController _classController;
-  late TextEditingController _studentsController;
+  String? _selectedTeacherId;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.item.teacher);
     _classController = TextEditingController(text: widget.item.name);
-    _studentsController = TextEditingController(text: widget.item.studentCount.toString());
+    _selectedTeacherId = widget.item.teacherId?.toString();
+
+    final teacher = widget.teachers.firstWhere(
+      (t) => t['name'] == widget.item.teacher,
+      orElse: () => {'id': null},
+    );
+    _selectedTeacherId = teacher['id']?.toString();
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
     _classController.dispose();
-    _studentsController.dispose();
     super.dispose();
   }
 
   Future<void> _onUpdate() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate() || _selectedTeacherId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select teacher'), backgroundColor: Color(0xFFF44336))
+      );
+      return;
+    }
     setState(() => _isLoading = true);
-    final success = await updateClass(widget.item.id, _nameController.text.trim(), _classController.text.trim(), _studentsController.text.trim());
+
+    final teacherName = widget.teachers.firstWhere((t) => t['id'].toString() == _selectedTeacherId)['name'];
+
+    final success = await updateClass(widget.item.id, teacherName, _classController.text.trim(), "0");
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
@@ -522,12 +583,35 @@ class _EditClassDialogState extends State<EditClassDialog> {
             children: [
               const Text('Edit Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87)),
               const SizedBox(height: 20),
-              _DialogTextField(controller: _nameController, label: 'Teacher Name', hint: 'Enter teacher name', validator: (v) => (v == null || v.isEmpty)? 'Name is required' : null),
+
+              DropdownButtonFormField<String>(
+                value: _selectedTeacherId,
+                decoration: InputDecoration(
+                  labelText: 'Teacher Name',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE0E0E0))),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFF2196F3), width: 1.5)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                items: widget.teachers.map((teacher) {
+                  return DropdownMenuItem<String>(
+                    value: teacher['id'].toString(),
+                    child: Text(teacher['name'], style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                  );
+                }).toList(),
+                onChanged: (value) => setState(() => _selectedTeacherId = value),
+                validator: (v) => v == null? 'Teacher Name is required' : null,
+              ),
               const SizedBox(height: 14),
-              _DialogTextField(controller: _classController, label: 'Class Name', hint: 'Enter class name', validator: (v) => (v == null || v.isEmpty)? 'Class is required' : null),
-              const SizedBox(height: 14),
-              _DialogTextField(controller: _studentsController, label: 'Students Count', hint: 'Enter number of students', keyboardType: TextInputType.number, validator: (v) {if (v == null || v.isEmpty) return 'Students is required'; if (int.tryParse(v) == null) return 'Enter a valid number'; return null;}),
+
+              _DialogTextField(
+                controller: _classController,
+                label: 'Class Name',
+                hint: 'Enter class name',
+                validator: (v) => (v == null || v.isEmpty)? 'Class Name is required' : null,
+              ),
               const SizedBox(height: 24),
+
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
