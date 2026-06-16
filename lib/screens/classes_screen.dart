@@ -33,8 +33,13 @@ class ClassItem {
   factory ClassItem.fromJson(Map<String, dynamic> json) {
     return ClassItem(
       id: json['id']?? 0,
+<<<<<<< HEAD
       name: json['class_name']?? '',
       teacher: json['name']?? '',
+=======
+      name: json['name']?? '',
+      teacher: json['class_name']?? '',
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
       studentCount: json['students_count']?? 0,
       status: json['status'] == 'active'? ClassStatus.active :
               json['status'] == 'inactive'? ClassStatus.inactive :
@@ -400,21 +405,33 @@ class _AddClassDialogState extends State<AddClassDialog> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _classController = TextEditingController();
+<<<<<<< HEAD
   
+=======
+  final TextEditingController _studentsController = TextEditingController();
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
   bool _isLoading = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _classController.dispose();
+<<<<<<< HEAD
     
+=======
+    _studentsController.dispose();
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
     super.dispose();
   }
 
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
+<<<<<<< HEAD
     final success = await createClass(_nameController.text.trim(), _classController.text.trim(), "0");
+=======
+    final success = await createClass(_nameController.text.trim(), _classController.text.trim(), _studentsController.text.trim());
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
@@ -444,7 +461,12 @@ class _AddClassDialogState extends State<AddClassDialog> {
               const SizedBox(height: 14),
               _DialogTextField(controller: _classController, label: 'Class', hint: 'Enter class name', validator: (v) => (v == null || v.isEmpty)? 'Class is required' : null),
               const SizedBox(height: 14),
+<<<<<<< HEAD
              
+=======
+              _DialogTextField(controller: _studentsController, label: 'Roll No', hint: 'Enter number of students', keyboardType: TextInputType.number, validator: (v) {if (v == null || v.isEmpty) return 'Students is required'; if (int.tryParse(v) == null) return 'Enter a valid number'; return null;}),
+              const SizedBox(height: 24),
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -473,7 +495,11 @@ class _EditClassDialogState extends State<EditClassDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _nameController;
   late TextEditingController _classController;
+<<<<<<< HEAD
   
+=======
+  late TextEditingController _studentsController;
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
   bool _isLoading = false;
 
   @override
@@ -481,21 +507,33 @@ class _EditClassDialogState extends State<EditClassDialog> {
     super.initState();
     _nameController = TextEditingController(text: widget.item.teacher);
     _classController = TextEditingController(text: widget.item.name);
+<<<<<<< HEAD
    Count.toString());
+=======
+    _studentsController = TextEditingController(text: widget.item.studentCount.toString());
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _classController.dispose();
+<<<<<<< HEAD
   
+=======
+    _studentsController.dispose();
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
     super.dispose();
   }
 
   Future<void> _onUpdate() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
+<<<<<<< HEAD
     final success = await updateClass(widget.item.id, _nameController.text.trim(), _classController.text.trim(), "0");
+=======
+    final success = await updateClass(widget.item.id, _nameController.text.trim(), _classController.text.trim(), _studentsController.text.trim());
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
@@ -525,7 +563,12 @@ class _EditClassDialogState extends State<EditClassDialog> {
               const SizedBox(height: 14),
               _DialogTextField(controller: _classController, label: 'Class Name', hint: 'Enter class name', validator: (v) => (v == null || v.isEmpty)? 'Class is required' : null),
               const SizedBox(height: 14),
+<<<<<<< HEAD
               
+=======
+              _DialogTextField(controller: _studentsController, label: 'Students Count', hint: 'Enter number of students', keyboardType: TextInputType.number, validator: (v) {if (v == null || v.isEmpty) return 'Students is required'; if (int.tryParse(v) == null) return 'Enter a valid number'; return null;}),
+              const SizedBox(height: 24),
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [

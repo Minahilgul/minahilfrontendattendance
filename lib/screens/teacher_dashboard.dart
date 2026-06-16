@@ -3,7 +3,10 @@ import 'package:geolocator/geolocator.dart';
 import 'settings_screen.dart';
 import '../widgets/base_scaffold.dart'; 
 import '../core/services/session_service.dart';
+<<<<<<< HEAD
 // import '../core/helpers/device_mac_helper.dart';
+=======
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
 
 
 
@@ -120,15 +123,21 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     setState(() => isLoading = true);
     try {
       Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+<<<<<<< HEAD
       // ADD: Get device MAC address
     // final macAddress = await DeviceMacHelper.getMacAddress();
+=======
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
       final result = await SessionService.createSession(
         teacherId: teacherId,
         classId: classId,
         latitude: pos.latitude,
         longitude: pos.longitude,
+<<<<<<< HEAD
         // deviceMacAddress: macAddress,   // ADD THIS
 
+=======
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
       );
       if (result['success']) {
         final id = result['data']['id'];

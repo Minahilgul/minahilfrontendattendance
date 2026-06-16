@@ -8,7 +8,10 @@ class SessionService {
     required int classId,
     required double latitude,
     required double longitude,
+<<<<<<< HEAD
     // required String deviceMacAddress,
+=======
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
   }) async {
     final response = await http.post(
       Uri.parse('${AuthService.baseUrl}/create-session'),
@@ -21,7 +24,10 @@ class SessionService {
         'class_id': classId,
         'latitude': latitude,
         'longitude': longitude,
+<<<<<<< HEAD
         // 'device_mac_address': deviceMacAddress, 
+=======
+>>>>>>> af416199e6087c9de125e478054a03f0373937c4
       }),
     );
 
