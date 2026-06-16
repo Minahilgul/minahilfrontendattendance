@@ -445,7 +445,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
               _DialogTextField(controller: _classController, label: 'Class', hint: 'Enter class name', validator: (v) => (v == null || v.isEmpty)? 'Class is required' : null),
               const SizedBox(height: 14),
               _DialogTextField(controller: _studentsController, label: 'Roll No', hint: 'Enter number of students', keyboardType: TextInputType.number, validator: (v) {if (v == null || v.isEmpty) return 'Students is required'; if (int.tryParse(v) == null) return 'Enter a valid number'; return null;}),
-              const SizedBox(height: 24);
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -527,7 +527,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
               _DialogTextField(controller: _classController, label: 'Class Name', hint: 'Enter class name', validator: (v) => (v == null || v.isEmpty)? 'Class is required' : null),
               const SizedBox(height: 14),
               _DialogTextField(controller: _studentsController, label: 'Students Count', hint: 'Enter number of students', keyboardType: TextInputType.number, validator: (v) {if (v == null || v.isEmpty) return 'Students is required'; if (int.tryParse(v) == null) return 'Enter a valid number'; return null;}),
-              const SizedBox(height: 24);
+              const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
