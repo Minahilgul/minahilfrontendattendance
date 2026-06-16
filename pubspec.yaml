@@ -25,11 +25,8 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   firebase_core: ^4.0.0
   firebase_auth: ^6.0.0
-<<<<<<< HEAD
   network_info_plus: ^5.0.3
   device_info_plus: ^10.1.0
-=======
->>>>>>> af416199e6087c9de125e478054a03f0373937c4
 dev_dependencies:
   flutter_test:
     sdk: flutter 
