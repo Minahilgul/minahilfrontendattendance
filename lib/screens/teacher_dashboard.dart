@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'settings_screen.dart';
 import '../widgets/base_scaffold.dart'; 
 import '../core/services/session_service.dart';
+import 'student_selection_screen.dart';
 // import '../core/helpers/device_mac_helper.dart';
 
 
@@ -115,32 +116,121 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       ),
     );
   }
-
   Future<void> startSession() async {
-    setState(() => isLoading = true);
-    try {
-      Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-      // ADD: Get device MAC address
-    // final macAddress = await DeviceMacHelper.getMacAddress();
-      final result = await SessionService.createSession(
-        teacherId: teacherId,
-        classId: classId,
-        latitude: pos.latitude,
-        longitude: pos.longitude,
-        // deviceMacAddress: macAddress,   // ADD THIS
-      );
-      if (result['success']) {
-        final id = result['data']['id'];
-        setState(() => activeSessionId = id);
-        _showSnack('Session start ho gayi! ID: $id');
-      } else {
-        _showSnack(result['message'] ?? 'Error');
-      }
-    } catch (e) {
-      _showSnack('Error: $e');
+  setState(() => isLoading = true);
+  print("1. BUTTON TAPPED ✅"); // 👈 ye add karo debug ke liye
+  
+  try {
+    // 👇 YE 4 LINE ADD KARO - Location service check
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    print("2. Location Service: $serviceEnabled");
+    if (!serviceEnabled) {
+      _showSnack('Location ON karo phone/PC se');
+      await Geolocator.openLocationSettings();
+      setState(() => isLoading = false);
+      return;
     }
-    setState(() => isLoading = false);
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    print("3. Permission: $permission");
+    // 👇 YE IMPORTANT HAI - Web ke liye
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      permission = await Geolocator.requestPermission();
+      print("4. After request: $permission");
+    }
+    
+    if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      _showSnack('Location Allow karo browser se');
+
+      setState(() => isLoading = false);
+      return;
+    }
+
+    print("5. Getting location..."); // 👈 ye add karo
+    Position pos = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.low, // 👈 high se low kar do web ke liye
+      timeLimit: Duration(seconds: 10), // 👈 timeout add karo
+    );
+    print("6. Location OK: ${pos.latitude}"); // 👈 ye add karo
+
+    final result = await SessionService.createSession(
+      teacherId: teacherId,
+      classId: classId,
+      latitude: pos.latitude,
+      longitude: pos.longitude,
+    );
+
+    print("7. API Result: $result"); // 👈 ye add karo
+
+    if (result['success']) {
+      final int id = result['data']['id'];
+      setState(() => activeSessionId = id);
+
+      if (!mounted) return;
+      print("8. Navigating to StudentSelectionScreen..."); // 👈 ye add karo
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => StudentSelectionScreen(sessionId: id),
+        ),
+      );
+    } else {
+      _showSnack(result['message'] ?? 'Failed to start session');
+    }
+  } catch (e) {
+    print("ERROR: $e"); // 👈 ye add karo
+    _showSnack('Error: $e');
   }
+  setState(() => isLoading = false);
+}
+// Future<void> startSession() async {
+//   setState(() => isLoading = true);
+//   print("1. BUTTON TAPPED ✅"); // 👈 ye add karo debug ke liye
+//   try {
+//     LocationPermission permission = await Geolocator.checkPermission();
+//     if (permission == LocationPermission.denied) {
+//       permission = await Geolocator.requestPermission();
+//     }
+//     if (permission == LocationPermission.denied ||
+//         permission == LocationPermission.deniedForever) {
+//       _showSnack('Location permission is required to start a session.');
+//       setState(() => isLoading = false);
+//       return;
+//     }
+
+//     Position pos = await Geolocator.getCurrentPosition(
+//       desiredAccuracy: LocationAccuracy.high,
+//     );
+
+//     final result = await SessionService.createSession(
+//       teacherId: teacherId,
+//       classId: classId,
+//       latitude: pos.latitude,
+//       longitude: pos.longitude,
+//     );
+
+//     if (result['success']) {
+//       final int id = result['data']['id'];  // ✅ 'id' naam ka variable
+//       setState(() => activeSessionId = id); // ✅ id use kiya
+
+//       if (!mounted) return;
+//       Navigator.push(
+//         context,
+//         MaterialPageRoute(
+//           builder: (_) => StudentSelectionScreen(
+//             sessionId: id, // ✅ id pass kiya
+//           ),
+//         ),
+//       );
+//     } else {
+//       _showSnack(result['message'] ?? 'Failed to start session');
+//     }
+//   } catch (e) {
+//     _showSnack('Error: $e');
+//   }
+//   setState(() => isLoading = false);
+// }
+  
 
   Future<void> endSession() async {
     if (activeSessionId == null) {
