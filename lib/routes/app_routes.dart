@@ -13,6 +13,7 @@ import '../screens/create_session_page.dart';
 import '../screens/settings_screen.dart';
 import '../screens/student_directory_screen.dart';
 import '../screens/student_dashboard_screen.dart';
+import 'package:attendence_verification/screens/student_report_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -30,6 +31,10 @@ final GoRouter appRouter = GoRouter(
   path: '/settings',
   builder: (context, state) => const SettingsScreen(),
     ),
+    GoRoute(
+  path: '/student-reports',
+  builder: (context, state) => const StudentReportScreen(),
+),
     
     
     GoRoute(

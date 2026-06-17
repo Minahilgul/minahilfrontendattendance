@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/session_service.dart';
+import 'attendance_marking_screen.dart'; // ✅ upar add karo
 
 class StudentSelectionScreen extends StatefulWidget {
   final int sessionId;
@@ -43,42 +44,81 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
       });
     }
   }
-
-  Future<void> _saveStudents() async {
-    if (selectedIds.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Kam az kam ek student select karo')),
-      );
-      return;
-    }
-
-    setState(() => isSaving = true);
-
-    final result = await SessionService.saveSessionStudents(
-      sessionId: widget.sessionId,
-      studentIds: selectedIds.toList(),
+Future<void> _saveStudents() async {
+  if (selectedIds.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Kam az kam ek student select karo')),
     );
-
-    setState(() => isSaving = false);
-
-    if (result['success']) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('${selectedIds.length} students save ho gaye!'),
-          backgroundColor: const Color(0xFF0F9D58),
-        ),
-      );
-      Navigator.pop(context);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Error'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    return;
   }
+
+  setState(() => isSaving = true);
+
+  final result = await SessionService.saveSessionStudents(
+    sessionId: widget.sessionId,
+    studentIds: selectedIds.toList(),
+  );
+
+  setState(() => isSaving = false);
+
+  if (result['success']) {
+    if (!mounted) return;
+    // ✅ Selected students ko attendance screen pe bhejo
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AttendanceMarkingScreen(
+          sessionId: widget.sessionId,
+          selectedStudents: students
+              .where((s) => selectedIds.contains(s['id'] as int))
+              .toList(),
+        ),
+      ),
+    );
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(result['message'] ?? 'Error'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+}
+  // Future<void> _saveStudents() async {
+  //   if (selectedIds.isEmpty) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Select atleast one student')),
+  //     );
+  //     return;
+  //   }
+
+  //   setState(() => isSaving = true);
+
+  //   final result = await SessionService.saveSessionStudents(
+  //     sessionId: widget.sessionId,
+  //     studentIds: selectedIds.toList(),
+  //   );
+
+  //   setState(() => isSaving = false);
+
+  //   if (result['success']) {
+  //     if (!mounted) return;
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text('${selectedIds.length} students save ho gaye!'),
+  //         backgroundColor: const Color(0xFF0F9D58),
+  //       ),
+  //     );
+  //     Navigator.pop(context);
+  //   } else {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //         content: Text(result['message'] ?? 'Error'),
+  //         backgroundColor: Colors.red,
+  //       ),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -301,7 +341,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
                       child: CircularProgressIndicator(
                           color: Colors.white, strokeWidth: 2),
                     )
-                  : const Text('Session Banao',
+                  : const Text('Next',
                       style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

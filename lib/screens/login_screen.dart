@@ -29,6 +29,8 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     final result = await AuthService.login(emailController.text, passwordController.text);
+     if (!mounted) return;
+
   
     setState(() {
       _isLoading = false;
@@ -53,6 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
       await storage.write(key: 'token', value: token);
       
       print("Token saved securely");
+       if (!mounted) return;
 
       
       if (role == 'admin') {

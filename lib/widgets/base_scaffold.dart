@@ -75,7 +75,14 @@ class BaseScaffold extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.push('/settings');
-              }),     
+              }),
+           ListTile(
+          leading: const Icon(Icons.assessment_outlined, color: Color(0xFF2979FF)),
+          title: const Text('Student Reports'),
+          onTap: () {
+         Navigator.pop(context);
+         context.push('/student-reports');
+  }),
             ], 
             if (role == 'teacher') ...[
               ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
