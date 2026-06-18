@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../core/services/auth_service.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 👈 GetStorage hatao
 import 'package:go_router/go_router.dart';
+import '../core/services/device_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
-  final storage = FlutterSecureStorage(); // 👈 GetStorage ki jagah ye
+  final storage = FlutterSecureStorage(); //  GetStorage ki jagah ye
 
   Future<void> _login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
@@ -24,15 +25,22 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
-    setState(() {
-      _isLoading = true;
-    });
+    // DEVICE ID GET KARO
+  final deviceId = await DeviceService.getDeviceId();
+  print("DEVICE ID = $deviceId");
 
-    final result = await AuthService.login(emailController.text, passwordController.text);
-  
-    setState(() {
-      _isLoading = false;
-    });
+  setState(() {
+    _isLoading = true;
+  });
+
+  final result = await AuthService.login(
+    emailController.text,
+    passwordController.text,
+  );
+
+  setState(() {
+    _isLoading = false;
+  });
 
     if (result['success']) {
       
@@ -40,12 +48,12 @@ class _LoginScreenState extends State<LoginScreen> {
       int userId = user['id'] ?? 0; 
       String role = user['role'] ?? 'student';
       String userName = user['username'] ?? emailController.text;
-      String token = user['token'] ?? ''; // 👈 token variable me lo
+      String token = user['token'] ?? ''; //  token variable me lo
       print("FULL RESPONSE: $result"); 
       print("USER DATA: $user");
       print("Final UserID: $userId"); 
       
-      // 👇 Bas ye 5 line change - await lagao + .toString()
+      //  Bas ye 5 line change - await lagao + .toString()
       await storage.write(key: 'isLoggedIn', value: 'true');
       await storage.write(key: 'userName', value: userName);
       await storage.write(key: 'role', value: role);

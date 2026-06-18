@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'device_service.dart';
+
 
 class AuthService {
   // 🔥 BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakho
@@ -15,15 +17,19 @@ class AuthService {
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
+      final deviceId = await DeviceService.getDeviceId();
+
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({"email": email, "password": password}),
+        body: jsonEncode({"email": email, "password": password,"device_id": deviceId,
+}),
       );
 
+       print("DEVICE ID: $deviceId");
       print("LOGIN STATUS: ${response.statusCode}");
       print("LOGIN BODY: ${response.body}");
 
