@@ -223,7 +223,23 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                 ),
-                const SizedBox(height: 25),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: () {
+                      context.push('/register-teacher');
+                    },
+                    child: const Text(
+                      "Register as a Teacher",
+                      style: TextStyle(
+                        color: Color(0xff1f4e79),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
                 const Center(
                   child: Column(
                     children: [

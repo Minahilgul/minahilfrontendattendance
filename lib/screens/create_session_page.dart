@@ -142,7 +142,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
 
     try {
       String? userIdStr = await _storage.read(key: 'userId');
-      int userId = int.tryParse(userIdStr ?? '') ?? 1;
+      int userId = int.tryParse(userIdStr ?? '') ?? AuthService.currentUser?['id'] ?? 1;
 
       final result = await SessionService.createSession(
         teacherId: userId,

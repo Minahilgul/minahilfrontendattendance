@@ -47,16 +47,12 @@ class TeacherService {
     try {
       final token = await AuthService.getToken();
 
-      final deviceInfo = DeviceInfoPlugin();
-      final info = await deviceInfo.androidInfo;
-
-
       final body = {
         'username': username,
         'email': email,
         'password': password,
         'phone': phone,
-        // 'device_id': info.id
+        if (deviceId != null && deviceId.isNotEmpty) 'device_id': deviceId,
       };
 
       final response = await http.post(
@@ -180,6 +176,87 @@ class TeacherService {
       return response.statusCode == 200;
     } catch (e) {
       print("DELETE TEACHER SERVICE ERROR: $e");
+      return false;
+    }
+  }
+
+  // ─────────────────────────────
+  // SELF-REGISTER TEACHER
+  // ─────────────────────────────
+  static Future<Map<String, dynamic>> registerTeacher({
+    required String username,
+    required String email,
+    required String password,
+    required String phone,
+    required String deviceId,
+  }) async {
+    try {
+      final body = {
+        'username': username,
+        'email': email,
+        'password': password,
+        'phone': phone,
+        'device_id': deviceId,
+      };
+
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/register-teacher'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      print("REGISTER TEACHER STATUS: ${response.statusCode}");
+      print("REGISTER TEACHER RESPONSE: ${response.body}");
+
+      final jsonData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return {'success': true, 'message': jsonData['message'] ?? 'Registration successful!'};
+      }
+
+      String errorMessage = jsonData['message'] ?? 'Failed to register';
+      if (jsonData['errors'] != null) {
+        final errors = jsonData['errors'] as Map<String, dynamic>;
+        errorMessage = errors.values
+            .expand((e) => e is List ? e : [e])
+            .join('\n');
+      }
+
+      return {'success': false, 'message': errorMessage};
+    } catch (e) {
+      print("REGISTER TEACHER SERVICE ERROR: $e");
+      return {'success': false, 'message': 'Network error: $e'};
+    }
+  }
+
+  // ─────────────────────────────
+  // APPROVE TEACHER
+  // ─────────────────────────────
+  static Future<bool> approveTeacher(int id) async {
+    try {
+      final token = await AuthService.getToken();
+
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/teachers/approve/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print("APPROVE TEACHER STATUS: ${response.statusCode}");
+      print("APPROVE TEACHER RESPONSE: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['success'] == true;
+      }
+      return false;
+    } catch (e) {
+      print("APPROVE TEACHER SERVICE ERROR: $e");
       return false;
     }
   }

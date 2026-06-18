@@ -57,14 +57,14 @@ class TeacherModel {
       name: name,
       department: json['department']?? 'N/A',
       role: json['role']?? 'Teacher',
-      status: TeacherStatus.verified,
+      status: json['status'] == 1 ? TeacherStatus.verified : TeacherStatus.inactive,
       activeClasses: json['active_classes']?? 0,
       deviceInfo: json['device_info'],
       lastSeen: json['last_seen'],
       registeredInfo: json['created_at'],
       email: json['email'],
       phone: json['phone'],
-       deviceId: json['device_Id'], 
+      deviceId: json['device_id'], 
     );
   }
 }
@@ -220,8 +220,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                 const SizedBox(height: 14),
                 _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
                 const SizedBox(height: 14),
-                // FIX: MAC address field — required by backend device_mac_address column
-                _buildField('Device IMEI Address', _imeiCtrl, Icons.router_outlined),
+                _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -364,8 +363,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
             const SizedBox(height: 14),
             _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
             const SizedBox(height: 14),
-            // FIX: MAC address field — pre-filled from existing teacher data
-            _buildField('Device IMEI Address', _imeiCtrl, Icons.router_outlined),
+            _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined),
             const SizedBox(height: 24),
             Row(
               children: [
@@ -412,8 +410,9 @@ class TeacherCard extends StatelessWidget {
   final TeacherModel teacher;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final VoidCallback? onApprove;
 
-  const TeacherCard({super.key, required this.teacher, this.onEdit, this.onDelete});
+  const TeacherCard({super.key, required this.teacher, this.onEdit, this.onDelete, this.onApprove});
 
   @override
   Widget build(BuildContext context) {
@@ -500,6 +499,24 @@ class TeacherCard extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(onPressed: () {}, style: TextButton.styleFrom(foregroundColor: const Color(0xFF1565C0), padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap), child: const Row(mainAxisSize: MainAxisSize.min, children: [Text('VIEW LOGS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)), SizedBox(width: 4), Icon(Icons.arrow_forward, size: 14)])),
+              ),
+            ),
+          if (teacher.status == TeacherStatus.inactive)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  onPressed: onApprove,
+                  icon: const Icon(Icons.check, size: 14, color: Colors.white),
+                  label: const Text('APPROVE TEACHER', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
               ),
             ),
         ],
@@ -604,6 +621,35 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     }
   }
 
+  void _showApproveDialog(TeacherModel teacher) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Approve Teacher'),
+        content: Text('Are you sure you want to approve and activate the account of ${teacher.name}?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
+            child: const Text('Approve', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final success = await TeacherService.approveTeacher(teacher.id);
+      if (success) {
+        _fetchTeachers();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${teacher.name} approved successfully'), backgroundColor: const Color(0xFF2E7D32)));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to approve teacher'), backgroundColor: Color(0xFFC62828)));
+      }
+    }
+  }
+
   @override
   void dispose() {
     _searchCtrl.dispose();
@@ -691,6 +737,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                                 if (result == true) _fetchTeachers();
                               },
                               onDelete: () => _showDeleteDialog(t),
+                              onApprove: () => _showApproveDialog(t),
                             )),
                         Container(
                           margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
