@@ -1,11 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'device_service.dart';
+
 
 class AuthService {
-  // 🔥 BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakho
+  //  BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakho
   static const String baseUrl = 'http://localhost:8000/api';
   // static const String baseUrl = 'http://attia.ddev.site/api';
+  //for emulator
+  // static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   static Map<String, dynamic>? currentUser;
   static String? token;
@@ -15,15 +19,19 @@ class AuthService {
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
+      final deviceId = await DeviceService.getDeviceId();
+
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({"email": email, "password": password}),
+        body: jsonEncode({"email": email, "password": password,"device_id": deviceId,
+}),
       );
 
+       print("DEVICE ID: $deviceId");
       print("LOGIN STATUS: ${response.statusCode}");
       print("LOGIN BODY: ${response.body}");
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/services/teacher_service.dart'; // FIX: was importing student_service.dart
+import '../core/services/teacher_service.dart';
+import '../core/services/device_service.dart'; //  add this import
 
 class AddTeacherScreen extends StatefulWidget {
   const AddTeacherScreen({super.key});
@@ -9,13 +10,28 @@ class AddTeacherScreen extends StatefulWidget {
 }
 
 class _AddTeacherScreenState extends State<AddTeacherScreen> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController emailController = TextEditingController();   // FIX: uncommented
-  final TextEditingController passwordController = TextEditingController(); // FIX: added
-  final TextEditingController phoneController = TextEditingController();    // FIX: added
-  final TextEditingController macController = TextEditingController();      // FIX: added
+  final TextEditingController nameController     = TextEditingController();
+  final TextEditingController emailController    = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController phoneController    = TextEditingController();
+  final TextEditingController deviceIdController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+
+  // ✅ STEP 1: Add initState here
+  @override
+  void initState() {
+    super.initState();
+    _fetchDeviceId(); // auto fill device ID on screen open
+  }
+
+  // ✅ STEP 2: Add this function here
+  Future<void> _fetchDeviceId() async {
+    final id = await DeviceService.getDeviceId();
+    setState(() {
+       deviceIdController.text = id; // auto fills the MAC field
+    });
+  }
 
   @override
   void dispose() {
@@ -23,7 +39,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
     emailController.dispose();
     passwordController.dispose();
     phoneController.dispose();
-    macController.dispose();
+    deviceIdController.dispose();
     super.dispose();
   }
 
@@ -38,11 +54,11 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
         padding: const EdgeInsets.all(20),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView( // FIX: wrapped in ScrollView so all fields fit
+          child: SingleChildScrollView(
             child: Column(
               children: [
                 TextFormField(
-                  controller: nameController,
+                  controller:  nameController,
                   decoration: const InputDecoration(
                     labelText: "Teacher Name",
                     border: OutlineInputBorder(),
@@ -53,7 +69,6 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                // FIX: email field restored — required by backend
                 TextFormField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
@@ -67,7 +82,6 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                // FIX: password field added — required by backend
                 TextFormField(
                   controller: passwordController,
                   obscureText: true,
@@ -82,7 +96,6 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                   },
                 ),
                 const SizedBox(height: 20),
-                // FIX: phone field added — expected by backend
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
@@ -92,20 +105,26 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // FIX: MAC address field added — expected by backend
+
+                // ✅ MAC field is now auto-filled and read-only
                 TextFormField(
-                  controller: macController,
+                  controller: deviceIdController,
+                  readOnly: true, // user cannot edit — auto filled
                   decoration: const InputDecoration(
-                    labelText: "Device MAC Address",
+                    labelText: "Device ID (Auto Detected)",
                     border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.devices),
+                    filled: true,
+                    fillColor: Color(0xFFF5F5F5),
                   ),
                 ),
+
                 const SizedBox(height: 30),
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _submitTeacher, // FIX: renamed to _submitTeacher
+                    onPressed: _submitTeacher,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xff1f4e79),
                     ),
@@ -123,23 +142,25 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
     );
   }
 
-  // FIX: was calling StudentService.addStudent() — now calls TeacherService.addTeacher()
   Future<void> _submitTeacher() async {
     if (!_formKey.currentState!.validate()) return;
 
     final result = await TeacherService.addTeacher(
-      username: nameController.text.trim(),
-      email: emailController.text.trim(),
-      password: passwordController.text.trim(),
-      phone: phoneController.text.trim(),
-      deviceMacAddress: macController.text.trim(),
+      username:         nameController.text.trim(),
+      email:            emailController.text.trim(),
+      password:         passwordController.text.trim(),
+      phone:            phoneController.text.trim(),
+      deviceId: deviceIdController.text.trim(),
     );
 
     if (!mounted) return;
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Teacher added successfully!'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Teacher added successfully!'),
+          backgroundColor: Colors.green,
+        ),
       );
       Navigator.of(context).pop(true);
     } else {

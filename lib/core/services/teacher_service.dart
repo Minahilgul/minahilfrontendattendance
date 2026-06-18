@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 
 class TeacherService {
   // ─────────────────────────────
@@ -41,19 +42,21 @@ class TeacherService {
     required String email,
     required String password,
     required String phone,
-    String? deviceMacAddress,
+    String? deviceId,
   }) async {
     try {
       final token = await AuthService.getToken();
+
+      final deviceInfo = DeviceInfoPlugin();
+      final info = await deviceInfo.androidInfo;
+
 
       final body = {
         'username': username,
         'email': email,
         'password': password,
         'phone': phone,
-        // ✅ Only send device_mac_address if not empty
-        if (deviceMacAddress != null && deviceMacAddress.isNotEmpty)
-          'device_mac_address': deviceMacAddress,
+        // 'device_id': info.id
       };
 
       final response = await http.post(
@@ -71,12 +74,12 @@ class TeacherService {
 
       final jsonData = jsonDecode(response.body);
 
-      // ✅ FIX: return full response so UI can show specific validation errors
+      //  return full response so UI can show specific validation errors
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {'success': true, 'message': jsonData['message'] ?? 'Teacher added'};
       }
 
-      // ✅ Extract Laravel validation errors for display
+      // Extract Laravel validation errors for display
       String errorMessage = jsonData['message'] ?? 'Failed to add teacher';
       if (jsonData['errors'] != null) {
         final errors = jsonData['errors'] as Map<String, dynamic>;
@@ -100,7 +103,7 @@ class TeacherService {
     required String username,
     required String email,
     required String phone,
-    String? deviceMacAddress,
+    String? deviceId,
     String? password,
   }) async {
     try {
@@ -110,8 +113,10 @@ class TeacherService {
         'username': username,
         'email': email,
         'phone': phone,
-        // ✅ FIX: send null instead of empty string so Laravel treats it as nullable
-        'device_mac_address': (deviceMacAddress?.isNotEmpty == true) ? deviceMacAddress : null,
+        'password': password,
+        // send null instead of empty string so Laravel treats it as nullable
+         if (deviceId != null && deviceId.isNotEmpty)
+             'device_id': deviceId,
       };
 
       // ✅ Only include password if user typed a new one

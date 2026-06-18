@@ -3,6 +3,7 @@ import 'package:attendence_verification/core/services/auth_service.dart';
 import '../core/services/teacher_service.dart';
 import '../widgets/base_scaffold.dart';
 
+
 // ─────────────────────────────────────────────
 // DATA MODELS
 // ─────────────────────────────────────────────
@@ -24,7 +25,7 @@ class TeacherModel {
   final String? registeredInfo;
   final String? email;
   final String? phone;
-final String? deviceMacAddress;
+  final String? deviceId;
 
   const TeacherModel({
     required this.id,
@@ -41,7 +42,7 @@ final String? deviceMacAddress;
     this.registeredInfo,
     this.email,
     this.phone,
-     this.deviceMacAddress, 
+    this.deviceId, 
   });
 
   factory TeacherModel.fromJson(Map<String, dynamic> json) {
@@ -63,7 +64,7 @@ final String? deviceMacAddress;
       registeredInfo: json['created_at'],
       email: json['email'],
       phone: json['phone'],
-       deviceMacAddress: json['device_mac_address'], 
+       deviceId: json['device_Id'], 
     );
   }
 }
@@ -79,14 +80,14 @@ Future<bool> addTeacher(
   String email,
   String password,
   String phone,
-  String deviceMacAddress,
+  String deviceId,
 ) async {
   final result = await TeacherService.addTeacher(
     username: username,
     email: email,
     password: password,
     phone: phone,
-    deviceMacAddress: deviceMacAddress,
+    deviceId: deviceId,
   );
   return result['success'] == true;
 }
@@ -98,14 +99,14 @@ Future<bool> updateTeacher(
   String username,
   String email,
   String phone,
-  String deviceMacAddress,
+  String deviceId,
 ) async {
   final result = await TeacherService.updateTeacher(
     id: id,
     username: username,
     email: email,
     phone: phone,
-    deviceMacAddress: deviceMacAddress,
+    deviceId: deviceId,
   );
   return result['success'] == true;
 }
@@ -159,7 +160,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _macCtrl = TextEditingController(); // FIX: added MAC controller
+  final _imeiCtrl = TextEditingController(); // FIX: added MAC controller
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -169,7 +170,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _phoneCtrl.dispose();
-    _macCtrl.dispose(); // FIX: dispose MAC controller
+    _imeiCtrl.dispose(); // FIX: dispose MAC controller
     super.dispose();
   }
 
@@ -182,7 +183,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
       _emailCtrl.text.trim(),
       _passwordCtrl.text.trim(),
       _phoneCtrl.text.trim(),
-      _macCtrl.text.trim(),
+      _imeiCtrl.text.trim(),
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -220,7 +221,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                 _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
                 const SizedBox(height: 14),
                 // FIX: MAC address field — required by backend device_mac_address column
-                _buildField('Device MAC Address', _macCtrl, Icons.router_outlined),
+                _buildField('Device IMEI Address', _imeiCtrl, Icons.router_outlined),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -292,7 +293,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
   late TextEditingController _usernameCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
-  late TextEditingController _macCtrl; // FIX: added MAC controller
+  late TextEditingController _imeiCtrl; // FIX: added MAC controller
   bool _isLoading = false;
 
   @override
@@ -302,7 +303,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     _emailCtrl = TextEditingController(text: widget.teacher.email?? '');
     _phoneCtrl = TextEditingController(text: widget.teacher.phone?? '');
     // FIX: prefill existing MAC address from teacher model
-    _macCtrl = TextEditingController(text: widget.teacher.deviceMacAddress ?? '');
+    _imeiCtrl = TextEditingController(text: widget.teacher.deviceId ?? '');
   }
 
   @override
@@ -310,20 +311,20 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
-    _macCtrl.dispose(); // FIX: dispose MAC controller
+    _imeiCtrl.dispose(); // FIX: dispose MAC controller
     super.dispose();
   }
 
   Future<void> _onUpdate() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    // FIX: pass _macCtrl as 5th arg to match updated wrapper signature
+    // FIX: pass _imeiCtrl as 5th arg to match updated wrapper signature
     final success = await updateTeacher(
       widget.teacher.id,
       _usernameCtrl.text.trim(),
       _emailCtrl.text.trim(),
       _phoneCtrl.text.trim(),
-      _macCtrl.text.trim(),
+      _imeiCtrl.text.trim(),
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -364,7 +365,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
             _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
             const SizedBox(height: 14),
             // FIX: MAC address field — pre-filled from existing teacher data
-            _buildField('Device MAC Address', _macCtrl, Icons.router_outlined),
+            _buildField('Device IMEI Address', _imeiCtrl, Icons.router_outlined),
             const SizedBox(height: 24),
             Row(
               children: [
