@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import 'device_service.dart';
 
 
@@ -11,25 +11,24 @@ class AuthService {
 
   static Map<String, dynamic>? currentUser;
   static String? token;
-  static const FlutterSecureStorage storage = FlutterSecureStorage();
+  static final storage = GetStorage();
 
   // ───────────────── LOGIN ─────────────────
   static Future<Map<String, dynamic>> login(
       String email, String password) async {
     try {
       final deviceId = await DeviceService.getDeviceId();
-
+      print(deviceId);
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({"email": email, "password": password,"device_id": deviceId,
-}),
+        body: jsonEncode({"email": email, "password": password,"device_id": deviceId,}),
       );
 
-       print("DEVICE ID: $deviceId");
+      print("DEVICE ID: $deviceId");
       print("LOGIN STATUS: ${response.statusCode}");
       print("LOGIN BODY: ${response.body}");
 
@@ -47,8 +46,8 @@ class AuthService {
         final result = data['result'] ?? {};
         token = result['token'] ?? '';
         currentUser = result;
-        await storage.write(key: 'token', value: token);
-        await storage.write(key: 'user', value: jsonEncode(currentUser));
+        await storage.write('token', token);
+        await storage.write('user', jsonEncode(currentUser));
         print("Token saved: $token");
         return data;
       } else {
@@ -106,7 +105,7 @@ class AuthService {
   // ───────────────── GET TOKEN ─────────────────
   static Future<String?> getToken() async {
     if (token == null) {
-      token = await storage.read(key: 'token');
+      token = storage.read<String>('token');
     }
     print("GET TOKEN: $token");
     return token;
@@ -114,8 +113,8 @@ class AuthService {
 
   // ───────────────── LOAD TOKEN ─────────────────
   static Future<void> loadToken() async {
-    token = await storage.read(key: 'token');
-    final String? userJson = await storage.read(key: 'user');
+    token = storage.read<String>('token');
+    final String? userJson = storage.read<String>('user');
     if (userJson != null) {
       currentUser = jsonDecode(userJson);
     }
@@ -127,7 +126,7 @@ class AuthService {
   static Future<void> logout() async {
     token = null;
     currentUser = null;
-    await storage.delete(key: 'token');
-    await storage.delete(key: 'user');
+    await storage.remove('token');
+    await storage.remove('user');
   }
 }

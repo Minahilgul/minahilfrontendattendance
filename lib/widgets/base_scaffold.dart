@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 
 class BaseScaffold extends StatelessWidget {
   final String title;
@@ -114,8 +114,8 @@ class BaseScaffold extends StatelessWidget {
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
               onTap: () async {
-                final storage = const FlutterSecureStorage();
-                await storage.deleteAll();
+                final storage = GetStorage();
+                await storage.erase();
                 if (context.mounted) {
                   Navigator.pop(context);
                   context.go('/login');

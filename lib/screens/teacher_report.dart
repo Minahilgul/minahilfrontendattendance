@@ -1,44 +1,20 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const ReportsAuditApp());
-}
-
-class ReportsAuditApp extends StatelessWidget {
-  const ReportsAuditApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Reports & Audit',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2962FF),
-          brightness: Brightness.light,
-        ),
-        fontFamily: 'Roboto',
-      ),
-      home: const ReportsAuditScreen(),
-    );
-  }
-}
+import 'package:go_router/go_router.dart';
 
 // ─── Data Models ──────────────────────────────────────────────────────────────
 
-enum AuditStatus { suspicious, verified, flagged }
+enum TeacherAuditStatus { suspicious, verified, flagged }
 
-class AuditLog {
+class TeacherAuditLog {
   final String name;
   final String subject;
   final String course;
   final String time;
   final String detail;
-  final AuditStatus status;
+  final TeacherAuditStatus status;
 
-  const AuditLog({
+  const TeacherAuditLog({
     required this.name,
     required this.subject,
     required this.course,
@@ -50,15 +26,15 @@ class AuditLog {
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
-class ReportsAuditScreen extends StatefulWidget {
-  const ReportsAuditScreen({super.key});
+class TeacherReportScreen extends StatefulWidget {
+  const TeacherReportScreen({super.key});
 
   @override
-  State<ReportsAuditScreen> createState() => _ReportsAuditScreenState();
+  State<TeacherReportScreen> createState() => _TeacherReportScreenState();
 }
 
-class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
-  int _navIndex = 1;
+class _TeacherReportScreenState extends State<TeacherReportScreen> {
+  int _navIndex = 2;
 
   String _selectedClass = 'All Classes';
   String _selectedFaculty = 'All Faculty';
@@ -68,30 +44,30 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   final List<String> _faculty = ['All Faculty', 'Dr. Sarah Jenkins', 'Prof. Michael Chen'];
   final List<String> _periods = ['Last 7 Days', 'Last 30 Days', 'This Semester'];
 
-  final List<AuditLog> _logs = const [
-    AuditLog(
+  final List<TeacherAuditLog> _logs = const [
+    TeacherAuditLog(
       name: 'Dr. Sara',
       subject: 'CS101',
       course: 'Computer Science Fundamentals',
       time: '10:30 AM',
       detail: 'Duplicate IP Detected',
-      status: AuditStatus.suspicious,
+      status: TeacherAuditStatus.suspicious,
     ),
-    AuditLog(
+    TeacherAuditLog(
       name: 'Madam Azleen',
       subject: 'MAT1025',
       course: 'Linear Algebra',
       time: '11:45 AM',
       detail: 'Biometric is Confirmed',
-      status: AuditStatus.verified,
+      status: TeacherAuditStatus.verified,
     ),
-    AuditLog(
+    TeacherAuditLog(
       name: 'Esha Gul (Student)',
       subject: 'PHY105',
       course: 'Quantum Physics',
       time: '01:15 PM',
       detail: 'GPS Location (500m)',
-      status: AuditStatus.flagged,
+      status: TeacherAuditStatus.flagged,
     ),
   ];
 
@@ -109,8 +85,8 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
 
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
+    _NavItem(icon: Icons.class_rounded, label: 'Classes'),
     _NavItem(icon: Icons.bar_chart_rounded, label: 'Reports'),
-    _NavItem(icon: Icons.folder_rounded, label: 'Directory'),
     _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
   ];
 
@@ -142,7 +118,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
               ),
             ),
             Text(
-              'ADMIN DASHBOARD',
+              'TEACHER DASHBOARD',
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
@@ -352,7 +328,16 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
             children: List.generate(_navItems.length, (i) {
               final isActive = _navIndex == i;
               return GestureDetector(
-                onTap: () => setState(() => _navIndex = i),
+                onTap: () {
+                  setState(() => _navIndex = i);
+                  if (i == 0) {
+                    context.push('/teacher-dashboard');
+                  } else if (i == 1) {
+                    context.push('/classes');
+                  } else if (i == 3) {
+                    context.push('/settings');
+                  }
+                },
                 behavior: HitTestBehavior.opaque,
                 child: SizedBox(
                   width: 72,
@@ -635,7 +620,7 @@ class _TrendBadge extends StatelessWidget {
 // ─── Audit Log Card ───────────────────────────────────────────────────────────
 
 class _AuditLogCard extends StatelessWidget {
-  final AuditLog log;
+  final TeacherAuditLog log;
   const _AuditLogCard({required this.log});
 
   @override
@@ -646,19 +631,19 @@ class _AuditLogCard extends StatelessWidget {
     String statusLabel;
 
     switch (log.status) {
-      case AuditStatus.suspicious:
+      case TeacherAuditStatus.suspicious:
         iconBg = const Color(0xFFFFEBEE);
         iconData = Icons.warning_rounded;
         statusColor = const Color(0xFFE53935);
         statusLabel = 'SUSPICIOUS';
         break;
-      case AuditStatus.verified:
+      case TeacherAuditStatus.verified:
         iconBg = const Color(0xFFE8F5E9);
         iconData = Icons.check_circle_rounded;
         statusColor = const Color(0xFF43A047);
         statusLabel = 'VERIFIED';
         break;
-      case AuditStatus.flagged:
+      case TeacherAuditStatus.flagged:
         iconBg = const Color(0xFFFFF3E0);
         iconData = Icons.flag_rounded;
         statusColor = const Color(0xFFFFA726);

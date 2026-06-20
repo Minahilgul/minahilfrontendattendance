@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'settings_screen.dart';
 import '../widgets/base_scaffold.dart'; 
 import '../core/services/session_service.dart';
+import '../core/services/auth_service.dart';
 import 'student_selection_screen.dart';
-// import '../core/helpers/device_mac_helper.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 
 
@@ -28,7 +31,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   bool isLoading = false;
 
   int get teacherId => widget.userId; 
-  final int classId = 5; 
 
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
@@ -106,11 +108,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           ),
           _DashboardCardWidget(
             card: _DashboardCard(title: 'Class Roster', icon: Icons.group_rounded, iconColor: Color(0xFF1565C0)),
-            onTap: () {},
+            onTap: () => context.push('/roster'),
           ),
           _DashboardCardWidget(
             card: _DashboardCard(title: 'Reports', icon: Icons.bar_chart_rounded, iconColor: Color(0xFF7B1FA2)),
-            onTap: () {},
+            onTap: () => context.push('/teacher-reports'),
           ),
         ],
       ),
@@ -155,7 +157,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
     final result = await SessionService.createSession(
       teacherId: teacherId,
-      classId: classId,
       latitude: pos.latitude,
       longitude: pos.longitude,
     );
@@ -267,11 +268,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               return GestureDetector(
                 onTap: () {
                   setState(() => _selectedIndex = index);
-                  if(index == 3) { // Settings tab
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => SettingsScreen()),
-                    );
+                  if(index == 1) {
+                    context.push('/classes');
+                  } else if(index == 2) {
+                    context.push('/teacher-reports');
+                  } else if(index == 3) {
+                    context.push('/settings');
                   }
                 },
                 child: SizedBox(

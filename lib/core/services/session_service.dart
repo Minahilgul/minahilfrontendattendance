@@ -8,7 +8,6 @@ class SessionService {
   // ─────────────────────────────────────────────
   static Future<Map<String, dynamic>> createSession({
     required int teacherId,
-    required int classId,
     required double latitude,
     required double longitude,
   }) async {
@@ -24,7 +23,6 @@ class SessionService {
         },
         body: jsonEncode({
           'teacher_id': teacherId,
-          'class_id': classId,
           'latitude': latitude,
           'longitude': longitude,
         }),
@@ -57,14 +55,14 @@ class SessionService {
   }
 
   // ─────────────────────────────────────────────
-  // GET ALL STUDENTS
+  // GET SESSION STUDENTS
   // ─────────────────────────────────────────────
-  static Future<Map<String, dynamic>> getStudents() async {
+  static Future<Map<String, dynamic>> getStudents(int sessionId) async {
     try {
       final token = await AuthService.getToken();
 
       final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/students'),
+        Uri.parse('${AuthService.baseUrl}/sessions/$sessionId/students'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',

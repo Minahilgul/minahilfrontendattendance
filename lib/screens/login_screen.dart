@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/auth_service.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // 👈 GetStorage hatao
+import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
 import '../core/services/device_service.dart';
 
@@ -16,7 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
-  final storage = FlutterSecureStorage(); //  GetStorage ki jagah ye
+  final storage = GetStorage();
 
   Future<void> _login() async {
     if (emailController.text.isEmpty || passwordController.text.isEmpty) {
@@ -53,12 +53,11 @@ class _LoginScreenState extends State<LoginScreen> {
       print("USER DATA: $user");
       print("Final UserID: $userId"); 
       
-      //  Bas ye 5 line change - await lagao + .toString()
-      await storage.write(key: 'isLoggedIn', value: 'true');
-      await storage.write(key: 'userName', value: userName);
-      await storage.write(key: 'role', value: role);
-      await storage.write(key: 'userId', value: userId.toString());
-      await storage.write(key: 'token', value: token);
+      await storage.write('isLoggedIn', 'true');
+      await storage.write('userName', userName);
+      await storage.write('role', role);
+      await storage.write('userId', userId.toString());
+      await storage.write('token', token);
       
       print("Token saved securely");
 

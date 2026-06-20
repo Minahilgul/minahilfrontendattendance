@@ -29,7 +29,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
   Future<void> _loadStudents() async {
     setState(() { isLoading = true; error = null; });
 
-    final result = await SessionService.getStudents();
+    final result = await SessionService.getStudents(widget.sessionId);
 
     if (result['success']) {
       setState(() {

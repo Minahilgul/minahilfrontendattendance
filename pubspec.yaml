@@ -22,9 +22,6 @@ dependencies:
   go_router: ^16.0.0
   geolocator: ^11.0.0
   permission_handler: ^11.3.1
-  flutter_secure_storage: ^9.0.0
-  firebase_core: ^4.0.0
-  firebase_auth: ^6.0.0
   network_info_plus: ^5.0.3
   device_info_plus: ^11.0.0
 dev_dependencies:
@@ -34,6 +31,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  config:
+    enable-swift-package-manager: false
 
   assets:
     - assets/images/davs_logo.png

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/system_setting_service.dart';
 
@@ -11,7 +11,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final storage = FlutterSecureStorage(); 
+  final storage = GetStorage(); 
   String token = ""; // 👈 hardcoded token hata diya
 
   List<dynamic> settings = [];
@@ -25,7 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   // 👇 ye naya function add kiya
   Future<void> loadToken() async {
-    String? savedToken = await storage.read(key: 'token'); // 👈 secure storage se lo
+    String? savedToken = storage.read<String>('token'); // 👈 GetStorage se lo
     print("Secure Token Loaded: $savedToken");
 
     if (savedToken != null && savedToken.isNotEmpty) {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/session_service.dart';
 import '../core/services/class_service.dart';
@@ -14,7 +14,7 @@ class CreateSessionPage extends StatefulWidget {
 }
 
 class _CreateSessionPageState extends State<CreateSessionPage> {
-  final _storage = const FlutterSecureStorage();
+  final _storage = GetStorage();
   
   double? _latitude;
   double? _longitude;
@@ -43,7 +43,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
   }
 
   Future<void> _loadUserRole() async {
-    String? role = await _storage.read(key: 'role');
+    String? role = _storage.read<String>('role');
     setState(() {
       _userRole = role ?? 'admin';
     });
@@ -60,7 +60,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
       setState(() {
         _classes = data;
         if (_classes.isNotEmpty) {
-          _selectedClassId = _classes.first['id'];
+          _selectedClassId = int.tryParse(_classes.first['id']?.toString() ?? '') ?? 0;
         }
         _isLoadingClasses = false;
       });
@@ -141,12 +141,11 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
     });
 
     try {
-      String? userIdStr = await _storage.read(key: 'userId');
+      String? userIdStr = _storage.read<String>('userId');
       int userId = int.tryParse(userIdStr ?? '') ?? AuthService.currentUser?['id'] ?? 1;
 
       final result = await SessionService.createSession(
         teacherId: userId,
-        classId: _selectedClassId!,
         latitude: _latitude!,
         longitude: _longitude!,
       );
@@ -340,8 +339,9 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                             ),
                           ),
                           items: _classes.map((c) {
+                            final int idVal = int.tryParse(c['id']?.toString() ?? '') ?? 0;
                             return DropdownMenuItem<int>(
-                              value: c['id'],
+                              value: idVal,
                               child: Text(
                                 "${c['class_name'] ?? 'Class'} (${c['name'] ?? 'No Teacher'})",
                                 style: const TextStyle(fontSize: 14),

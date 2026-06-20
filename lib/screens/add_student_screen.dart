@@ -178,8 +178,8 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                               : _selectedClass,
                           items: classes.map((c) {
                             return DropdownMenuItem<String>(
-                              value: c['name'].toString(),
-                              child: Text(c['name'].toString()),
+                              value: c['name']?.toString() ?? '',
+                              child: Text(c['name']?.toString() ?? ''),
                             );
                           }).toList(),
                           onChanged: (val) {

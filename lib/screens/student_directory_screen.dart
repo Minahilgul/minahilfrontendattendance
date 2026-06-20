@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import '../core/services/student_service.dart';
 import '../widgets/base_scaffold.dart';
 
@@ -454,8 +454,8 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
   }
 
   Future<void> _loadUserRole() async {
-    const storage = FlutterSecureStorage();
-    final role = await storage.read(key: 'role');
+    final storage = GetStorage();
+    final role = storage.read<String>('role');
     if (role != null && mounted) {
       setState(() {
         _currentRole = role;

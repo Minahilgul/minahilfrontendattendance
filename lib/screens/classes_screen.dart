@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:attendence_verification/core/services/auth_service.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import '../core/services/class_service.dart';
 import '../widgets/base_scaffold.dart';
 
@@ -120,8 +120,8 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
   }
 
   Future<void> _loadRole() async {
-    const storage = FlutterSecureStorage();
-    final role = await storage.read(key: 'role');
+    final storage = GetStorage();
+    final role = storage.read<String>('role');
     if (role!= null && mounted) {
       setState(() {
         _currentRole = role;
@@ -439,7 +439,11 @@ class _AddClassDialogState extends State<AddClassDialog> {
     }
     setState(() => _isLoading = true);
 
-    final teacherName = widget.teachers.firstWhere((t) => t['id'].toString() == _selectedTeacherId)['name'];
+    final teacher = widget.teachers.firstWhere(
+      (t) => t['id']?.toString() == _selectedTeacherId,
+      orElse: () => <String, dynamic>{'username': 'Unknown'},
+    );
+    final teacherName = teacher['username']?.toString() ?? 'Unknown';
 
     final success = await createClass(teacherName, _classController.text.trim(), "0");
     if (!mounted) return;
@@ -478,9 +482,11 @@ class _AddClassDialogState extends State<AddClassDialog> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 ),
                 items: widget.teachers.map((teacher) {
+                  final String teacherIdStr = teacher['id']?.toString() ?? '';
+                  final String teacherName = teacher['username']?.toString() ?? 'Unknown';
                   return DropdownMenuItem<String>(
-                    value: teacher['id'].toString(),
-                    child: Text(teacher['name'], style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                    value: teacherIdStr,
+                    child: Text(teacherName, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                   );
                 }).toList(),
                 onChanged: (value) => setState(() => _selectedTeacherId = value),
@@ -534,8 +540,8 @@ class _EditClassDialogState extends State<EditClassDialog> {
     _selectedTeacherId = widget.item.teacherId?.toString();
 
     final teacher = widget.teachers.firstWhere(
-      (t) => t['name'] == widget.item.teacher,
-      orElse: () => {'id': null},
+      (t) => t['username']?.toString() == widget.item.teacher,
+      orElse: () => <String, dynamic>{'id': null},
     );
     _selectedTeacherId = teacher['id']?.toString();
   }
@@ -555,7 +561,11 @@ class _EditClassDialogState extends State<EditClassDialog> {
     }
     setState(() => _isLoading = true);
 
-    final teacherName = widget.teachers.firstWhere((t) => t['id'].toString() == _selectedTeacherId)['name'];
+    final teacher = widget.teachers.firstWhere(
+      (t) => t['id']?.toString() == _selectedTeacherId,
+      orElse: () => <String, dynamic>{'username': 'Unknown'},
+    );
+    final teacherName = teacher['username']?.toString() ?? 'Unknown';
 
     final success = await updateClass(widget.item.id, teacherName, _classController.text.trim(), "0");
     if (!mounted) return;
@@ -594,9 +604,11 @@ class _EditClassDialogState extends State<EditClassDialog> {
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 ),
                 items: widget.teachers.map((teacher) {
+                  final String teacherIdStr = teacher['id']?.toString() ?? '';
+                  final String teacherName = teacher['username']?.toString() ?? 'Unknown';
                   return DropdownMenuItem<String>(
-                    value: teacher['id'].toString(),
-                    child: Text(teacher['name'], style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                    value: teacherIdStr,
+                    child: Text(teacherName, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                   );
                 }).toList(),
                 onChanged: (value) => setState(() => _selectedTeacherId = value),

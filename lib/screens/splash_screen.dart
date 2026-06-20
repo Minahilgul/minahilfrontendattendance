@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get_storage/get_storage.dart';
 import '../core/services/auth_service.dart';
 import 'package:go_router/go_router.dart';
 
@@ -41,11 +41,11 @@ class _SplashScreenState extends State<SplashScreen>
   void _checkLogin() async {
     await Future.delayed(const Duration(seconds: 3));
 
-    const storage = FlutterSecureStorage();
-    String? token = await storage.read(key: 'token');
-    String? role = await storage.read(key: 'role');
-    String? userIdStr = await storage.read(key: 'userId');
-    String? userName = await storage.read(key: 'userName');
+    final storage = GetStorage();
+    String? token = storage.read<String>('token');
+    String? role = storage.read<String>('role');
+    String? userIdStr = storage.read<String>('userId');
+    String? userName = storage.read<String>('userName');
 
     if (token != null && role != null) {
       int userId = int.tryParse(userIdStr ?? '') ?? 0;
