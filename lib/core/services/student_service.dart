@@ -254,14 +254,27 @@ class StudentService {
     }
   }
 
+  // ✅ UPDATED: added optional cls/rollNo so admin can edit Class & Roll Number
+  //    Backend (StudentsController@updateStudent) already accepts 'class' and
+  //    'roll_no' — only this Flutter method was missing them.
   static Future<bool> updateStudent({
     required int id,
     required String username,
     required String email,
     required String phone,
+    String? cls,
+    String? rollNo,
   }) async {
     try {
       final token = await AuthService.getToken();
+      final body = <String, dynamic>{
+        'username': username,
+        'email': email,
+        'phone': phone,
+      };
+      if (cls != null) body['class'] = cls;
+      if (rollNo != null) body['roll_no'] = rollNo;
+
       final response = await http.put(
         Uri.parse('${AuthService.baseUrl}/students/$id'),
         headers: {
@@ -269,11 +282,7 @@ class StudentService {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode({
-          'username': username,
-          'email': email,
-          'phone': phone,
-        }),
+        body: jsonEncode(body),
       );
       return response.statusCode == 200;
     } catch (e) {

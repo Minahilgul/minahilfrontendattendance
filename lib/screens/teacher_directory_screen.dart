@@ -74,39 +74,45 @@ class TeacherModel {
 // ─────────────────────────────────────────────
 
 // FIX: TeacherService.addTeacher now returns Map<String,dynamic> not bool.
-//      Added deviceMacAddress param to match service signature.
+//      Added deviceId param to match service signature.
+// NEW: Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> addTeacher(
   String username,
   String email,
   String password,
   String phone,
-  String deviceId,
-) async {
+  String deviceId, {
+  int? status,
+}) async {
   final result = await TeacherService.addTeacher(
     username: username,
     email: email,
     password: password,
     phone: phone,
     deviceId: deviceId,
+    status: status,
   );
   return result['success'] == true;
 }
 
 // FIX: TeacherService.updateTeacher now returns Map<String,dynamic> not bool.
-//      Added deviceMacAddress param to match service signature.
+//      Added deviceId param to match service signature.
+// NEW: Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> updateTeacher(
   int id,
   String username,
   String email,
   String phone,
-  String deviceId,
-) async {
+  String deviceId, {
+  int? status,
+}) async {
   final result = await TeacherService.updateTeacher(
     id: id,
     username: username,
     email: email,
     phone: phone,
     deviceId: deviceId,
+    status: status,
   );
   return result['success'] == true;
 }
@@ -161,6 +167,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _imeiCtrl = TextEditingController(); // FIX: added MAC controller
+  bool _isActive = true; // NEW: Active/Inactive toggle, defaults to Active
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -177,13 +184,14 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    // FIX: pass _macCtrl as 5th arg to match updated wrapper signature
+    // FIX: pass _imeiCtrl as 5th arg to match updated wrapper signature
     final success = await addTeacher(
       _usernameCtrl.text.trim(),
       _emailCtrl.text.trim(),
       _passwordCtrl.text.trim(),
       _phoneCtrl.text.trim(),
       _imeiCtrl.text.trim(),
+      status: _isActive ? 1 : 0, // NEW
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -218,9 +226,43 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                 const SizedBox(height: 14),
                 _buildPasswordField(),
                 const SizedBox(height: 14),
-                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
+                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone,
+                validator: (v) =>
+      v == null || v.trim().isEmpty
+          ? 'Phone number required'
+          : null,
+                ),
+
                 const SizedBox(height: 14),
-                _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined),
+                _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined,
+                validator: (v) =>
+      v == null || v.trim().isEmpty
+          ? 'Device ID required'
+          : null,
+                ),
+                const SizedBox(height: 14),
+
+                // NEW: Active/Inactive status toggle — placed below last field, right corner
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      _isActive ? 'Active' : 'Inactive',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Switch(
+                      value: _isActive,
+                      activeColor: const Color(0xFF1565C0),
+                      onChanged: (val) => setState(() => _isActive = val),
+                    ),
+                  ],
+                ),
+
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -293,6 +335,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
   late TextEditingController _imeiCtrl; // FIX: added MAC controller
+  late bool _isActive; // NEW: pre-filled from existing teacher status
   bool _isLoading = false;
 
   @override
@@ -303,6 +346,8 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     _phoneCtrl = TextEditingController(text: widget.teacher.phone?? '');
     // FIX: prefill existing MAC address from teacher model
     _imeiCtrl = TextEditingController(text: widget.teacher.deviceId ?? '');
+    // NEW: prefill toggle from existing teacher status
+    _isActive = widget.teacher.status == TeacherStatus.verified;
   }
 
   @override
@@ -324,6 +369,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
       _emailCtrl.text.trim(),
       _phoneCtrl.text.trim(),
       _imeiCtrl.text.trim(),
+      status: _isActive ? 1 : 0, // NEW
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -361,9 +407,42 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
             const SizedBox(height: 14),
             _buildField('Email', _emailCtrl, Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) => v!.isEmpty? 'Email required' : null),
             const SizedBox(height: 14),
-            _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
+            _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone,
+            validator: (v) =>
+      v == null || v.trim().isEmpty
+          ? 'Phone number required'
+          : null,
+            ),
             const SizedBox(height: 14),
-            _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined),
+            _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined,
+            validator: (v) =>
+      v == null || v.trim().isEmpty
+          ? 'Device ID required'
+          : null,
+            ),
+            const SizedBox(height: 14),
+
+            // NEW: Active/Inactive status toggle — placed below last field, right corner
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Text(
+                  _isActive ? 'Active' : 'Inactive',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Switch(
+                  value: _isActive,
+                  activeColor: const Color(0xFF1565C0),
+                  onChanged: (val) => setState(() => _isActive = val),
+                ),
+              ],
+            ),
+
             const SizedBox(height: 24),
             Row(
               children: [

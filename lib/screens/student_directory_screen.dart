@@ -52,12 +52,22 @@ class StudentModel {
   }
 }
 
-Future<bool> updateStudent(int id, String username, String email, String phone) async {
+// ✅ UPDATED: added optional cls/rollNo so Class & Roll Number can be edited too.
+Future<bool> updateStudent(
+  int id,
+  String username,
+  String email,
+  String phone, {
+  String? cls,
+  String? rollNo,
+}) async {
   return await StudentService.updateStudent(
     id: id,
     username: username,
     email: email,
     phone: phone,
+    cls: cls,
+    rollNo: rollNo,
   );
 }
 
@@ -119,7 +129,16 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
   }
 
   Future<void> _onSave() async {
-    if (!_formKey.currentState!.validate()) return;
+    // NEW: explicit red "fill all required fields" message when any validator fails
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all required fields'),
+          backgroundColor: Color(0xFFC62828),
+        ),
+      );
+      return;
+    }
     if (_selectedClass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a class'), backgroundColor: Color(0xFFC62828))
@@ -172,7 +191,8 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                 const SizedBox(height: 14),
                 _buildPasswordField(),
                 const SizedBox(height: 14),
-                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
+                // ✅ UPDATED: Phone Number is now required
+                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'Phone number required' : null),
                 const SizedBox(height: 14),
                 _loadingClasses
                     ? const Center(child: CircularProgressIndicator())
@@ -270,7 +290,13 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
   late TextEditingController _usernameCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
+  late TextEditingController _rollNoCtrl; // NEW: mirrors Add form
   bool _isLoading = false;
+
+  // NEW: Class dropdown state — mirrors Add form
+  List<Map<String, dynamic>> _classes = [];
+  bool _loadingClasses = true;
+  String _selectedClass = '';
 
   @override
   void initState() {
@@ -278,6 +304,26 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
     _usernameCtrl = TextEditingController(text: widget.student.name);
     _emailCtrl = TextEditingController(text: widget.student.email ?? '');
     _phoneCtrl = TextEditingController(text: widget.student.phone ?? '');
+    _rollNoCtrl = TextEditingController(text: widget.student.rollNo ?? '');
+    _selectedClass = widget.student.className ?? '';
+    _loadClasses();
+  }
+
+  // NEW: load class list, same as Add dialog, and pre-select the student's current class
+  Future<void> _loadClasses() async {
+    final list = await StudentService.fetchClasses();
+    if (mounted) {
+      setState(() {
+        _classes = list;
+        // Keep existing selection if it matches a class in the fetched list,
+        // otherwise fall back to the first available class.
+        final matches = list.any((c) => c['name']?.toString() == _selectedClass);
+        if (!matches && _selectedClass.isEmpty && list.isNotEmpty) {
+          _selectedClass = list[0]['name']?.toString() ?? '';
+        }
+        _loadingClasses = false;
+      });
+    }
   }
 
   @override
@@ -285,13 +331,36 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
+    _rollNoCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _onUpdate() async {
-    if (!_formKey.currentState!.validate()) return;
+    // NEW: explicit red "fill all required fields" message when any validator fails
+    if (!_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill all required fields'),
+          backgroundColor: Color(0xFFC62828),
+        ),
+      );
+      return;
+    }
+    if (_selectedClass.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a class'), backgroundColor: Color(0xFFC62828))
+      );
+      return;
+    }
     setState(() => _isLoading = true);
-    final success = await updateStudent(widget.student.id, _usernameCtrl.text.trim(), _emailCtrl.text.trim(), _phoneCtrl.text.trim());
+    final success = await updateStudent(
+      widget.student.id,
+      _usernameCtrl.text.trim(),
+      _emailCtrl.text.trim(),
+      _phoneCtrl.text.trim(),
+      cls: _selectedClass,
+      rollNo: _rollNoCtrl.text.trim(),
+    );
     if (!mounted) return;
     setState(() => _isLoading = false);
 
@@ -328,8 +397,40 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                 const SizedBox(height: 14),
                 _buildField('Email', _emailCtrl, Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) => v!.isEmpty ? 'Email required' : null),
                 const SizedBox(height: 14),
-                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone),
+                // ✅ UPDATED: Phone Number is now required
+                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone, validator: (v) => v!.isEmpty ? 'Phone number required' : null),
+                const SizedBox(height: 14),
+
+                // NEW: Class dropdown — mirrors Add form, pre-filled with student's current class
+                _loadingClasses
+                    ? const Center(child: CircularProgressIndicator())
+                    : DropdownButtonFormField<String>(
+                        value: _selectedClass.isEmpty ? null : _selectedClass,
+                        items: _classes.map((c) {
+                          return DropdownMenuItem<String>(
+                            value: c['name']?.toString() ?? '',
+                            child: Text(c['name']?.toString() ?? ''),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedClass = val ?? '';
+                          });
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Class',
+                          prefixIcon: const Icon(Icons.class_outlined, size: 20),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                          isDense: true,
+                        ),
+                      ),
+                const SizedBox(height: 14),
+
+                // NEW: Roll Number field — mirrors Add form, pre-filled
+                _buildField('Roll Number', _rollNoCtrl, Icons.format_list_numbered, validator: (v) => v!.isEmpty ? 'Roll number required' : null),
                 const SizedBox(height: 24),
+
                 Row(
                   children: [
                     Expanded(

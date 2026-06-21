@@ -43,6 +43,7 @@ class TeacherService {
     required String password,
     required String phone,
     String? deviceId,
+    int? status, // NEW: 1 = active, 0 = inactive. Backend defaults to 1 if omitted.
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -53,6 +54,7 @@ class TeacherService {
         'password': password,
         'phone': phone,
         if (deviceId != null && deviceId.isNotEmpty) 'device_id': deviceId,
+        if (status != null) 'status': status, // NEW
       };
 
       final response = await http.post(
@@ -101,6 +103,7 @@ class TeacherService {
     required String phone,
     String? deviceId,
     String? password,
+    int? status, // NEW: 1 = active, 0 = inactive. Backend preserves current value if omitted.
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -113,6 +116,7 @@ class TeacherService {
         // send null instead of empty string so Laravel treats it as nullable
          if (deviceId != null && deviceId.isNotEmpty)
              'device_id': deviceId,
+        if (status != null) 'status': status, // NEW
       };
 
       // ✅ Only include password if user typed a new one
