@@ -56,8 +56,11 @@ class ClassService {
   // ─────────────────────────────────────────────
   // CREATE CLASS
   // ─────────────────────────────────────────────
+  // ✅ UPDATED: now accepts and sends teacherId (the real FK), so the
+  // backend can store ManageClass.teacher_id directly.
   static Future<bool> createClass({
     required String name,
+    int? teacherId,
     required String className,
     required String students,
   }) async {
@@ -72,6 +75,7 @@ class ClassService {
         },
         body: jsonEncode({
           'name': name,
+          if (teacherId != null) 'teacher_id': teacherId,
           'class_name': className,
           'students_count': int.tryParse(students) ?? 0,
           'status': 'active',
@@ -89,9 +93,11 @@ class ClassService {
   // ─────────────────────────────────────────────
   // UPDATE CLASS
   // ─────────────────────────────────────────────
+  // ✅ UPDATED: same teacherId addition as createClass.
   static Future<bool> updateClass({
     required int id,
     required String name,
+    int? teacherId,
     required String className,
     required String students,
     String status = 'active',
@@ -107,6 +113,7 @@ class ClassService {
         },
         body: jsonEncode({
           'name': name,
+          if (teacherId != null) 'teacher_id': teacherId,
           'class_name': className,
           'students_count': int.tryParse(students) ?? 0,
           'status': status,

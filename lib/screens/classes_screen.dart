@@ -35,7 +35,10 @@ class ClassItem {
     return ClassItem(
       id: json['id']?? 0,
       name: json['class_name']?? '',
-      teacher: json['name']?? '',
+      // ✅ UPDATED: backend now sends teacher_name directly (resolved via
+      // ManageClass.teacher() relationship). Falls back to the old `name`
+      // field for safety if teacher_name is ever missing.
+      teacher: json['teacher_name']?? json['name']?? '',
       teacherId: json['teacher_id'],
       studentCount: json['students_count']?? 0,
       status: json['status'] == 'active'
@@ -59,18 +62,22 @@ Future<void> fetchClasses() async {
   allClasses = data.map((e) => ClassItem.fromJson(e)).toList();
 }
 
-Future<bool> createClass(String name, String className, String students) async {
+// ✅ UPDATED: now takes teacherId (the real FK) so the backend can store
+// ManageClass.teacher_id directly instead of guessing it later.
+Future<bool> createClass(String name, int? teacherId, String className, String students) async {
   return await ClassService.createClass(
     name: name,
+    teacherId: teacherId,
     className: className,
     students: students,
   );
 }
 
-Future<bool> updateClass(int id, String name, String className, String students) async {
+Future<bool> updateClass(int id, String name, int? teacherId, String className, String students) async {
   return await ClassService.updateClass(
     id: id,
     name: name,
+    teacherId: teacherId,
     className: className,
     students: students,
   );
@@ -444,8 +451,11 @@ class _AddClassDialogState extends State<AddClassDialog> {
       orElse: () => <String, dynamic>{'username': 'Unknown'},
     );
     final teacherName = teacher['username']?.toString() ?? 'Unknown';
+    final teacherIdInt = int.tryParse(_selectedTeacherId!);
 
-    final success = await createClass(teacherName, _classController.text.trim(), "0");
+    // ✅ UPDATED: now passes teacherIdInt (the real FK) alongside the
+    // display name.
+    final success = await createClass(teacherName, teacherIdInt, _classController.text.trim(), "0");
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
@@ -537,13 +547,10 @@ class _EditClassDialogState extends State<EditClassDialog> {
   void initState() {
     super.initState();
     _classController = TextEditingController(text: widget.item.name);
+    // ✅ SIMPLIFIED: teacherId now comes straight from the backend's real
+    // foreign key (ManageClass.teacher_id) — no more guessing by matching
+    // usernames against the freshly-fetched teacher list.
     _selectedTeacherId = widget.item.teacherId?.toString();
-
-    final teacher = widget.teachers.firstWhere(
-      (t) => t['username']?.toString() == widget.item.teacher,
-      orElse: () => <String, dynamic>{'id': null},
-    );
-    _selectedTeacherId = teacher['id']?.toString();
   }
 
   @override
@@ -566,8 +573,9 @@ class _EditClassDialogState extends State<EditClassDialog> {
       orElse: () => <String, dynamic>{'username': 'Unknown'},
     );
     final teacherName = teacher['username']?.toString() ?? 'Unknown';
+    final teacherIdInt = int.tryParse(_selectedTeacherId!);
 
-    final success = await updateClass(widget.item.id, teacherName, _classController.text.trim(), "0");
+    final success = await updateClass(widget.item.id, teacherName, teacherIdInt, _classController.text.trim(), "0");
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
