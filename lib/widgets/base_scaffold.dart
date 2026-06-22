@@ -110,6 +110,15 @@ class BaseScaffold extends StatelessWidget {
               Navigator.pop(context);
               context.push('/profile');
             }),
+            ListTile(leading: const Icon(Icons.checklist), title: const Text('Reports'), onTap: () {
+                Navigator.pop(context);
+                context.push('/Reports');
+            }),
+             ListTile(leading: const Icon(Icons.checklist), title: const Text('Alerts'), onTap: () {
+                Navigator.pop(context);
+                context.push('/Alerts');
+            }),
+
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
