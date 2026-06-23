@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'add_student_screen.dart';
 import 'add_teacher_screen.dart';
 import 'teacher_directory_screen.dart';
-import 'profile_screen.dart' as profile;
+// import 'admin_profile_screen.dart' as profile;
 import 'view_attendance_screen.dart';
 import 'classes_screen.dart';
 import 'pending_approvals_screen.dart';

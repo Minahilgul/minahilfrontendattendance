@@ -18,6 +18,7 @@ import '../screens/student_dashboard_screen.dart';
 import '../screens/register_teacher_screen.dart';
 import '../screens/teacher_report.dart';
 import '../screens/class_roaster.dart';
+import '../screens/admin_profile_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',
@@ -78,6 +79,7 @@ final GoRouter appRouter = GoRouter(
     GoRoute(path: '/create-session', builder: (context, state) => const CreateSessionPage()),
     GoRoute(path: '/add-student', builder: (context, state) => const StudentDirectoryScreen()),
     GoRoute(path: '/register-teacher', builder: (context, state) => const RegisterTeacherScreen()),
+    GoRoute(path: '/profile', builder: (context, state) => const AdminProfileScreen()),
     GoRoute(
       path: '/student-dashboard',
       builder: (context, state) {
