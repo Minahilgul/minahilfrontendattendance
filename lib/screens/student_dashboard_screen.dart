@@ -266,6 +266,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       title: ['Student Dashboard', 'My Reports', 'Notifications', 'My Profile'][_selectedIndex],
       role: widget.role,
       bottomNav: _buildBottomNav(),
+      onDrawerNavTap: (index) {        // NEW
+      setState(() => _selectedIndex = index);
+    },
       body: _buildBody(),
     );
   }

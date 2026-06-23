@@ -9,6 +9,10 @@ class BaseScaffold extends StatelessWidget {
   final Widget? bottomNav;
   final Widget? floatingActionButton;
   final String role;
+  // NEW: optional callback so StudentDashboardScreen can switch its
+  // internal _selectedIndex when a drawer item is tapped, without
+  // needing Go Router routes for pages that live inside the dashboard.
+  final Function(int)? onDrawerNavTap;
 
   const BaseScaffold({
     super.key,
@@ -18,6 +22,7 @@ class BaseScaffold extends StatelessWidget {
     this.actions,
     this.bottomNav,
     this.floatingActionButton,
+    this.onDrawerNavTap,             // NEW
   });
 
   @override
@@ -28,6 +33,7 @@ class BaseScaffold extends StatelessWidget {
         backgroundColor: const Color(0xFF2979FF),
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: actions,
       ),
       drawer: Drawer(
         child: ListView(
@@ -40,85 +46,96 @@ class BaseScaffold extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
-                children:  [
+                children: [
                   const CircleAvatar(radius: 28, child: Icon(Icons.admin_panel_settings)),
                   const SizedBox(height: 12),
-                  Text(role == 'admin' ? 'Administrator' : role == 'teacher' ? 'Teacher' : 'Student', style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    role == 'admin' ? 'Administrator' : role == 'teacher' ? 'Teacher' : 'Student',
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ),
-            if (role == 'admin') ... [
-              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), 
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/');
-              }),
-              ListTile(leading: const Icon(Icons.people), title: const Text('Teacher Directory'), onTap: () {
-                Navigator.pop(context);
-                context.push('/teachers');
-              }),
-              ListTile(leading: const Icon(Icons.person_outline), title: const Text('Student Directory'), onTap: () {
-                Navigator.pop(context);
-                context.push('/add-student');
-              }),
-              ListTile(leading: const Icon(Icons.class_), title: const Text('Manage Classes'), onTap: () {
-                Navigator.pop(context);
-                context.push('/classes');
-              }),
-              ListTile(leading: const Icon(Icons.pending_actions), title: const Text('Pending Approvals'), onTap: () {
-                Navigator.pop(context);
-                context.push('/pending');
-              }),
-              ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('System Settings'),
-              onTap: () {
-                Navigator.pop(context);
-                context.push('/settings');
-              }),     
-            ], 
+
+            // ─── Admin items ───────────────────────────────────────────────
+            if (role == 'admin') ...[
+              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'),
+                onTap: () { Navigator.pop(context); context.push('/'); }),
+              ListTile(leading: const Icon(Icons.people), title: const Text('Teacher Directory'),
+                onTap: () { Navigator.pop(context); context.push('/teachers'); }),
+              ListTile(leading: const Icon(Icons.person_outline), title: const Text('Student Directory'),
+                onTap: () { Navigator.pop(context); context.push('/add-student'); }),
+              ListTile(leading: const Icon(Icons.class_), title: const Text('Manage Classes'),
+                onTap: () { Navigator.pop(context); context.push('/classes'); }),
+              ListTile(leading: const Icon(Icons.pending_actions), title: const Text('Pending Approvals'),
+                onTap: () { Navigator.pop(context); context.push('/pending'); }),
+              ListTile(leading: const Icon(Icons.settings), title: const Text('System Settings'),
+                onTap: () { Navigator.pop(context); context.push('/settings'); }),
+            ],
+
+            // ─── Teacher items ───────────
             if (role == 'teacher') ...[
-              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
-                Navigator.pop(context);
-                context.push('/teacher-dashboard');
-              }),
-              ListTile(leading: const Icon(Icons.class_), title: const Text('My Classes'), onTap: () {
-                Navigator.pop(context);
-                context.push('/classes');
-              }),
-              ListTile(leading: const Icon(Icons.checklist), title: const Text('Attendance'), onTap: () {
-                Navigator.pop(context);
-                context.push('/attendance');
-              }),
+              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'),
+                onTap: () { Navigator.pop(context); context.push('/teacher-dashboard'); }),
+              ListTile(leading: const Icon(Icons.class_), title: const Text('My Classes'),
+                onTap: () { Navigator.pop(context); context.push('/classes'); }),
+              ListTile(leading: const Icon(Icons.checklist), title: const Text('Attendance'),
+                onTap: () { Navigator.pop(context); context.push('/attendance'); }),
               ListTile(
                 leading: const Icon(Icons.person_outline, color: Color(0xFF0F9D58)),
                 title: const Text('Student Directory'),
+                onTap: () { Navigator.pop(context); context.push('/add-student'); },
+              ),
+            ],
+
+            // ─── Student items ─────────────────────────────────────────
+            if (role == 'student') ...[
+              ListTile(
+                leading: const Icon(Icons.home_rounded),
+                title: const Text('Home'),
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('/add-student');
+                  onDrawerNavTap?.call(0);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.bar_chart_rounded),
+                title: const Text('Reports'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onDrawerNavTap?.call(1);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.notifications_rounded),
+                title: const Text('Notifications'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onDrawerNavTap?.call(2);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.person_rounded),
+                title: const Text('Profile'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onDrawerNavTap?.call(3);
                 },
               ),
             ],
-            if (role == 'student') ...[
-              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'), onTap: () {
-                Navigator.pop(context);
-                context.push('/student-dashboard');
-              }),
-            ],
-            const Divider(),
-            ListTile(leading: const Icon(Icons.person), title: const Text('Profile'), onTap: () {
-              Navigator.pop(context);
-              context.push('/profile');
-            }),
-            ListTile(leading: const Icon(Icons.checklist), title: const Text('Reports'), onTap: () {
-                Navigator.pop(context);
-                context.push('/Reports');
-            }),
-             ListTile(leading: const Icon(Icons.checklist), title: const Text('Alerts'), onTap: () {
-                Navigator.pop(context);
-                context.push('/Alerts');
-            }),
 
+            const Divider(),
+            
+            if (role != 'student') ...[
+              ListTile(leading: const Icon(Icons.person), title: const Text('Profile'),
+                onTap: () { Navigator.pop(context); context.push('/profile'); }),
+              ListTile(leading: const Icon(Icons.checklist), title: const Text('Reports'),
+                onTap: () { Navigator.pop(context); context.push('/Reports'); }),
+              ListTile(leading: const Icon(Icons.checklist), title: const Text('Alerts'),
+                onTap: () { Navigator.pop(context); context.push('/Alerts'); }),
+            ],
+
+            // ─── Logout — always shown ─────────────────────────────────────
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text('Logout', style: TextStyle(color: Colors.red)),
@@ -134,7 +151,6 @@ class BaseScaffold extends StatelessWidget {
           ],
         ),
       ),
-           
       body: body,
       bottomNavigationBar: bottomNav,
       floatingActionButton: floatingActionButton,
