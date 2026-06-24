@@ -4,9 +4,10 @@ import 'package:get_storage/get_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../widgets/base_scaffold.dart';
+import '../core/services/student_profile_service.dart';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const String _baseUrl = 'http://localhost:8000/api'; // ← apna URL yahan rakho
+const String _baseUrl    = 'http://localhost:8000/api';
 const Color _kGreen      = Color(0xFF0F9D58);
 const Color _kGreenLight = Color(0xFF00BFA5);
 const Color _kBg         = Color(0xFFF5F7FA);
@@ -30,7 +31,7 @@ class AttendanceRecord {
       );
 }
 
-// ─── Dummy Notifications (static — extend later with real API) ────────────────
+// ─── Dummy Notifications ──────────────────────────────────────────────────────
 const List<Map<String, String>> _kNotifications = [
   {
     'icon': '📡',
@@ -82,7 +83,6 @@ class StudentDashboardScreen extends StatefulWidget {
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   int _selectedIndex = 0;
 
-  // Shared data loaded once
   Map<String, dynamic>? _studentInfo;
   List<AttendanceRecord> _allRecords = [];
   bool _loading = true;
@@ -94,7 +94,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     _loadData();
   }
 
-  // ── API Calls ──────────────────────────────────────────────────────────────
   Future<String?> _getToken() async {
     final storage = GetStorage();
     return storage.read<String>('token');
@@ -110,24 +109,17 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         if (token != null) 'Authorization': 'Bearer $token',
       };
 
-      // 1. Student profile
       final profileRes = await http.get(
         Uri.parse('$_baseUrl/students/${widget.userId}'),
         headers: headers,
       );
 
-      // 2. All students list to filter by this student's attendance
-      //    (Since there's no dedicated report endpoint, we use /students/{id}
-      //     and a general attendance fetch if available, else show from profile)
       Map<String, dynamic>? info;
       if (profileRes.statusCode == 200) {
         final body = jsonDecode(profileRes.body);
         info = body['data'] ?? body;
       }
 
-      // 3. Fetch attendance via mark-attendance data
-      //    We call GET /students/{id} which may include attendance relation.
-      //    If not available, show what we have. Extend this URL to your real report endpoint.
       List<AttendanceRecord> records = [];
       if (info != null && info['attendances'] != null) {
         final list = info['attendances'] as List;
@@ -144,13 +136,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     }
   }
 
-  // ── Bottom Nav ─────────────────────────────────────────────────────────────
   Widget _buildBottomNav() {
     final items = const [
-      {'icon': Icons.home_rounded,         'label': 'Home'},
-      {'icon': Icons.bar_chart_rounded,    'label': 'Reports'},
-      {'icon': Icons.notifications_rounded,'label': 'Alerts'},
-      {'icon': Icons.person_rounded,       'label': 'Profile'},
+      {'icon': Icons.home_rounded,          'label': 'Home'},
+      {'icon': Icons.bar_chart_rounded,     'label': 'Reports'},
+      {'icon': Icons.notifications_rounded, 'label': 'Alerts'},
+      {'icon': Icons.person_rounded,        'label': 'Profile'},
     ];
 
     return Container(
@@ -167,14 +158,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             children: List.generate(items.length, (i) {
               final active = _selectedIndex == i;
               return GestureDetector(
-               onTap: () {
-  setState(() {
-    _selectedIndex = i;
-  });
-},
-
-                  // if (i == 3) context.push('/profile');
-                
+                onTap: () => setState(() => _selectedIndex = i),
                 child: SizedBox(
                   width: 72,
                   child: Column(
@@ -218,7 +202,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  // ── Page Router ────────────────────────────────────────────────────────────
   Widget _buildBody() {
     if (_loading) {
       return const Center(
@@ -266,9 +249,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       title: ['Student Dashboard', 'My Reports', 'Notifications', 'My Profile'][_selectedIndex],
       role: widget.role,
       bottomNav: _buildBottomNav(),
-      onDrawerNavTap: (index) {        // NEW
-      setState(() => _selectedIndex = index);
-    },
+      onDrawerNavTap: (index) => setState(() => _selectedIndex = index),
       body: _buildBody(),
     );
   }
@@ -292,8 +273,8 @@ class _HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now();
-    final todayStr = '${today.year}-${today.month.toString().padLeft(2,'0')}-${today.day.toString().padLeft(2,'0')}';
+    final today    = DateTime.now();
+    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     final todayRecord = records.where((r) => r.date == todayStr).toList();
     final todayStatus = todayRecord.isNotEmpty ? todayRecord.first.status : 'not_marked';
 
@@ -310,7 +291,6 @@ class _HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Welcome Banner ──────────────────────────────────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -321,13 +301,7 @@ class _HomePage extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: _kGreen.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: _kGreen.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -338,7 +312,6 @@ class _HomePage extends StatelessWidget {
                   const Text('Student Portal • Attendance Verification System',
                       style: TextStyle(color: Colors.white70, fontSize: 13)),
                   const SizedBox(height: 16),
-                  // Today status + overall row
                   Row(
                     children: [
                       Expanded(
@@ -351,47 +324,33 @@ class _HomePage extends StatelessWidget {
                         ),
                       ),
                       Container(width: 1, height: 40, color: Colors.white30),
-                      Expanded(
-                        child: _BannerStat(
-                          label: 'Overall',
-                          value: '$pct%',
-                          center: true,
-                        ),
-                      ),
+                      Expanded(child: _BannerStat(label: 'Overall', value: '$pct%', center: true)),
                     ],
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-
-            // ── Account Details ─────────────────────────────────────────────
             _SectionCard(
               icon: Icons.info_outline,
               title: 'ACCOUNT DETAILS',
-              child: Column(
-                children: [
-                  _InfoRow(label: 'User ID', value: '#$userId'),
-                  _InfoRow(label: 'Role', value: role.toUpperCase()),
-                  _InfoRow(label: 'Status', value: 'Active', valueColor: _kGreen),
-                ],
-              ),
+              child: Column(children: [
+                _InfoRow(label: 'User ID', value: '#$userId'),
+                _InfoRow(label: 'Role',    value: role.toUpperCase()),
+                _InfoRow(label: 'Status',  value: 'Active', valueColor: _kGreen),
+              ]),
             ),
             const SizedBox(height: 16),
-
-            // ── This Month Stats ────────────────────────────────────────────
             _SectionCard(
               icon: Icons.calendar_month_rounded,
               title: 'THIS MONTH',
-              child: Row(
-                children: [
-                  _StatBox(label: 'Present', value: present, color: _kGreen,      bg: const Color(0xFFE6F4EA)),
-                  const SizedBox(width: 10),
-                  _StatBox(label: 'Late',    value: late,    color: Color(0xFFF59E0B), bg: Color(0xFFFFF8E1)),
-                  const SizedBox(width: 10),
-                  _StatBox(label: 'Absent',  value: absent,  color: Colors.red,    bg: Color(0xFFFFEBEE)),
-                ],
-              ),
+              child: Row(children: [
+                _StatBox(label: 'Present', value: present, color: _kGreen,                   bg: const Color(0xFFE6F4EA)),
+                const SizedBox(width: 10),
+                _StatBox(label: 'Late',    value: late,    color: const Color(0xFFF59E0B),    bg: const Color(0xFFFFF8E1)),
+                const SizedBox(width: 10),
+                _StatBox(label: 'Absent',  value: absent,  color: Colors.red,                 bg: const Color(0xFFFFEBEE)),
+              ]),
             ),
           ],
         ),
@@ -418,12 +377,11 @@ class _ReportsPageState extends State<_ReportsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final records  = widget.records;
-    final present  = records.where((r) => r.status == 'present').length;
-    final total    = records.length;
-    final pct      = total > 0 ? ((present / total) * 100).round() : 0;
+    final records = widget.records;
+    final present = records.where((r) => r.status == 'present').length;
+    final total   = records.length;
+    final pct     = total > 0 ? ((present / total) * 100).round() : 0;
 
-    // Subject list for filter chips
     final subjects = ['All', ...records.map((r) => r.subject).toSet().toList()];
     final filtered = _filter == 'All' ? records : records.where((r) => r.subject == _filter).toList();
 
@@ -438,17 +396,15 @@ class _ReportsPageState extends State<_ReportsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Overall Summary Card ────────────────────────────────────
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(18),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0,3))],
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 3))],
                 ),
                 child: Row(
                   children: [
-                    // Circle progress
                     SizedBox(
                       width: 80, height: 80,
                       child: Stack(
@@ -493,8 +449,6 @@ class _ReportsPageState extends State<_ReportsPage> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // ── Filter Chips ────────────────────────────────────────────
               SizedBox(
                 height: 36,
                 child: ListView.separated(
@@ -502,7 +456,7 @@ class _ReportsPageState extends State<_ReportsPage> {
                   itemCount: subjects.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (_, i) {
-                    final s = subjects[i];
+                    final s      = subjects[i];
                     final active = _filter == s;
                     return GestureDetector(
                       onTap: () => setState(() => _filter = s),
@@ -524,8 +478,6 @@ class _ReportsPageState extends State<_ReportsPage> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // ── Attendance History List ─────────────────────────────────
               if (filtered.isEmpty)
                 Center(
                   child: Padding(
@@ -534,8 +486,7 @@ class _ReportsPageState extends State<_ReportsPage> {
                       children: [
                         Icon(Icons.history_edu_rounded, size: 48, color: Colors.grey.shade400),
                         const SizedBox(height: 12),
-                        Text('No attendance records yet',
-                            style: TextStyle(color: Colors.grey.shade500)),
+                        Text('No attendance records yet', style: TextStyle(color: Colors.grey.shade500)),
                       ],
                     ),
                   ),
@@ -551,7 +502,7 @@ class _ReportsPageState extends State<_ReportsPage> {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// PAGE 3 — NOTIFICATIONS (static for now)
+// PAGE 3 — NOTIFICATIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 class _NotificationsPage extends StatefulWidget {
   @override
@@ -569,7 +520,6 @@ class _NotificationsPageState extends State<_NotificationsPage> {
       color: _kBg,
       child: Column(
         children: [
-          // Header row
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
             child: Row(
@@ -609,12 +559,7 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                     decoration: BoxDecoration(
                       color: _read[i] ? Colors.white : const Color(0xFFE8F0FE),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border(
-                        left: BorderSide(
-                          color: _read[i] ? Colors.transparent : _kGreen,
-                          width: 4,
-                        ),
-                      ),
+                      border: Border(left: BorderSide(color: _read[i] ? Colors.transparent : _kGreen, width: 4)),
                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
                     ),
                     child: Row(
@@ -622,10 +567,7 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                       children: [
                         Container(
                           width: 42, height: 42,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade100,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                          decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
                           child: Center(child: Text(n['icon']!, style: const TextStyle(fontSize: 20))),
                         ),
                         const SizedBox(width: 12),
@@ -681,31 +623,193 @@ class _ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<_ProfilePage> {
-  bool _showPw = false;
-  final _currentPw  = TextEditingController();
-  final _newPw      = TextEditingController();
-  final _confirmPw  = TextEditingController();
+  final _service = StudentProfileService();
 
-  @override
-  void dispose() {
-    _currentPw.dispose(); _newPw.dispose(); _confirmPw.dispose();
-    super.dispose();
+  void _showSnackbar(String msg, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(msg),
+      backgroundColor: isError ? Colors.red : _kGreen,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+Future<void> _openChangePassword() async {
+  final formKey   = GlobalKey<FormState>();
+  final currentPw = TextEditingController();
+  final newPw     = TextEditingController();
+  final confirmPw = TextEditingController();
+
+  await showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      bool showCurrent = false, showNew = false, showConfirm = false;
+      bool loading = false;
+
+      return StatefulBuilder(
+        builder: (ctx, setS) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(children: [
+                    const Icon(Icons.lock_outline, color: _kGreen),
+                    const SizedBox(width: 8),
+                    const Text('Change Password',
+                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ]),
+                  const SizedBox(height: 16),
+                  _dialogPwField('Current Password', currentPw, showCurrent,
+                      () => setS(() => showCurrent = !showCurrent),
+                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null),
+                  const SizedBox(height: 12),
+                  _dialogPwField('New Password', newPw, showNew,
+                      () => setS(() => showNew = !showNew),
+                      validator: (v) {
+                        if (v == null || v.isEmpty) return 'Required';
+                        if (v.length < 8) return 'Min 8 characters';
+                        return null;
+                      }),
+                  const SizedBox(height: 12),
+                  _dialogPwField('Confirm Password', confirmPw, showConfirm,
+                      () => setS(() => showConfirm = !showConfirm),
+                      validator: (v) =>
+                          v != newPw.text ? 'Passwords do not match' : null),
+                  const SizedBox(height: 20),
+                  Row(children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Cancel'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: loading
+                            ? null
+                            : () async {
+                                if (!formKey.currentState!.validate()) return;
+                                setS(() => loading = true);
+                                try {
+                                  await _service.changePassword(
+                                    currentPassword: currentPw.text,
+                                    newPassword: newPw.text,
+                                    confirmPassword: confirmPw.text,
+                                  );
+                                  if (ctx.mounted) Navigator.pop(ctx);
+                                  if (mounted) {
+                                    _showSnackbar('Password changed successfully');
+                                  }
+                                } catch (e) {
+                                  if (ctx.mounted) setS(() => loading = false);
+                                  if (mounted) _showSnackbar(e.toString(), isError: true);
+                                }
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _kGreen,
+                          padding: const EdgeInsets.symmetric(vertical: 13),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: loading
+                            ? const SizedBox(
+                                width: 20, height: 20,
+                                child: CircularProgressIndicator(
+                                    color: Colors.white, strokeWidth: 2))
+                            : const Text('Update',
+                                style: TextStyle(color: Colors.white)),
+                      ),
+                    ),
+                  ]),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
+
+  // Dialog band hone ke BAAD dispose karo
+  currentPw.dispose();
+  newPw.dispose();
+  confirmPw.dispose();
+}
+
+  Widget _dialogPwField(
+    String label,
+    TextEditingController ctrl,
+    bool show,
+    VoidCallback toggle, {
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: ctrl,
+      obscureText: !show,
+      validator: validator,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: const Icon(Icons.lock_outline, color: _kGreen),
+        suffixIcon: IconButton(
+          icon: Icon(show ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+          onPressed: toggle,
+        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: _kGreen, width: 2),
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      ),
+    );
+  }
+
+  Future<void> _logout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+        content: const Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Logout', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await _service.logout();
+      if (mounted) context.go('/login');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final info = widget.studentInfo;
-    final email = info?['email'] ?? '—';
-    final phone = info?['phone'] ?? '—';
-    final className =
-    info?['class_name']?.toString() ??
-    info?['class']?.toString() ?? '—';
-    // final className = info?['class_name'] ?? info?['class']?['name'] ?? '—';
-    final rollNo = info?['roll_no'] ?? info?['roll_number'] ?? '—';
-
-    // Avatar initials
-    final parts = widget.name.trim().split(' ');
-    final initials = parts.length >= 2
+    final info      = widget.studentInfo;
+    final email     = info?['email'] ?? '—';
+    final phone     = info?['phone'] ?? '—';
+    final className = info?['class_name']?.toString() ?? info?['class']?.toString() ?? '—';
+    final rollNo    = info?['roll_no'] ?? info?['roll_number'] ?? '—';
+    final parts     = widget.name.trim().split(' ');
+    final initials  = parts.length >= 2
         ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
         : widget.name.substring(0, 2).toUpperCase();
 
@@ -715,7 +819,7 @@ class _ProfilePageState extends State<_ProfilePage> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            // ── Avatar ─────────────────────────────────────────────────────
+            // Avatar
             Container(
               width: 80, height: 80,
               decoration: const BoxDecoration(
@@ -728,110 +832,75 @@ class _ProfilePageState extends State<_ProfilePage> {
               ),
             ),
             const SizedBox(height: 12),
-            Text(widget.name, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1C1B1F))),
-            Text(rollNo != '—' ? rollNo : 'Student', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            Text(widget.name,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1C1B1F))),
+            Text(rollNo != '—' ? rollNo : 'Student',
+                style: const TextStyle(color: Colors.grey, fontSize: 13)),
             const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE6F4EA),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: const Text('● Active', style: TextStyle(color: _kGreen, fontSize: 12, fontWeight: FontWeight.w700)),
+              decoration: BoxDecoration(color: const Color(0xFFE6F4EA), borderRadius: BorderRadius.circular(10)),
+              child: const Text('● Active',
+                  style: TextStyle(color: _kGreen, fontSize: 12, fontWeight: FontWeight.w700)),
             ),
             const SizedBox(height: 24),
 
-            // ── Personal Info ───────────────────────────────────────────────
+            // Personal Info
             _SectionCard(
               icon: Icons.person_outline,
               title: 'PERSONAL INFO',
-              child: Column(
-                children: [
-                  _InfoRow(label: 'Full Name', value: widget.name),
-                  _InfoRow(label: 'Email',     value: email),
-                  _InfoRow(label: 'Phone',     value: phone),
-                  _InfoRow(label: 'Class',     value: className),
-                  _InfoRow(label: 'Roll No',   value: rollNo),
-                  _InfoRow(label: 'User ID',   value: '#${widget.userId}'),
-                  _InfoRow(label: 'Role',      value: widget.role.toUpperCase()),
-                  _InfoRow(label: 'Status',    value: 'Active', valueColor: _kGreen),
-                ],
-              ),
+              child: Column(children: [
+                _InfoRow(label: 'Full Name', value: widget.name),
+                _InfoRow(label: 'Email',     value: email),
+                _InfoRow(label: 'Phone',     value: phone),
+                _InfoRow(label: 'Class',     value: className),
+                _InfoRow(label: 'Roll No',   value: rollNo),
+                _InfoRow(label: 'Role',      value: widget.role.toUpperCase()),
+                _InfoRow(label: 'Status',    value: 'Active', valueColor: _kGreen),
+              ]),
             ),
             const SizedBox(height: 16),
 
-            // ── Change Password ─────────────────────────────────────────────
-            _SectionCard(
-              icon: Icons.lock_outline,
-              title: 'CHANGE PASSWORD',
-              trailing: GestureDetector(
-                onTap: () => setState(() => _showPw = !_showPw),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(8),
+            // Actions Card
+            Card(
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.grey.shade200),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(children: [
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          color: _kGreen.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      child: const Icon(Icons.lock_outline, color: _kGreen, size: 22),
+                    ),
+                    title: const Text('Change Password',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                    subtitle: const Text('Update your password',
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: _openChangePassword,
                   ),
-                  child: Text(_showPw ? 'Cancel' : 'Change',
-                      style: const TextStyle(color: _kGreen, fontSize: 12, fontWeight: FontWeight.w700)),
-                ),
-              ),
-              child: _showPw
-                  ? Column(
-                      children: [
-                        const SizedBox(height: 12),
-                        _PwField(label: 'Current Password', controller: _currentPw),
-                        const SizedBox(height: 10),
-                        _PwField(label: 'New Password',     controller: _newPw),
-                        const SizedBox(height: 10),
-                        _PwField(label: 'Confirm Password', controller: _confirmPw),
-                        const SizedBox(height: 16),
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              if (_newPw.text == _confirmPw.text && _newPw.text.isNotEmpty) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Password updated successfully'), backgroundColor: _kGreen),
-                                );
-                                setState(() => _showPw = false);
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Passwords do not match'), backgroundColor: Colors.red),
-                                );
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _kGreen,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                            ),
-                            child: const Text('Update Password',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                          ),
-                        ),
-                      ],
-                    )
-                  : const SizedBox.shrink(),
-            ),
-            const SizedBox(height: 16),
-
-            // ── Logout ──────────────────────────────────────────────────────
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () async {
-                  final storage = GetStorage();
-                  await storage.erase();
-                  if (context.mounted) context.go('/login');
-                },
-                icon: const Icon(Icons.logout, color: Colors.white),
-                label: const Text('Logout', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
+                  const Divider(height: 1, indent: 56),
+                  ListTile(
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                          color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                      child: const Icon(Icons.logout, color: Colors.red, size: 22),
+                    ),
+                    title: const Text('Logout',
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.red)),
+                    subtitle: const Text('Sign out from this device',
+                        style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                    onTap: _logout,
+                  ),
+                ]),
               ),
             ),
           ],
@@ -856,20 +925,23 @@ class _SectionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Icon(icon, color: _kGreen, size: 18),
-                const SizedBox(width: 8),
-                Expanded(child: Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.8))),
-                if (trailing != null) trailing!,
-              ],
-            ),
+            Row(children: [
+              Icon(icon, color: _kGreen, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(title,
+                    style: const TextStyle(
+                        fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.8)),
+              ),
+              if (trailing != null) trailing!,
+            ]),
             const Divider(height: 20),
             child,
           ],
@@ -894,7 +966,11 @@ class _InfoRow extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-          Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: valueColor ?? const Color(0xFF1C1B1F))),
+          Text(value,
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: valueColor ?? const Color(0xFF1C1B1F))),
         ],
       ),
     );
@@ -915,13 +991,11 @@ class _StatBox extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          children: [
-            Text('$value', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
-            const SizedBox(height: 4),
-            Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
-          ],
-        ),
+        child: Column(children: [
+          Text('$value', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+        ]),
       ),
     );
   }
@@ -943,7 +1017,8 @@ class _BannerStat extends StatelessWidget {
         children: [
           Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(value,
+              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -977,7 +1052,9 @@ class _AttendanceTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(record.subject, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1C1B1F))),
+                Text(record.subject,
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1C1B1F))),
                 const SizedBox(height: 3),
                 Text('📅 ${record.date}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
               ],
@@ -986,35 +1063,12 @@ class _AttendanceTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
             decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
-            child: Text('$icon ${record.status[0].toUpperCase()}${record.status.substring(1)}',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color)),
+            child: Text(
+              '$icon ${record.status[0].toUpperCase()}${record.status.substring(1)}',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+            ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PwField extends StatelessWidget {
-  final String label;
-  final TextEditingController controller;
-
-  const _PwField({required this.label, required this.controller});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: true,
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(fontSize: 13),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _kGreen),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       ),
     );
   }

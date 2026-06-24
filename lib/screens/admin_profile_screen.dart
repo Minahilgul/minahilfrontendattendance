@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
 import '../core/services/admin_profile_service.dart';
 import 'edit_profile_dialog.dart';
 import 'change_password_dialog.dart';
 import 'change_email_dialog.dart';
-import 'package:go_router/go_router.dart';  // ← yeh add karo
+import 'package:go_router/go_router.dart';  
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({Key? key}) : super(key: key);
@@ -310,7 +308,8 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   context: context,
                   builder: (_) => EditProfileDialog(name: name, phone: phone, profileService: _profileService),
                 );
-                if (result == true) { _loadProfile(); _showSnackbar('Profile updated successfully'); }
+                if (result == true) {
+                   await _loadProfile(); _showSnackbar('Profile updated successfully'); }
               },
             ),
             const Divider(height: 1, indent: 56),
@@ -323,7 +322,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                   context: context,
                   builder: (_) => ChangeEmailDialog(currentEmail: email, profileService: _profileService),
                 );
-                if (result == true) { _loadProfile(); _showSnackbar('Email updated successfully'); }
+                if (result == true) { await _loadProfile(); _showSnackbar('Email updated successfully'); }
               },
             ),
             const Divider(height: 1, indent: 56),

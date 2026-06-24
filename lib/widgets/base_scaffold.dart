@@ -10,9 +10,11 @@ class BaseScaffold extends StatelessWidget {
   final Widget? floatingActionButton;
   final String role;
   // NEW: optional callback so StudentDashboardScreen can switch its
-  // internal _selectedIndex when a drawer item is tapped, without
-  // needing Go Router routes for pages that live inside the dashboard.
+  // internal _selectedIndex when a drawer item is tapped.
   final Function(int)? onDrawerNavTap;
+  // NEW: optional display name shown in the drawer header.
+  // If not provided, falls back to role label (Administrator/Teacher/Student).
+  final String? displayName;
 
   const BaseScaffold({
     super.key,
@@ -22,14 +24,35 @@ class BaseScaffold extends StatelessWidget {
     this.actions,
     this.bottomNav,
     this.floatingActionButton,
-    this.onDrawerNavTap,             // NEW
+    this.onDrawerNavTap,
+    this.displayName,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Drawer header label — use displayName if provided, else role label
+    final String headerLabel = displayName?.isNotEmpty == true
+        ? displayName!
+        : role == 'admin'
+            ? 'Administrator'
+            : role == 'teacher'
+                ? 'Teacher'
+                : 'Student';
+
+    // Avatar initials from displayName
+    String initials = '';
+    if (displayName != null && displayName!.trim().isNotEmpty) {
+      final parts = displayName!.trim().split(' ');
+      initials = parts.length >= 2
+          ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
+          : parts[0][0].toUpperCase();
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: Colors.white)),
+        title: Text(title,
+            style: const TextStyle(
+                fontWeight: FontWeight.w800, fontSize: 20, color: Colors.white)),
         backgroundColor: const Color(0xFF2979FF),
         foregroundColor: Colors.white,
         elevation: 0,
@@ -41,54 +64,128 @@ class BaseScaffold extends StatelessWidget {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [Color(0xFF2979FF), Color(0xFF00BFA5)]),
+                gradient: LinearGradient(
+                    colors: [Color(0xFF2979FF), Color(0xFF00BFA5)]),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const CircleAvatar(radius: 28, child: Icon(Icons.admin_panel_settings)),
-                  const SizedBox(height: 12),
-                  Text(
-                    role == 'admin' ? 'Administrator' : role == 'teacher' ? 'Teacher' : 'Student',
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.white.withOpacity(0.25),
+                    child: initials.isNotEmpty
+                        ? Text(initials,
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20))
+                        : const Icon(Icons.admin_panel_settings,
+                            color: Colors.white),
                   ),
+                  const SizedBox(height: 12),
+                  // ✅ Shows actual name if displayName is passed, else role label
+                  Text(headerLabel,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold)),
+                  // Sub-label: role badge below name
+                  if (displayName?.isNotEmpty == true)
+                    Text(
+                      role == 'admin'
+                          ? 'Administrator'
+                          : role == 'teacher'
+                              ? 'Teacher'
+                              : 'Student',
+                      style: TextStyle(
+                          color: Colors.white.withOpacity(0.75), fontSize: 12),
+                    ),
                 ],
               ),
             ),
 
-            // ─── Admin items ───────────────────────────────────────────────
+            // ─── Admin items ──────────────────────────────────────────────
             if (role == 'admin') ...[
-              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'),
-                onTap: () { Navigator.pop(context); context.push('/'); }),
-              ListTile(leading: const Icon(Icons.people), title: const Text('Teacher Directory'),
-                onTap: () { Navigator.pop(context); context.push('/teachers'); }),
-              ListTile(leading: const Icon(Icons.person_outline), title: const Text('Student Directory'),
-                onTap: () { Navigator.pop(context); context.push('/add-student'); }),
-              ListTile(leading: const Icon(Icons.class_), title: const Text('Manage Classes'),
-                onTap: () { Navigator.pop(context); context.push('/classes'); }),
-              ListTile(leading: const Icon(Icons.pending_actions), title: const Text('Pending Approvals'),
-                onTap: () { Navigator.pop(context); context.push('/pending'); }),
-              ListTile(leading: const Icon(Icons.settings), title: const Text('System Settings'),
-                onTap: () { Navigator.pop(context); context.push('/settings'); }),
+              ListTile(
+                  leading: const Icon(Icons.home),
+                  title: const Text('Dashboard'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/admin-dashboard');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.people),
+                  title: const Text('Teacher Directory'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/teachers');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.person_outline),
+                  title: const Text('Student Directory'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/add-student');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.class_),
+                  title: const Text('Manage Classes'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/classes');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.pending_actions),
+                  title: const Text('Pending Approvals'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/pending');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.settings),
+                  title: const Text('System Settings'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/settings');
+                  }),
             ],
 
-            // ─── Teacher items ───────────
+            // ─── Teacher items ────────────────────────────────────────────
             if (role == 'teacher') ...[
-              ListTile(leading: const Icon(Icons.home), title: const Text('Dashboard'),
-                onTap: () { Navigator.pop(context); context.push('/teacher-dashboard'); }),
-              ListTile(leading: const Icon(Icons.class_), title: const Text('My Classes'),
-                onTap: () { Navigator.pop(context); context.push('/classes'); }),
-              ListTile(leading: const Icon(Icons.checklist), title: const Text('Attendance'),
-                onTap: () { Navigator.pop(context); context.push('/attendance'); }),
               ListTile(
-                leading: const Icon(Icons.person_outline, color: Color(0xFF0F9D58)),
+                  leading: const Icon(Icons.home),
+                  title: const Text('Dashboard'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/teacher-dashboard');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.class_),
+                  title: const Text('My Classes'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/classes');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.checklist),
+                  title: const Text('Attendance'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/attendance');
+                  }),
+              ListTile(
+                leading: const Icon(Icons.person_outline,
+                    color: Color(0xFF0F9D58)),
                 title: const Text('Student Directory'),
-                onTap: () { Navigator.pop(context); context.push('/add-student'); },
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/add-student');
+                },
               ),
             ],
 
-            // ─── Student items ─────────────────────────────────────────
+            // ─── Student items ────────────────────────────────────────────
             if (role == 'student') ...[
               ListTile(
                 leading: const Icon(Icons.home_rounded),
@@ -125,20 +222,30 @@ class BaseScaffold extends StatelessWidget {
             ],
 
             const Divider(),
-            
+
+            // Profile / Reports / Alerts — admin & teacher only
             if (role != 'student') ...[
-              ListTile(leading: const Icon(Icons.person), title: const Text('Profile'),
-                onTap: () { Navigator.pop(context); context.push('/profile'); }),
-              ListTile(leading: const Icon(Icons.checklist), title: const Text('Reports'),
-                onTap: () { Navigator.pop(context); context.push('/Reports'); }),
-              ListTile(leading: const Icon(Icons.checklist), title: const Text('Alerts'),
-                onTap: () { Navigator.pop(context); context.push('/Alerts'); }),
+              ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text('Profile'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/profile');
+                  }),
+              ListTile(
+                  leading: const Icon(Icons.bar_chart),
+                  title: const Text('Reports'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    context.push('/reports');
+                  }),
             ],
 
-            // ─── Logout — always shown ─────────────────────────────────────
+            // Logout — always shown
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text('Logout', style: TextStyle(color: Colors.red)),
+              title: const Text('Logout',
+                  style: TextStyle(color: Colors.red)),
               onTap: () async {
                 final storage = GetStorage();
                 await storage.erase();
