@@ -107,8 +107,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             onTap: endSession,
           ),
           _DashboardCardWidget(
-            card: _DashboardCard(title: 'Class Roster', icon: Icons.group_rounded, iconColor: Color(0xFF1565C0)),
-            onTap: () => context.push('/roster'),
+            card: _DashboardCard(title: 'My Profile', icon: Icons.group_rounded, iconColor: Color(0xFF1565C0)),
+            onTap: () => context.push('/teacher-profile'),
           ),
           _DashboardCardWidget(
             card: _DashboardCard(title: 'Reports', icon: Icons.bar_chart_rounded, iconColor: Color(0xFF7B1FA2)),
@@ -148,12 +148,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       return;
     }
 
-    print("5. Getting location..."); // 👈 ye add karo
+    print("5. Getting location..."); 
     Position pos = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low, // 👈 high se low kar do web ke liye
-      timeLimit: Duration(seconds: 10), // 👈 timeout add karo
+      desiredAccuracy: LocationAccuracy.low, 
+      timeLimit: Duration(seconds: 10), //  timeout add karo
     );
-    print("6. Location OK: ${pos.latitude}"); // 👈 ye add karo
+    print("6. Location OK: ${pos.latitude}"); //  ye add karo
 
     final result = await SessionService.createSession(
       teacherId: teacherId,
@@ -161,14 +161,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       longitude: pos.longitude,
     );
 
-    print("7. API Result: $result"); // 👈 ye add karo
+    print("7. API Result: $result"); //  ye add karo
 
     if (result['success']) {
       final int id = result['data']['id'];
       setState(() => activeSessionId = id);
 
       if (!mounted) return;
-      print("8. Navigating to StudentSelectionScreen..."); // 👈 ye add karo
+      print("8. Navigating to StudentSelectionScreen..."); //  ye add karo
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -179,59 +179,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       _showSnack(result['message'] ?? 'Failed to start session');
     }
   } catch (e) {
-    print("ERROR: $e"); // 👈 ye add karo
+    print("ERROR: $e"); 
     _showSnack('Error: $e');
   }
   setState(() => isLoading = false);
 }
-// Future<void> startSession() async {
-//   setState(() => isLoading = true);
-//   print("1. BUTTON TAPPED ✅"); // 👈 ye add karo debug ke liye
-//   try {
-//     LocationPermission permission = await Geolocator.checkPermission();
-//     if (permission == LocationPermission.denied) {
-//       permission = await Geolocator.requestPermission();
-//     }
-//     if (permission == LocationPermission.denied ||
-//         permission == LocationPermission.deniedForever) {
-//       _showSnack('Location permission is required to start a session.');
-//       setState(() => isLoading = false);
-//       return;
-//     }
 
-//     Position pos = await Geolocator.getCurrentPosition(
-//       desiredAccuracy: LocationAccuracy.high,
-//     );
-
-//     final result = await SessionService.createSession(
-//       teacherId: teacherId,
-//       classId: classId,
-//       latitude: pos.latitude,
-//       longitude: pos.longitude,
-//     );
-
-//     if (result['success']) {
-//       final int id = result['data']['id'];  // ✅ 'id' naam ka variable
-//       setState(() => activeSessionId = id); // ✅ id use kiya
-
-//       if (!mounted) return;
-//       Navigator.push(
-//         context,
-//         MaterialPageRoute(
-//           builder: (_) => StudentSelectionScreen(
-//             sessionId: id, // ✅ id pass kiya
-//           ),
-//         ),
-//       );
-//     } else {
-//       _showSnack(result['message'] ?? 'Failed to start session');
-//     }
-//   } catch (e) {
-//     _showSnack('Error: $e');
-//   }
-//   setState(() => isLoading = false);
-// }
-  
 
   Future<void> endSession() async {
     if (activeSessionId == null) {
