@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/teacher_service.dart';
-import '../core/services/device_service.dart'; //  add this import
+import '../core/services/device_service.dart'; 
 
 class AddTeacherScreen extends StatefulWidget {
   const AddTeacherScreen({super.key});
@@ -18,7 +18,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
 
   final _formKey = GlobalKey<FormState>();
 
-  // ✅ STEP 1: Add initState here
+  // Add initState here
   @override
   void initState() {
     super.initState();
@@ -106,7 +106,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // ✅ MAC field is now auto-filled and read-only
+                // MAC field is now auto-filled and read-only
                 TextFormField(
                   controller: deviceIdController,
                   readOnly: true, // user cannot edit — auto filled

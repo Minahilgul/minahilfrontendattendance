@@ -107,7 +107,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       appBar: AppBar(
-        // ✅ Teacher color: Green (0xFF0F9D58) — Admin wala Blue (0xFF2C3E87) se alag
+        // Teacher color: Green (0xFF0F9D58) 
         title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
         backgroundColor: const Color(0xFF0F9D58),
         elevation: 0,
@@ -159,7 +159,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
           children: [
-            // ── Header ──────────────────────────────────────────
+            // Header 
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -195,7 +195,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    // ✅ Teacher badge
+                    //  Teacher badge
                     child: const Text('Teacher', style: TextStyle(color: Colors.white, fontSize: 13)),
                   ),
                   if (lastLogin != null) ...[

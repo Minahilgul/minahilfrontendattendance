@@ -41,7 +41,7 @@ class StudentProfileService {
     if (token == null) throw Exception('Not authenticated');
 
     final response = await http.post(
-      Uri.parse('$baseUrl/student/profile/change-password'),  // ← student endpoint
+      Uri.parse('$baseUrl/student/profile/change-password'),  //  student endpoint
       headers: _headers(token),
       body: jsonEncode({
         'current_password': currentPassword,

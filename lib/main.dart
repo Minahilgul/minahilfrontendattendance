@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'routes/app_routes.dart';
-import 'core/services/auth_service.dart'; // ✅ Import add karo
+import 'core/services/auth_service.dart'; 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // ✅ Flutter init karna lazmi hai
-  await GetStorage.init(); // ✅ GetStorage initialize karo
-  await AuthService.loadToken(); // ✅ Token + User load karo app start pe
+  WidgetsFlutterBinding.ensureInitialized(); //  Flutter init karna lazmi hai
+  await GetStorage.init(); //  GetStorage initialize 
+  await AuthService.loadToken(); //  Token + User load karna app start pe
   
   runApp(const MyApp());
 }

@@ -2,7 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-// ─── Data Models ──────────────────────────────────────────────────────────────
+// Data Models 
 
 enum TeacherAuditStatus { suspicious, verified, flagged }
 
@@ -24,7 +24,7 @@ class TeacherAuditLog {
   });
 }
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+//  Screen
 
 class TeacherReportScreen extends StatefulWidget {
   const TeacherReportScreen({super.key});
@@ -375,7 +375,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
   }
 }
 
-// ─── Line Chart ───────────────────────────────────────────────────────────────
+// Line Chart 
 
 class _AttendanceLineChart extends StatelessWidget {
   final List<FlSpot> spots;
@@ -465,7 +465,7 @@ class _AttendanceLineChart extends StatelessWidget {
   }
 }
 
-// ─── Dropdown Filter ──────────────────────────────────────────────────────────
+//  Dropdown Filter 
 
 class _DropdownFilter extends StatelessWidget {
   final String value;
@@ -518,7 +518,7 @@ class _DropdownFilter extends StatelessWidget {
   }
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
+// Stat Card
 
 class _StatCard extends StatelessWidget {
   final String label;
@@ -587,7 +587,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-// ─── Trend Badge ──────────────────────────────────────────────────────────────
+// Trend Badge 
 
 class _TrendBadge extends StatelessWidget {
   final String label;
@@ -617,7 +617,7 @@ class _TrendBadge extends StatelessWidget {
   }
 }
 
-// ─── Audit Log Card ───────────────────────────────────────────────────────────
+// Audit Log Card 
 
 class _AuditLogCard extends StatelessWidget {
   final TeacherAuditLog log;
@@ -752,7 +752,7 @@ class _AuditLogCard extends StatelessWidget {
   }
 }
 
-// ─── Reusable White Card ──────────────────────────────────────────────────────
+// Reusable White Card 
 
 class _WhiteCard extends StatelessWidget {
   final Widget child;
@@ -779,7 +779,7 @@ class _WhiteCard extends StatelessWidget {
   }
 }
 
-// ─── Nav Item ─────────────────────────────────────────────────────────────────
+//  Nav Item 
 
 class _NavItem {
   final IconData icon;

@@ -9,11 +9,9 @@ class BaseScaffold extends StatelessWidget {
   final Widget? bottomNav;
   final Widget? floatingActionButton;
   final String role;
-  // NEW: optional callback so StudentDashboardScreen can switch its
-  // internal _selectedIndex when a drawer item is tapped.
+  
   final Function(int)? onDrawerNavTap;
-  // NEW: optional display name shown in the drawer header.
-  // If not provided, falls back to role label (Administrator/Teacher/Student).
+  
   final String? displayName;
 
   const BaseScaffold({
@@ -39,7 +37,7 @@ class BaseScaffold extends StatelessWidget {
                 ? 'Teacher'
                 : 'Student';
 
-    // Avatar initials from displayName
+    
     String initials = '';
     if (displayName != null && displayName!.trim().isNotEmpty) {
       final parts = displayName!.trim().split(' ');
@@ -84,7 +82,7 @@ class BaseScaffold extends StatelessWidget {
                             color: Colors.white),
                   ),
                   const SizedBox(height: 12),
-                  // ✅ Shows actual name if displayName is passed, else role label
+                  //  Shows actual name if displayName is passed, else role label
                   Text(headerLabel,
                       style: const TextStyle(
                           color: Colors.white,
@@ -105,7 +103,7 @@ class BaseScaffold extends StatelessWidget {
               ),
             ),
 
-            // ─── Admin items ──────────────────────────────────────────────
+            //  Admin items 
             if (role == 'admin') ...[
               ListTile(
                   leading: const Icon(Icons.home),
@@ -151,7 +149,7 @@ class BaseScaffold extends StatelessWidget {
                   }),
             ],
 
-            // ─── Teacher items ────────────────────────────────────────────
+            // Teacher items 
             if (role == 'teacher') ...[
               ListTile(
                   leading: const Icon(Icons.home),
@@ -185,7 +183,7 @@ class BaseScaffold extends StatelessWidget {
               ),
             ],
 
-            // ─── Student items ────────────────────────────────────────────
+            //  Student items
             if (role == 'student') ...[
               ListTile(
                 leading: const Icon(Icons.home_rounded),

@@ -254,9 +254,7 @@ class StudentService {
     }
   }
 
-  // ✅ UPDATED: added optional cls/rollNo so admin can edit Class & Roll Number
-  //    Backend (StudentsController@updateStudent) already accepts 'class' and
-  //    'roll_no' — only this Flutter method was missing them.
+
   static Future<bool> updateStudent({
     required int id,
     required String username,

@@ -4,9 +4,9 @@ import 'auth_service.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 
 class TeacherService {
-  // ─────────────────────────────
+
   // FETCH ALL TEACHERS
-  // ─────────────────────────────
+  
   static Future<List<Map<String, dynamic>>> fetchTeachers() async {
     try {
       final token = await AuthService.getToken();
@@ -15,7 +15,7 @@ class TeacherService {
         Uri.parse('${AuthService.baseUrl}/teachers'),
         headers: {
           'Accept': 'application/json',
-          'Authorization': 'Bearer $token', // ✅ FIX: was missing token
+          'Authorization': 'Bearer $token', 
         },
       );
 
@@ -34,9 +34,9 @@ class TeacherService {
     }
   }
 
-  // ─────────────────────────────
+  
   // ADD TEACHER
-  // ─────────────────────────────
+  
   static Future<Map<String, dynamic>> addTeacher({
     required String username,
     required String email,
@@ -119,7 +119,7 @@ class TeacherService {
         if (status != null) 'status': status, // NEW
       };
 
-      // ✅ Only include password if user typed a new one
+      //  Only include password if user typed a new one
       if (password != null && password.isNotEmpty) {
         body['password'] = password;
       }

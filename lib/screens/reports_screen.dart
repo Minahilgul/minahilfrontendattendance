@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../widgets/base_scaffold.dart';
 
-// ─────────────────────────────────────────────
 // MODELS
-// ─────────────────────────────────────────────
 
 enum AuditStatus { suspicious, verified, flagged }
 
@@ -30,9 +28,9 @@ final List<AuditLog> _auditLogs = [
   AuditLog(name: 'James Wilson (Student)', subject: 'PHY105 • Quantum Physics', time: '01:15 PM', detail: 'GPS Location (500m)', status: AuditStatus.flagged),
 ];
 
-// ─────────────────────────────────────────────
+
 // HELPERS
-// ─────────────────────────────────────────────
+
 
 Color _statusColor(AuditStatus s) {
   switch (s) {
@@ -58,9 +56,9 @@ IconData _statusIcon(AuditStatus s) {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // REUSABLE WIDGETS
-// ─────────────────────────────────────────────
+
 
 class FilterDropdown extends StatefulWidget {
   final String label;
@@ -250,9 +248,7 @@ class AttendanceLineChart extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
 // MAIN SCREEN
-// ─────────────────────────────────────────────
 
 class ReportsAuditScreen extends StatefulWidget {
   const ReportsAuditScreen({super.key});

@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class SessionService {
-  // ─────────────────────────────────────────────
+  
   // CREATE SESSION
-  // ─────────────────────────────────────────────
+  
   static Future<Map<String, dynamic>> createSession({
     required int teacherId,
     required double latitude,
@@ -54,9 +54,9 @@ class SessionService {
     }
   }
 
-  // ─────────────────────────────────────────────
+  
   // GET SESSION STUDENTS
-  // ─────────────────────────────────────────────
+  
   static Future<Map<String, dynamic>> getStudents(int sessionId) async {
     try {
       final token = await AuthService.getToken();
@@ -87,9 +87,9 @@ class SessionService {
     }
   }
 
-  // ─────────────────────────────────────────────
+  
   // SAVE SELECTED STUDENTS
-  // ─────────────────────────────────────────────
+  
   static Future<Map<String, dynamic>> saveSessionStudents({
     required int sessionId,
     required List<int> studentIds,
@@ -128,9 +128,9 @@ class SessionService {
     }
   }
 
-  // ─────────────────────────────────────────────
+  
   // END SESSION
-  // ─────────────────────────────────────────────
+  
   static Future<Map<String, dynamic>> endSession(int sessionId) async {
     try {
       final token = await AuthService.getToken();

@@ -4,9 +4,9 @@ import 'package:get_storage/get_storage.dart';
 import '../core/services/class_service.dart';
 import '../widgets/base_scaffold.dart';
 
-// ─────────────────────────────────────────────
+
 // DATA MODEL
-// ─────────────────────────────────────────────
+
 
 enum ClassStatus { active, inactive, scheduled }
 
@@ -35,9 +35,7 @@ class ClassItem {
     return ClassItem(
       id: json['id']?? 0,
       name: json['class_name']?? '',
-      // ✅ UPDATED: backend now sends teacher_name directly (resolved via
-      // ManageClass.teacher() relationship). Falls back to the old `name`
-      // field for safety if teacher_name is ever missing.
+      
       teacher: json['teacher_name']?? json['name']?? '',
       teacherId: json['teacher_id'],
       studentCount: json['students_count']?? 0,
@@ -51,9 +49,9 @@ class ClassItem {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // API SERVICE
-// ─────────────────────────────────────────────
+
 
 List<ClassItem> allClasses = [];
 
@@ -62,7 +60,7 @@ Future<void> fetchClasses() async {
   allClasses = data.map((e) => ClassItem.fromJson(e)).toList();
 }
 
-// ✅ UPDATED: now takes teacherId (the real FK) so the backend can store
+
 // ManageClass.teacher_id directly instead of guessing it later.
 Future<bool> createClass(String name, int? teacherId, String className, String students) async {
   return await ClassService.createClass(
@@ -87,9 +85,9 @@ Future<bool> deleteClass(int id) async {
   return await ClassService.deleteClass(id);
 }
 
-// ─────────────────────────────────────────────
+
 // CLASSES SCREEN
-// ─────────────────────────────────────────────
+
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -453,7 +451,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
     final teacherName = teacher['username']?.toString() ?? 'Unknown';
     final teacherIdInt = int.tryParse(_selectedTeacherId!);
 
-    // ✅ UPDATED: now passes teacherIdInt (the real FK) alongside the
+    
     // display name.
     final success = await createClass(teacherName, teacherIdInt, _classController.text.trim(), "0");
     if (!mounted) return;
@@ -547,9 +545,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
   void initState() {
     super.initState();
     _classController = TextEditingController(text: widget.item.name);
-    // ✅ SIMPLIFIED: teacherId now comes straight from the backend's real
-    // foreign key (ManageClass.teacher_id) — no more guessing by matching
-    // usernames against the freshly-fetched teacher list.
+    
     _selectedTeacherId = widget.item.teacherId?.toString();
   }
 

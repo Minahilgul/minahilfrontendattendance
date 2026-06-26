@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/student_service.dart';
 
-// ─────────────────────────────────────────────
+
 // DATA MODEL
-// ─────────────────────────────────────────────
+
 
 class ApprovalRequest {
   final String id;
@@ -28,9 +28,8 @@ class ApprovalRequest {
   });
 }
 
-// ─────────────────────────────────────────────
+
 // APPROVAL CARD
-// ─────────────────────────────────────────────
 
 class ApprovalCard extends StatelessWidget {
   final ApprovalRequest request;
@@ -182,12 +181,9 @@ class ApprovalCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // APPROVALS SCREEN
-// ✅ FAB REMOVED — No "Add" button here.
-// This screen ONLY shows & manages pending approval requests.
-// Students are added from the Teacher "Add Student" screen.
-// ─────────────────────────────────────────────
+
 
 class ApprovalsScreen extends StatefulWidget {
   const ApprovalsScreen({super.key});
@@ -221,11 +217,11 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
   Future<void> _loadRequests() async {
     setState(() => isLoading = true);
     try {
-      // ✅ FIX: fetchPendingStudents now returns List<Map<String,dynamic>>
+      //  fetchPendingStudents now returns List<Map<String,dynamic>>
       final data = await StudentService.fetchPendingStudents();
 
       final list = data.map<ApprovalRequest>((s) {
-        // ✅ FIX: normalise field names — handle both 'name' and 'username'
+        //  normalise field names — handle both 'name' and 'username'
         final name = (s['name'] ?? s['username'] ?? '') as String;
         final initials = name
             .split(' ')
@@ -235,16 +231,16 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
             .join()
             .toUpperCase();
 
-        // ✅ FIX: handle 'class' or 'class_name'
+        //  handle 'class' or 'class_name'
         final classInfo =
             (s['class'] ?? s['class_name'] ?? 'N/A') as String;
 
-        // ✅ FIX: teacher name can come as teacher_name or via nested teacher object
+        //  teacher name can come as teacher_name or via nested teacher object
         final requestedBy = (s['teacher_name'] ??
                 s['teacher']?['username'] ??
                 'Teacher') as String;
 
-        // ✅ FIX: format created_at nicely if present
+        //  format created_at nicely if present
         final rawDate = s['created_at'] as String?;
         final timeAgo = rawDate != null ? _formatDate(rawDate) : 'Just now';
 
@@ -364,7 +360,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
     return BaseScaffold(
       title: 'Pending Approvals',
       role: 'admin',
-      // ✅ NO floatingActionButton here
+      //  NO floatingActionButton here
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
@@ -519,7 +515,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
           ],
         ),
       ),
-      // ✅ floatingActionButton intentionally omitted
+      //  floatingActionButton intentionally omitted
     );
   }
 

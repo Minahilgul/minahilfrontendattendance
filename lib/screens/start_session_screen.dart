@@ -107,7 +107,7 @@ class _StartSessionScreenState extends State<StartSessionScreen> {
   }
 }
 
-// ─── Current Class Card ───────────────────────────────────────────────────────
+// Current Class Card 
 
 class _CurrentClassCard extends StatelessWidget {
   const _CurrentClassCard();
@@ -186,7 +186,7 @@ class _CurrentClassCard extends StatelessWidget {
   }
 }
 
-// ─── Date & Time Row ──────────────────────────────────────────────────────────
+//  Date & Time Row 
 
 class _DateTimeRow extends StatelessWidget {
   const _DateTimeRow();
@@ -271,7 +271,7 @@ class _DateTimeRow extends StatelessWidget {
   }
 }
 
-// ─── GPS Verified Section ─────────────────────────────────────────────────────
+//  GPS Verified Section 
 
 class _GpsVerifiedSection extends StatelessWidget {
   const _GpsVerifiedSection();
@@ -387,7 +387,7 @@ class _GpsVerifiedSection extends StatelessWidget {
   }
 }
 
-// ─── Start Session Button ─────────────────────────────────────────────────────
+// Start Session Button 
 
 class _StartSessionButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -428,7 +428,7 @@ class _StartSessionButton extends StatelessWidget {
   }
 }
 
-// ─── Bottom Nav Bar ───────────────────────────────────────────────────────────
+//  Bottom Nav Bar
 
 class _BottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -503,7 +503,7 @@ class _BottomNavBar extends StatelessWidget {
   }
 }
 
-// ─── Reusable White Card ──────────────────────────────────────────────────────
+// Reusable White Card 
 
 class _WhiteCard extends StatelessWidget {
   final Widget child;

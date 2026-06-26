@@ -4,9 +4,9 @@ import '../core/services/teacher_service.dart';
 import '../widgets/base_scaffold.dart';
 
 
-// ─────────────────────────────────────────────
+
 // DATA MODELS
-// ─────────────────────────────────────────────
+
 
 enum TeacherStatus { verified, inactive, securityAlert }
 
@@ -69,13 +69,12 @@ class TeacherModel {
   }
 }
 
-// ─────────────────────────────────────────────
-// API SERVICE WRAPPERS
-// ─────────────────────────────────────────────
 
-// FIX: TeacherService.addTeacher now returns Map<String,dynamic> not bool.
+// API SERVICE WRAPPERS
+
+
 //      Added deviceId param to match service signature.
-// NEW: Added optional named `status` param (0 = inactive, 1 = active).
+//  Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> addTeacher(
   String username,
   String email,
@@ -95,9 +94,9 @@ Future<bool> addTeacher(
   return result['success'] == true;
 }
 
-// FIX: TeacherService.updateTeacher now returns Map<String,dynamic> not bool.
+//  TeacherService.updateTeacher now returns Map<String,dynamic> not bool.
 //      Added deviceId param to match service signature.
-// NEW: Added optional named `status` param (0 = inactive, 1 = active).
+//  Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> updateTeacher(
   int id,
   String username,
@@ -121,9 +120,9 @@ Future<bool> deleteTeacher(int id) async {
   return await TeacherService.deleteTeacher(id);
 }
 
-// ─────────────────────────────────────────────
+
 // STATUS BADGE WIDGET
-// ─────────────────────────────────────────────
+
 
 class StatusBadge extends StatelessWidget {
   final TeacherStatus status;
@@ -150,9 +149,9 @@ class StatusBadge extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // ADD TEACHER DIALOG
-// ─────────────────────────────────────────────
+
 
 class AddTeacherDialog extends StatefulWidget {
   const AddTeacherDialog({super.key});
@@ -166,7 +165,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _imeiCtrl = TextEditingController(); // FIX: added MAC controller
+  final _imeiCtrl = TextEditingController(); //  added MAC controller
   bool _isActive = true; // NEW: Active/Inactive toggle, defaults to Active
   bool _obscurePassword = true;
   bool _isLoading = false;
@@ -177,21 +176,21 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _phoneCtrl.dispose();
-    _imeiCtrl.dispose(); // FIX: dispose MAC controller
+    _imeiCtrl.dispose(); //  dispose MAC controller
     super.dispose();
   }
 
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    // FIX: pass _imeiCtrl as 5th arg to match updated wrapper signature
+    //  pass _imeiCtrl as 5th arg to match updated wrapper signature
     final success = await addTeacher(
       _usernameCtrl.text.trim(),
       _emailCtrl.text.trim(),
       _passwordCtrl.text.trim(),
       _phoneCtrl.text.trim(),
       _imeiCtrl.text.trim(),
-      status: _isActive ? 1 : 0, // NEW
+      status: _isActive ? 1 : 0, 
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -317,9 +316,9 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   }
 }
 
-// ─────────────────────────────────────────────
-// EDIT TEACHER DIALOG - ALL ERRORS FIXED
-// ─────────────────────────────────────────────
+
+// EDIT TEACHER DIALOG 
+
 
 class EditTeacherDialog extends StatefulWidget {
   final TeacherModel teacher;
@@ -334,8 +333,8 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
   late TextEditingController _usernameCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
-  late TextEditingController _imeiCtrl; // FIX: added MAC controller
-  late bool _isActive; // NEW: pre-filled from existing teacher status
+  late TextEditingController _imeiCtrl; //  added MAC controller
+  late bool _isActive; //  pre-filled from existing teacher status
   bool _isLoading = false;
 
   @override
@@ -344,9 +343,9 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     _usernameCtrl = TextEditingController(text: widget.teacher.name);
     _emailCtrl = TextEditingController(text: widget.teacher.email?? '');
     _phoneCtrl = TextEditingController(text: widget.teacher.phone?? '');
-    // FIX: prefill existing MAC address from teacher model
+    //  prefill existing MAC address from teacher model
     _imeiCtrl = TextEditingController(text: widget.teacher.deviceId ?? '');
-    // NEW: prefill toggle from existing teacher status
+    //  prefill toggle from existing teacher status
     _isActive = widget.teacher.status == TeacherStatus.verified;
   }
 
@@ -355,21 +354,21 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
-    _imeiCtrl.dispose(); // FIX: dispose MAC controller
+    _imeiCtrl.dispose(); //  dispose MAC controller
     super.dispose();
   }
 
   Future<void> _onUpdate() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    // FIX: pass _imeiCtrl as 5th arg to match updated wrapper signature
+    //  pass _imeiCtrl as 5th arg to match updated wrapper signature
     final success = await updateTeacher(
       widget.teacher.id,
       _usernameCtrl.text.trim(),
       _emailCtrl.text.trim(),
       _phoneCtrl.text.trim(),
       _imeiCtrl.text.trim(),
-      status: _isActive ? 1 : 0, // NEW
+      status: _isActive ? 1 : 0, 
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -481,9 +480,9 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // TEACHER CARD WIDGET
-// ─────────────────────────────────────────────
+
 
 class TeacherCard extends StatelessWidget {
   final TeacherModel teacher;
@@ -604,9 +603,9 @@ class TeacherCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // MAIN SCREEN - SIRF CONSTRUCTOR UPDATE KIYA
-// ─────────────────────────────────────────────
+
 
 class TeacherDirectoryScreen extends StatefulWidget {
   final int userId; 

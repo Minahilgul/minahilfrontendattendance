@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class ClassService {
-  // ─────────────────────────────────────────────
+  
   // FETCH ALL CLASSES
-  // ─────────────────────────────────────────────
+  
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
     try {
       final token = await AuthService.getToken();
@@ -28,9 +28,9 @@ class ClassService {
     }
   }
 
-  // ─────────────────────────────────────────────
+  
   // FETCH ALL TEACHERS (for dropdown)
-  // ─────────────────────────────────────────────
+  
   static Future<List<Map<String, dynamic>>> fetchTeachers() async {
     try {
       final token = await AuthService.getToken();
@@ -53,11 +53,10 @@ class ClassService {
     }
   }
 
-  // ─────────────────────────────────────────────
+  
   // CREATE CLASS
-  // ─────────────────────────────────────────────
-  // ✅ UPDATED: now accepts and sends teacherId (the real FK), so the
-  // backend can store ManageClass.teacher_id directly.
+  
+ 
   static Future<bool> createClass({
     required String name,
     int? teacherId,
@@ -90,10 +89,9 @@ class ClassService {
     }
   }
 
-  // ─────────────────────────────────────────────
   // UPDATE CLASS
-  // ─────────────────────────────────────────────
-  // ✅ UPDATED: same teacherId addition as createClass.
+  
+  //  UPDATED: same teacherId addition as createClass.
   static Future<bool> updateClass({
     required int id,
     required String name,
@@ -128,9 +126,9 @@ class ClassService {
     }
   }
 
-  // ─────────────────────────────────────────────
+  
   // DELETE CLASS
-  // ─────────────────────────────────────────────
+  
   static Future<bool> deleteClass(int id) async {
     try {
       final token = await AuthService.getToken();

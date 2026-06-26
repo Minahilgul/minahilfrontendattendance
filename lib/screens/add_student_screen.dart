@@ -11,7 +11,7 @@ class AddStudentScreen extends StatefulWidget {
 }
 
 class _AddStudentScreenState extends State<AddStudentScreen> {
-  // ✅ SAFE teacherId (NO 'null' STRING EVER)
+  //  SAFE teacherId (NO 'null' STRING EVER)
   String? get teacherIdValue {
     final user = AuthService.currentUser;
 
@@ -271,7 +271,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       roll: _rollController.text.trim(),
       status: _selectedStatus,
 
-      // ✅ IMPORTANT FIX: never send "null" string
+      //  never send "null" string
       teacherId: teacherIdValue ?? '',
     );
 

@@ -3,9 +3,9 @@ import 'package:get_storage/get_storage.dart';
 import '../core/services/student_service.dart';
 import '../widgets/base_scaffold.dart';
 
-// ─────────────────────────────────────────────
+
 // DATA MODELS
-// ─────────────────────────────────────────────
+
 
 class StudentModel {
   final int id;
@@ -74,9 +74,9 @@ Future<bool> deleteStudent(int id) async {
   return await StudentService.deleteStudent(id);
 }
 
-// ─────────────────────────────────────────────
+
 // ADD STUDENT DIALOG
-// ─────────────────────────────────────────────
+
 
 class AddStudentDialog extends StatefulWidget {
   const AddStudentDialog({super.key});
@@ -344,9 +344,9 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // EDIT STUDENT DIALOG
-// ─────────────────────────────────────────────
+
 
 class EditStudentDialog extends StatefulWidget {
   final StudentModel student;
@@ -385,7 +385,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
       setState(() {
         _classes = list;
 
-        // ✅ FIX: use 'class_name' key (same as AddStudentDialog)
+        //  use 'class_name' key (same as AddStudentDialog)
         final matches = list.any(
           (c) => c['class_name']?.toString() == _selectedClass,
         );
@@ -490,7 +490,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                         v!.isEmpty ? 'Phone number required' : null),
                 const SizedBox(height: 14),
 
-                // ✅ FIX: class_name key use ho rahi hai — Add dialog se match
+                //  class_name key use ho rahi hai — Add dialog se match
                 _loadingClasses
                     ? const Center(child: CircularProgressIndicator())
                     : DropdownButtonFormField<String>(
@@ -498,7 +498,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                             _selectedClass.isEmpty ? null : _selectedClass,
                         items: _classes.map((c) {
                           final className =
-                              c['class_name']?.toString() ?? ''; // ✅ FIXED
+                              c['class_name']?.toString() ?? ''; 
                           return DropdownMenuItem<String>(
                             value: className,
                             child: Text(className),
@@ -598,9 +598,9 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // STUDENT CARD WIDGET
-// ─────────────────────────────────────────────
+
 
 class StudentCard extends StatelessWidget {
   final StudentModel student;
@@ -702,9 +702,8 @@ class StudentCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────
+
 // MAIN DIRECTORY SCREEN
-// ─────────────────────────────────────────────
 
 class StudentDirectoryScreen extends StatefulWidget {
   const StudentDirectoryScreen({super.key});

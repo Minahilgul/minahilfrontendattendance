@@ -299,7 +299,7 @@ class _RosterScreenState extends State<RosterScreen> {
   }
 }
 
-// ─── Student Card ─────────────────────────────────────────────────────────────
+//  Student Card 
 
 class _StudentCard extends StatelessWidget {
   final StudentModel student;
@@ -379,7 +379,7 @@ class _StudentCard extends StatelessWidget {
   }
 }
 
-// ─── Status Badge ─────────────────────────────────────────────────────────────
+// Status Badge 
 
 class _StatusBadge extends StatelessWidget {
   final StudentStatus status;
@@ -423,7 +423,7 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-// ─── Add Student Button ───────────────────────────────────────────────────────
+//   Student Button 
 
 class _AddStudentButton extends StatelessWidget {
   final VoidCallback onTap;

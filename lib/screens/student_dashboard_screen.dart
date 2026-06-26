@@ -6,13 +6,13 @@ import 'package:http/http.dart' as http;
 import '../widgets/base_scaffold.dart';
 import '../core/services/student_profile_service.dart';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// Constants 
 const String _baseUrl    = 'http://localhost:8000/api';
 const Color _kGreen      = Color(0xFF0F9D58);
 const Color _kGreenLight = Color(0xFF00BFA5);
 const Color _kBg         = Color(0xFFF5F7FA);
 
-// ─── Model ───────────────────────────────────────────────────────────────────
+//  Model 
 class AttendanceRecord {
   final String subject;
   final String date;
@@ -31,7 +31,7 @@ class AttendanceRecord {
       );
 }
 
-// ─── Dummy Notifications ──────────────────────────────────────────────────────
+//  Dummy Notifications
 const List<Map<String, String>> _kNotifications = [
   {
     'icon': '📡',
@@ -63,7 +63,7 @@ const List<Map<String, String>> _kNotifications = [
   },
 ];
 
-// ─── Main Widget ──────────────────────────────────────────────────────────────
+//  Main Widget 
 class StudentDashboardScreen extends StatefulWidget {
   final int    userId;
   final String role;
@@ -255,9 +255,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+
 // PAGE 1 — HOME
-// ═══════════════════════════════════════════════════════════════════════════════
+
 class _HomePage extends StatelessWidget {
   final String name;
   final int userId;
@@ -359,9 +359,9 @@ class _HomePage extends StatelessWidget {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+
 // PAGE 2 — REPORTS
-// ═══════════════════════════════════════════════════════════════════════════════
+
 class _ReportsPage extends StatefulWidget {
   final List<AttendanceRecord> records;
   final VoidCallback onRefresh;
@@ -501,9 +501,9 @@ class _ReportsPageState extends State<_ReportsPage> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
+
 // PAGE 3 — NOTIFICATIONS
-// ═══════════════════════════════════════════════════════════════════════════════
+
 class _NotificationsPage extends StatefulWidget {
   @override
   State<_NotificationsPage> createState() => _NotificationsPageState();
@@ -607,9 +607,8 @@ class _NotificationsPageState extends State<_NotificationsPage> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // PAGE 4 — PROFILE
-// ═══════════════════════════════════════════════════════════════════════════════
+
 class _ProfilePage extends StatefulWidget {
   final String name;
   final int userId;
@@ -910,9 +909,8 @@ Future<void> _openChangePassword() async {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
 // SHARED SMALL WIDGETS
-// ═══════════════════════════════════════════════════════════════════════════════
+
 class _SectionCard extends StatelessWidget {
   final IconData icon;
   final String title;
