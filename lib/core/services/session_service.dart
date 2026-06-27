@@ -54,39 +54,69 @@ class SessionService {
     }
   }
 
-  
-  // GET SESSION STUDENTS
-  
-  static Future<Map<String, dynamic>> getStudents(int sessionId) async {
-    try {
-      final token = await AuthService.getToken();
+// GET ACTIVE SESSION (restore state on app load)
 
-      final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/sessions/$sessionId/students'),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
+static Future<Map<String, dynamic>> getActiveSession(int teacherId) async {
+  try {
+    final token = await AuthService.getToken();
 
-      print("GET STUDENTS STATUS: ${response.statusCode}");
-      print("GET STUDENTS RESPONSE: ${response.body}");
+    final response = await http.get(
+      Uri.parse('${AuthService.baseUrl}/active-session/$teacherId'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
 
-      final data = jsonDecode(response.body);
+    print("ACTIVE SESSION STATUS: ${response.statusCode}");
+    print("ACTIVE SESSION RESPONSE: ${response.body}");
 
-      if (response.statusCode == 200 && data['success'] == true) {
-        return {'success': true, 'data': data['data']};
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to fetch students',
-        };
-      }
-    } catch (e) {
-      return {'success': false, 'message': 'Connection error: $e'};
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return {
+        'success': true,
+        'active': data['active'],
+        'data': data['data'],
+      };
+    } else {
+      return {'success': false, 'active': false, 'data': null};
     }
+  } catch (e) {
+    return {'success': false, 'active': false, 'data': null};
   }
+}
 
+// GET STUDENTS FOR SESSION
+static Future<Map<String, dynamic>> getStudents(int sessionId) async {
+  try {
+    final token = await AuthService.getToken();
+
+    final response = await http.get(
+      Uri.parse('${AuthService.baseUrl}/sessions/$sessionId/students'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print("GET STUDENTS STATUS: ${response.statusCode}");
+    print("GET STUDENTS RESPONSE: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return {'success': true, 'data': data['data']};
+    } else {
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Failed to fetch students',
+      };
+    }
+  } catch (e) {
+    return {'success': false, 'message': 'Connection error: $e'};
+  }
+}
   
   // SAVE SELECTED STUDENTS
   
@@ -127,10 +157,7 @@ class SessionService {
       return {'success': false, 'message': 'Connection error: $e'};
     }
   }
-
-  
   // END SESSION
-  
   static Future<Map<String, dynamic>> endSession(int sessionId) async {
     try {
       final token = await AuthService.getToken();

@@ -8,6 +8,9 @@ import '../core/services/auth_service.dart';
 import 'student_selection_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'session_report_screen.dart';
+import 'attendance_report_screen.dart';
+import '../core/services/confirmation_service.dart';
 
 
 
@@ -38,6 +41,221 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     _NavItem(icon: Icons.bar_chart_rounded, label: 'Reports'),
     _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
   ];
+  //confirmation 
+  @override
+  void initState() {
+    super.initState();
+    _checkActiveSession();
+  }
+
+  Future<void> _checkActiveSession() async {
+    final result = await SessionService.getActiveSession(teacherId);
+    print("ACTIVE SESSION CHECK: $result");
+    if (result['success'] == true && result['active'] == true && result['data'] != null) {
+      setState(() {
+        activeSessionId = result['data']['id'];
+      });
+    }
+  }
+
+  //show response
+  Future<void> _showResponseDirectory() async {
+  if (activeSessionId == null) {
+    _showSnack('Start a session first');
+    return;
+  }
+
+  // Show loading
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const Center(child: CircularProgressIndicator()),
+  );
+
+  final result = await ConfirmationService.getDirectory(activeSessionId!);
+  if (!mounted) return;
+  Navigator.pop(context); // close loader
+
+  if (result['success'] != true) {
+    _showSnack(result['message'] ?? 'Failed to load directory');
+    return;
+  }
+
+  final List<dynamic> students = result['data'] ?? [];
+
+  showDialog(
+    context: context,
+    builder: (_) => Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.75,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: const BoxDecoration(
+                color: Color(0xFF00796B),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.how_to_reg_rounded, color: Colors.white),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text('Confirmation Directory',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15)),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+            ),
+            // Analytics row
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _directoryChip('✅ YES', result['yes_count'] ?? 0, const Color(0xFF0F9D58)),
+                  _directoryChip('❌ NO', result['no_count'] ?? 0, Colors.red),
+                  _directoryChip('⏳ Pending', result['pending_count'] ?? 0, Colors.orange),
+                ],
+              ),
+            ),
+            // Verdict
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF00796B).withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: Text(
+                    result['verdict'] ?? 'Awaiting responses',
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF00796B)),
+                  ),
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+            // Student list
+            Flexible(
+              child: students.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(24),
+                      child: Text('No students found',
+                          style: TextStyle(color: Colors.grey)),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: students.length,
+                      separatorBuilder: (_, __) =>
+                          const Divider(height: 1, indent: 16),
+                      itemBuilder: (_, i) {
+                        final s = students[i];
+                        final resp = s['response'] as String;
+                        final respColor = resp == 'yes'
+                            ? const Color(0xFF0F9D58)
+                            : resp == 'no'
+                                ? Colors.red
+                                : Colors.orange;
+                        final respIcon = resp == 'yes'
+                            ? Icons.check_circle_rounded
+                            : resp == 'no'
+                                ? Icons.cancel_rounded
+                                : Icons.hourglass_empty_rounded;
+
+                        return ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: respColor.withOpacity(0.12),
+                            child: Text(
+                              (s['student_name'] as String)
+                                  .substring(0, 1)
+                                  .toUpperCase(),
+                              style: TextStyle(
+                                  color: respColor,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          title: Text(s['student_name'] ?? '-',
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13)),
+                          subtitle: Text(
+                              'Roll: ${s['roll_no'] ?? '-'}  •  ${s['responded_at']}',
+                              style: const TextStyle(fontSize: 11)),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(respIcon, color: respColor, size: 16),
+                              const SizedBox(width: 4),
+                              Text(resp.toUpperCase(),
+                                  style: TextStyle(
+                                      color: respColor,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12)),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+            // Refresh button
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showResponseDirectory();
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Refresh'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF00796B),
+                    side: const BorderSide(color: Color(0xFF00796B)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _directoryChip(String label, int count, Color color) {
+  return Column(
+    children: [
+      Text('$count',
+          style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 22)),
+      Text(label,
+          style: TextStyle(color: color, fontSize: 11)),
+    ],
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -112,18 +330,33 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           ),
           _DashboardCardWidget(
             card: _DashboardCard(title: 'Reports', icon: Icons.bar_chart_rounded, iconColor: Color(0xFF7B1FA2)),
-            onTap: () => context.push('/teacher-reports'),
+            onTap: (){
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AttendanceReportScreen(),
+      ),
+    );
+  }, //=> context.push('/teacher-reports'),
           ),
+          _DashboardCardWidget(
+  card: _DashboardCard(
+    title: 'View Responses',
+    icon: Icons.how_to_reg_rounded,
+    iconColor: Color(0xFF00796B),
+  ),
+  onTap: _showResponseDirectory,
+),
         ],
       ),
     );
   }
   Future<void> startSession() async {
   setState(() => isLoading = true);
-  print("1. BUTTON TAPPED ✅"); // 👈 ye add karo debug ke liye
+  print("1. BUTTON TAPPED ✅"); 
   
   try {
-    // 👇 YE 4 LINE ADD KARO - Location service check
+    //Location service check
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     print("2. Location Service: $serviceEnabled");
     if (!serviceEnabled) {
@@ -135,7 +368,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
     LocationPermission permission = await Geolocator.checkPermission();
     print("3. Permission: $permission");
-    // 👇 YE IMPORTANT HAI - Web ke liye
+    //  YE IMPORTANT HAI - Web ke liye
     if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
       permission = await Geolocator.requestPermission();
       print("4. After request: $permission");
@@ -151,9 +384,9 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     print("5. Getting location..."); 
     Position pos = await Geolocator.getCurrentPosition(
       desiredAccuracy: LocationAccuracy.low, 
-      timeLimit: Duration(seconds: 10), //  timeout add karo
+      timeLimit: Duration(seconds: 10), 
     );
-    print("6. Location OK: ${pos.latitude}"); //  ye add karo
+    print("6. Location OK: ${pos.latitude}"); 
 
     final result = await SessionService.createSession(
       teacherId: teacherId,
@@ -161,14 +394,14 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       longitude: pos.longitude,
     );
 
-    print("7. API Result: $result"); //  ye add karo
+    print("7. API Result: $result"); // 👈 ye add karo
 
     if (result['success']) {
       final int id = result['data']['id'];
       setState(() => activeSessionId = id);
 
       if (!mounted) return;
-      print("8. Navigating to StudentSelectionScreen..."); //  ye add karo
+      print("8. Navigating to StudentSelectionScreen..."); // 👈 ye add karo
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -179,12 +412,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       _showSnack(result['message'] ?? 'Failed to start session');
     }
   } catch (e) {
-    print("ERROR: $e"); 
+    print("ERROR: $e"); // 👈 ye add karo
     _showSnack('Error: $e');
   }
   setState(() => isLoading = false);
 }
-
+  
 
   Future<void> endSession() async {
     if (activeSessionId == null) {
@@ -199,6 +432,108 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       _showSnack(result['message'] ?? 'Error ending session');
     }
   }
+
+  // Request Confirmation 
+  Future<void> _requestConfirmation() async {
+  if (activeSessionId == null) {
+    _showSnack('Start a session first');
+    return;
+  }
+  final result = await ConfirmationService.requestConfirmation(activeSessionId!);
+  if (result['success'] == true) {
+    _showSnack('Confirmation request sent to students');
+  } else {
+    _showSnack(result['message'] ?? 'Failed to send request');
+  }
+}
+
+  Future<void> _showConfirmationResults() async {
+    if (activeSessionId == null) return;
+    final result = await ConfirmationService.getResults(activeSessionId!);
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Confirmation Results',
+            style: TextStyle(fontWeight: FontWeight.bold)),
+        content: result['requested'] == true
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _resultRow('✅ YES (Present)', result['yes_count'] ?? 0,
+                      const Color(0xFF0F9D58)),
+                  const SizedBox(height: 8),
+                  _resultRow('❌ NO (Not Present)', result['no_count'] ?? 0,
+                      Colors.red),
+                  const Divider(height: 24),
+                  Text(
+                    '${result['total_responded']}/${result['total_students']} students responded',
+                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: (result['yes_count'] ?? 0) >=
+                              (result['no_count'] ?? 0)
+                          ? const Color(0xFF0F9D58).withOpacity(0.1)
+                          : Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      result['verdict'] ?? '-',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: (result['yes_count'] ?? 0) >=
+                                (result['no_count'] ?? 0)
+                            ? const Color(0xFF0F9D58)
+                            : Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : const Text('No confirmation request sent yet.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _showConfirmationResults();
+            },
+            child: const Text('Refresh'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _resultRow(String label, int count, Color color) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label,
+            style: TextStyle(color: color, fontWeight: FontWeight.w500)),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text('$count',
+              style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16)),
+        ),
+      ],
+    );
+  }// END
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
