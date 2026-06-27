@@ -328,6 +328,10 @@ Widget _directoryChip(String label, int count, Color color) {
             card: _DashboardCard(title: 'My Profile', icon: Icons.group_rounded, iconColor: Color(0xFF1565C0)),
             onTap: () => context.push('/teacher-profile'),
           ),
+           _DashboardCardWidget(
+            card: _DashboardCard(title: 'Class Roaster', icon: Icons.group_rounded, iconColor: Color(0xFF1565C0)),
+            onTap: () => context.push('/roster'),
+          ),
           _DashboardCardWidget(
             card: _DashboardCard(title: 'Reports', icon: Icons.bar_chart_rounded, iconColor: Color(0xFF7B1FA2)),
             onTap: (){

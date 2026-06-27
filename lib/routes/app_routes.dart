@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import '../core/services/auth_service.dart';
 
+import '../screens/class_roaster.dart';
+
 
 import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
@@ -19,6 +21,7 @@ import '../screens/register_teacher_screen.dart';
 import '../screens/teacher_report.dart';
 import '../screens/admin_profile_screen.dart';
 import '../screens/teacher_profile_screen.dart';
+
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/',

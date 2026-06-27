@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_storage/get_storage.dart';
@@ -5,14 +6,16 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../widgets/base_scaffold.dart';
 import '../core/services/student_profile_service.dart';
+import '../core/services/confirmation_service.dart';
+import '../core/services/auth_service.dart';
 
-// Constants 
+// Constants
 const String _baseUrl    = 'http://localhost:8000/api';
 const Color _kGreen      = Color(0xFF0F9D58);
 const Color _kGreenLight = Color(0xFF00BFA5);
 const Color _kBg         = Color(0xFFF5F7FA);
 
-//  Model 
+// Model
 class AttendanceRecord {
   final String subject;
   final String date;
@@ -31,7 +34,7 @@ class AttendanceRecord {
       );
 }
 
-//  Dummy Notifications
+// Dummy Notifications
 const List<Map<String, String>> _kNotifications = [
   {
     'icon': '📡',
@@ -63,7 +66,7 @@ const List<Map<String, String>> _kNotifications = [
   },
 ];
 
-//  Main Widget 
+// Main Widget
 class StudentDashboardScreen extends StatefulWidget {
   final int    userId;
   final String role;
@@ -88,12 +91,144 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   bool _loading = true;
   String? _error;
 
+  // ── Confirmation polling ──
+  Timer? _confirmationPoller;
+  int get studentId => widget.userId;
+
   @override
   void initState() {
     super.initState();
     _loadData();
+    _startPolling();
   }
 
+  @override
+  void dispose() {
+    _confirmationPoller?.cancel();
+    super.dispose();
+  }
+
+  // ── Polling methods ──────────────────────────
+  void _startPolling() {
+    _confirmationPoller = Timer.periodic(
+      const Duration(seconds: 5),
+      (_) => _checkForConfirmation(),
+    );
+  }
+
+  Future<void> _checkForConfirmation() async {
+    final token = await AuthService.getToken();
+    print("TOKEN: $token");
+    print("POLLING... studentId: $studentId");
+    final result = await ConfirmationService.getPending(studentId);
+    print("POLL RESULT: $result");
+    if (result['pending'] == true && mounted) {
+      _confirmationPoller?.cancel();
+      await _showConfirmationDialog(
+        result['request_id'],
+        result['session_id'],
+      );
+      _startPolling();
+    }
+  }
+
+  Future<void> _showConfirmationDialog(int requestId, int sessionId) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0288D1).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.how_to_vote_rounded, color: Color(0xFF0288D1)),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text('Teacher Confirmation',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Is your teacher physically present in the classroom right now?',
+              style: TextStyle(fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Your response is confidential.',
+              style: TextStyle(fontSize: 11, color: Colors.grey),
+            ),
+          ],
+        ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
+        actions: [
+          // NO
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red.shade50,
+              foregroundColor: Colors.red,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            icon: const Icon(Icons.close_rounded, size: 18),
+            label: const Text('NO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            onPressed: () async {
+              await _submitResponse(requestId, 'no');
+              if (mounted) Navigator.pop(context);
+            },
+          ),
+          // YES
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0F9D58),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            icon: const Icon(Icons.check_rounded, size: 18),
+            label: const Text('YES', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            onPressed: () async {
+              await _submitResponse(requestId, 'yes');
+              if (mounted) Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _submitResponse(int requestId, String response) async {
+    final result = await ConfirmationService.submitResponse(
+      requestId: requestId,
+      studentId: studentId,
+      response: response,
+    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['success'] == true
+              ? 'Response submitted: ${response.toUpperCase()} ✓'
+              : result['message'] ?? 'Failed to submit'),
+          backgroundColor:
+              result['success'] == true ? const Color(0xFF0F9D58) : Colors.red,
+        ),
+      );
+    }
+  }
+
+  // ── Data loading ─────────────────────────────
   Future<String?> _getToken() async {
     final storage = GetStorage();
     return storage.read<String>('token');
@@ -136,6 +271,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     }
   }
 
+  // ── Bottom Nav ───────────────────────────────
   Widget _buildBottomNav() {
     final items = const [
       {'icon': Icons.home_rounded,          'label': 'Home'},
@@ -202,6 +338,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
+  // ── Body ─────────────────────────────────────
   Widget _buildBody() {
     if (_loading) {
       return const Center(
@@ -256,7 +393,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 }
 
 
+// ════════════════════════════════════════════
 // PAGE 1 — HOME
+// ════════════════════════════════════════════
 
 class _HomePage extends StatelessWidget {
   final String name;
@@ -291,6 +430,7 @@ class _HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Welcome Banner
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -330,7 +470,42 @@ class _HomePage extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+
+            // Listening indicator (confirmation polling)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0288D1).withOpacity(0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF0288D1).withOpacity(0.2)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.sensors_rounded, color: Color(0xFF0288D1), size: 18),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Listening for teacher confirmation requests…',
+                      style: TextStyle(
+                          color: Color(0xFF0288D1),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0.3, end: 1.0),
+                    duration: const Duration(seconds: 1),
+                    builder: (_, val, __) => Opacity(
+                      opacity: val,
+                      child: const Icon(Icons.circle, size: 8, color: Color(0xFF0288D1)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
             _SectionCard(
               icon: Icons.info_outline,
               title: 'ACCOUNT DETAILS',
@@ -345,11 +520,11 @@ class _HomePage extends StatelessWidget {
               icon: Icons.calendar_month_rounded,
               title: 'THIS MONTH',
               child: Row(children: [
-                _StatBox(label: 'Present', value: present, color: _kGreen,                   bg: const Color(0xFFE6F4EA)),
+                _StatBox(label: 'Present', value: present, color: _kGreen,                bg: const Color(0xFFE6F4EA)),
                 const SizedBox(width: 10),
-                _StatBox(label: 'Late',    value: late,    color: const Color(0xFFF59E0B),    bg: const Color(0xFFFFF8E1)),
+                _StatBox(label: 'Late',    value: late,    color: const Color(0xFFF59E0B), bg: const Color(0xFFFFF8E1)),
                 const SizedBox(width: 10),
-                _StatBox(label: 'Absent',  value: absent,  color: Colors.red,                 bg: const Color(0xFFFFEBEE)),
+                _StatBox(label: 'Absent',  value: absent,  color: Colors.red,              bg: const Color(0xFFFFEBEE)),
               ]),
             ),
           ],
@@ -360,7 +535,9 @@ class _HomePage extends StatelessWidget {
 }
 
 
+// ════════════════════════════════════════════
 // PAGE 2 — REPORTS
+// ════════════════════════════════════════════
 
 class _ReportsPage extends StatefulWidget {
   final List<AttendanceRecord> records;
@@ -502,7 +679,9 @@ class _ReportsPageState extends State<_ReportsPage> {
 }
 
 
+// ════════════════════════════════════════════
 // PAGE 3 — NOTIFICATIONS
+// ════════════════════════════════════════════
 
 class _NotificationsPage extends StatefulWidget {
   @override
@@ -607,7 +786,10 @@ class _NotificationsPageState extends State<_NotificationsPage> {
   }
 }
 
+
+// ════════════════════════════════════════════
 // PAGE 4 — PROFILE
+// ════════════════════════════════════════════
 
 class _ProfilePage extends StatefulWidget {
   final String name;
@@ -631,123 +813,123 @@ class _ProfilePageState extends State<_ProfilePage> {
       behavior: SnackBarBehavior.floating,
     ));
   }
-Future<void> _openChangePassword() async {
-  final formKey   = GlobalKey<FormState>();
-  final currentPw = TextEditingController();
-  final newPw     = TextEditingController();
-  final confirmPw = TextEditingController();
 
-  await showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (ctx) {
-      bool showCurrent = false, showNew = false, showConfirm = false;
-      bool loading = false;
+  Future<void> _openChangePassword() async {
+    final formKey   = GlobalKey<FormState>();
+    final currentPw = TextEditingController();
+    final newPw     = TextEditingController();
+    final confirmPw = TextEditingController();
 
-      return StatefulBuilder(
-        builder: (ctx, setS) => Dialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(children: [
-                    const Icon(Icons.lock_outline, color: _kGreen),
-                    const SizedBox(width: 8),
-                    const Text('Change Password',
-                        style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ]),
-                  const SizedBox(height: 16),
-                  _dialogPwField('Current Password', currentPw, showCurrent,
-                      () => setS(() => showCurrent = !showCurrent),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Required' : null),
-                  const SizedBox(height: 12),
-                  _dialogPwField('New Password', newPw, showNew,
-                      () => setS(() => showNew = !showNew),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return 'Required';
-                        if (v.length < 8) return 'Min 8 characters';
-                        return null;
-                      }),
-                  const SizedBox(height: 12),
-                  _dialogPwField('Confirm Password', confirmPw, showConfirm,
-                      () => setS(() => showConfirm = !showConfirm),
-                      validator: (v) =>
-                          v != newPw.text ? 'Passwords do not match' : null),
-                  const SizedBox(height: 20),
-                  Row(children: [
-                    Expanded(
-                      child: OutlinedButton(
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        bool showCurrent = false, showNew = false, showConfirm = false;
+        bool loading = false;
+
+        return StatefulBuilder(
+          builder: (ctx, setS) => Dialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(children: [
+                      const Icon(Icons.lock_outline, color: _kGreen),
+                      const SizedBox(width: 8),
+                      const Text('Change Password',
+                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                      const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close),
                         onPressed: () => Navigator.pop(ctx),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Cancel'),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: loading
-                            ? null
-                            : () async {
-                                if (!formKey.currentState!.validate()) return;
-                                setS(() => loading = true);
-                                try {
-                                  await _service.changePassword(
-                                    currentPassword: currentPw.text,
-                                    newPassword: newPw.text,
-                                    confirmPassword: confirmPw.text,
-                                  );
-                                  if (ctx.mounted) Navigator.pop(ctx);
-                                  if (mounted) {
-                                    _showSnackbar('Password changed successfully');
+                    ]),
+                    const SizedBox(height: 16),
+                    _dialogPwField('Current Password', currentPw, showCurrent,
+                        () => setS(() => showCurrent = !showCurrent),
+                        validator: (v) => (v == null || v.isEmpty) ? 'Required' : null),
+                    const SizedBox(height: 12),
+                    _dialogPwField('New Password', newPw, showNew,
+                        () => setS(() => showNew = !showNew),
+                        validator: (v) {
+                          if (v == null || v.isEmpty) return 'Required';
+                          if (v.length < 8) return 'Min 8 characters';
+                          return null;
+                        }),
+                    const SizedBox(height: 12),
+                    _dialogPwField('Confirm Password', confirmPw, showConfirm,
+                        () => setS(() => showConfirm = !showConfirm),
+                        validator: (v) =>
+                            v != newPw.text ? 'Passwords do not match' : null),
+                    const SizedBox(height: 20),
+                    Row(children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: loading
+                              ? null
+                              : () async {
+                                  if (!formKey.currentState!.validate()) return;
+                                  setS(() => loading = true);
+                                  try {
+                                    await _service.changePassword(
+                                      currentPassword: currentPw.text,
+                                      newPassword: newPw.text,
+                                      confirmPassword: confirmPw.text,
+                                    );
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                    if (mounted) {
+                                      _showSnackbar('Password changed successfully');
+                                    }
+                                  } catch (e) {
+                                    if (ctx.mounted) setS(() => loading = false);
+                                    if (mounted) _showSnackbar(e.toString(), isError: true);
                                   }
-                                } catch (e) {
-                                  if (ctx.mounted) setS(() => loading = false);
-                                  if (mounted) _showSnackbar(e.toString(), isError: true);
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _kGreen,
-                          padding: const EdgeInsets.symmetric(vertical: 13),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _kGreen,
+                            padding: const EdgeInsets.symmetric(vertical: 13),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
+                          ),
+                          child: loading
+                              ? const SizedBox(
+                                  width: 20, height: 20,
+                                  child: CircularProgressIndicator(
+                                      color: Colors.white, strokeWidth: 2))
+                              : const Text('Update',
+                                  style: TextStyle(color: Colors.white)),
                         ),
-                        child: loading
-                            ? const SizedBox(
-                                width: 20, height: 20,
-                                child: CircularProgressIndicator(
-                                    color: Colors.white, strokeWidth: 2))
-                            : const Text('Update',
-                                style: TextStyle(color: Colors.white)),
                       ),
-                    ),
-                  ]),
-                ],
+                    ]),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
 
-  // Dialog band hone ke BAAD dispose karo
-  currentPw.dispose();
-  newPw.dispose();
-  confirmPw.dispose();
-}
+    currentPw.dispose();
+    newPw.dispose();
+    confirmPw.dispose();
+  }
 
   Widget _dialogPwField(
     String label,
@@ -909,7 +1091,10 @@ Future<void> _openChangePassword() async {
   }
 }
 
+
+// ════════════════════════════════════════════
 // SHARED SMALL WIDGETS
+// ════════════════════════════════════════════
 
 class _SectionCard extends StatelessWidget {
   final IconData icon;

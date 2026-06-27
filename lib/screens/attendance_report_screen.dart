@@ -44,9 +44,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         vsync: this, duration: const Duration(milliseconds: 500));
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _loadAll();
-    _refreshTimer = Timer.periodic(           // ab error nahi
+    _refreshTimer = Timer.periodic(           // ✅ FIX 3: ab error nahi
       const Duration(seconds: 15),
-       (_) => _loadAll(silent: true), 
+      (_) => _loadAll(silent: true), 
     );
   }
 
@@ -60,11 +60,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   }
 
   Future<void> _loadAll({bool silent = false}) async {
-  if (!silent){
-       setState(() { 
-        _loading = true; 
-        _error = null; });
-  }
+     if (!silent) setState(() { _loading = true; _error = null; });
     try {
       final token = await AuthService.getToken();
       final headers = {
@@ -72,6 +68,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         'Authorization': 'Bearer $token',
       };
 
+      //teenon requests Future.wait mein
       final results = await Future.wait([
         http.get(
           Uri.parse('${AuthService.baseUrl}/attendance/report')
@@ -107,15 +104,16 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         _weeklyData = List<Map<String, dynamic>>.from(body['weekly_data'] ?? []);
       }
 
-      if (results[2].statusCode == 200) {     //  ab crash nahi hoga
+      if (results[2].statusCode == 200) {     // ✅ ab crash nahi hoga
         final body = jsonDecode(results[2].body);
         _allSessions = List<Map<String, dynamic>>.from(body['data'] ?? []);
       }
 
       setState(() => _loading = false);
-      if (!silent) _animController.forward(from: 0);
+      _animController.forward(from: 0);
     } catch (e) {
-      setState(() { _error = 'Connection error: $e'; _loading = false; });
+          if (!silent) setState(() { _error = 'Connection error: $e'; _loading = false; });
+
     }
   }
 
@@ -171,7 +169,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   int get _absentCount  => _records.where((r) => r['status'] == 'absent').length;
   int get _lateCount    => _records.where((r) => r['status'] == 'late').length;
 
-  
+  // ════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -230,7 +228,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     );
   }
 
-  //Filter chips 
+  // ── Filter chips ──────────────────────────────────
   Widget _buildFilterChips() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
