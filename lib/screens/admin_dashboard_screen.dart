@@ -6,7 +6,7 @@ import 'teacher_directory_screen.dart';
 import 'view_attendance_screen.dart';
 import 'classes_screen.dart';
 import 'pending_approvals_screen.dart';
-import 'reports_screen.dart';
+import 'admin_report_screen.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/base_scaffold.dart'; 
 

@@ -11,7 +11,7 @@ import '../screens/teacher_dashboard.dart';
 import '../screens/classes_screen.dart';
 import '../screens/teacher_directory_screen.dart';
 import '../screens/pending_approvals_screen.dart';
-import '../screens/reports_screen.dart';
+import '../screens/admin_report_screen.dart';
 import '../screens/role_screen.dart'; 
 import '../screens/create_session_page.dart';
 import '../screens/settings_screen.dart';
@@ -21,6 +21,7 @@ import '../screens/register_teacher_screen.dart';
 import '../screens/teacher_report.dart';
 import '../screens/admin_profile_screen.dart';
 import '../screens/teacher_profile_screen.dart';
+
 
 
 final GoRouter appRouter = GoRouter(
