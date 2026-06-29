@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:get_storage/get_storage.dart';
+import '../core/theme/app_colors.dart';
 
 class BaseScaffold extends StatelessWidget {
   final String title;
@@ -47,23 +48,28 @@ class BaseScaffold extends StatelessWidget {
     }
 
     return Scaffold(
+       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(title,
             style: const TextStyle(
                 fontWeight: FontWeight.w800, fontSize: 20, color: Colors.white)),
-        backgroundColor: const Color(0xFF2979FF),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: actions,
       ),
       drawer: Drawer(
+        backgroundColor: AppColors.surface,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                    colors: [Color(0xFF2979FF), Color(0xFF00BFA5)]),
+                    colors: [ AppColors.primary,
+  AppColors.primaryDark,
+                    ],
+              ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,7 +180,7 @@ class BaseScaffold extends StatelessWidget {
                   }),
               ListTile(
                 leading: const Icon(Icons.person_outline,
-                    color: Color(0xFF0F9D58)),
+                    color: AppColors.success),
                 title: const Text('Student Directory'),
                 onTap: () {
                   Navigator.pop(context);
@@ -241,9 +247,9 @@ class BaseScaffold extends StatelessWidget {
 
             // Logout — always shown
             ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
+              leading: const Icon(Icons.logout, color: AppColors.danger),
               title: const Text('Logout',
-                  style: TextStyle(color: Colors.red)),
+                  style: TextStyle(color: AppColors.danger)),
               onTap: () async {
                 final storage = GetStorage();
                 await storage.erase();

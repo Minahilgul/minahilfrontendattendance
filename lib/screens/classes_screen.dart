@@ -214,9 +214,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
     return BaseScaffold(
       title: 'Classes',
       role: _currentRole,
-      actions: [
-        IconButton(icon: const Icon(Icons.add, color: Colors.white, size: 26), onPressed: _showAddClassDialog),
-      ],
+
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddClassDialog,
         backgroundColor: const Color(0xFF2196F3),

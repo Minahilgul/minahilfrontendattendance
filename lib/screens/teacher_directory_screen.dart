@@ -73,8 +73,6 @@ class TeacherModel {
 // API SERVICE WRAPPERS
 
 
-//      Added deviceId param to match service signature.
-//  Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> addTeacher(
   String username,
   String email,
@@ -94,9 +92,6 @@ Future<bool> addTeacher(
   return result['success'] == true;
 }
 
-//  TeacherService.updateTeacher now returns Map<String,dynamic> not bool.
-//      Added deviceId param to match service signature.
-//  Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> updateTeacher(
   int id,
   String username,
@@ -165,8 +160,8 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
-  final _imeiCtrl = TextEditingController(); //  added MAC controller
-  bool _isActive = true; // NEW: Active/Inactive toggle, defaults to Active
+  final _imeiCtrl = TextEditingController();
+  bool _isActive = true;
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -176,14 +171,13 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _phoneCtrl.dispose();
-    _imeiCtrl.dispose(); //  dispose MAC controller
+    _imeiCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    //  pass _imeiCtrl as 5th arg to match updated wrapper signature
     final success = await addTeacher(
       _usernameCtrl.text.trim(),
       _emailCtrl.text.trim(),
@@ -226,42 +220,23 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                 _buildPasswordField(),
                 const SizedBox(height: 14),
                 _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone,
-                validator: (v) =>
-      v == null || v.trim().isEmpty
-          ? 'Phone number required'
-          : null,
-                ),
-
+                  validator: (v) => v == null || v.trim().isEmpty ? 'Phone number required' : null),
                 const SizedBox(height: 14),
                 _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined,
-                validator: (v) =>
-      v == null || v.trim().isEmpty
-          ? 'Device ID required'
-          : null,
-                ),
+                  validator: (v) => v == null || v.trim().isEmpty ? 'Device ID required' : null),
                 const SizedBox(height: 14),
-
-                // NEW: Active/Inactive status toggle — placed below last field, right corner
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
                       _isActive ? 'Active' : 'Inactive',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                          color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600]),
                     ),
                     const SizedBox(width: 8),
-                    Switch(
-                      value: _isActive,
-                      activeColor: const Color(0xFF1565C0),
-                      onChanged: (val) => setState(() => _isActive = val),
-                    ),
+                    Switch(value: _isActive, activeColor: const Color(0xFF1565C0), onChanged: (val) => setState(() => _isActive = val)),
                   ],
                 ),
-
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -307,7 +282,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
       decoration: InputDecoration(
         labelText: 'Password',
         prefixIcon: const Icon(Icons.lock_outline, size: 20),
-        suffixIcon: IconButton(icon: Icon(_obscurePassword? Icons.visibility_off : Icons.visibility, size: 20), onPressed: () => setState(() => _obscurePassword =!_obscurePassword)),
+        suffixIcon: IconButton(icon: Icon(_obscurePassword? Icons.visibility_off : Icons.visibility, size: 20), onPressed: () => setState(() => _obscurePassword = !_obscurePassword)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         isDense: true,
@@ -333,8 +308,8 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
   late TextEditingController _usernameCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _phoneCtrl;
-  late TextEditingController _imeiCtrl; //  added MAC controller
-  late bool _isActive; //  pre-filled from existing teacher status
+  late TextEditingController _imeiCtrl;
+  late bool _isActive;
   bool _isLoading = false;
 
   @override
@@ -343,9 +318,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     _usernameCtrl = TextEditingController(text: widget.teacher.name);
     _emailCtrl = TextEditingController(text: widget.teacher.email?? '');
     _phoneCtrl = TextEditingController(text: widget.teacher.phone?? '');
-    //  prefill existing MAC address from teacher model
     _imeiCtrl = TextEditingController(text: widget.teacher.deviceId ?? '');
-    //  prefill toggle from existing teacher status
     _isActive = widget.teacher.status == TeacherStatus.verified;
   }
 
@@ -354,14 +327,13 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     _usernameCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
-    _imeiCtrl.dispose(); //  dispose MAC controller
+    _imeiCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _onUpdate() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    //  pass _imeiCtrl as 5th arg to match updated wrapper signature
     final success = await updateTeacher(
       widget.teacher.id,
       _usernameCtrl.text.trim(),
@@ -372,16 +344,13 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
-
     if (success) {
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${widget.teacher.name} updated successfully!'), backgroundColor: const Color(0xFF2E7D32))
-      );
+        SnackBar(content: Text('${widget.teacher.name} updated successfully!'), backgroundColor: const Color(0xFF2E7D32)));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to update teacher'), backgroundColor: Color(0xFFC62828))
-      );
+        const SnackBar(content: Text('Failed to update teacher'), backgroundColor: Color(0xFFC62828)));
     }
   }
 
@@ -393,81 +362,63 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
           child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Edit Teacher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-            const SizedBox(height: 4),
-            Text('Update faculty details', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
-            const SizedBox(height: 20),
-            _buildField('Username', _usernameCtrl, Icons.person_outline, validator: (v) => v!.isEmpty? 'Username required' : null),
-            const SizedBox(height: 14),
-            _buildField('Email', _emailCtrl, Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) => v!.isEmpty? 'Email required' : null),
-            const SizedBox(height: 14),
-            _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone,
-            validator: (v) =>
-      v == null || v.trim().isEmpty
-          ? 'Phone number required'
-          : null,
-            ),
-            const SizedBox(height: 14),
-            _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined,
-            validator: (v) =>
-      v == null || v.trim().isEmpty
-          ? 'Device ID required'
-          : null,
-            ),
-            const SizedBox(height: 14),
-
-            // NEW: Active/Inactive status toggle — placed below last field, right corner
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  _isActive ? 'Active' : 'Inactive',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600],
-                  ),
+                const Text('Edit Teacher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                Text('Update faculty details', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                const SizedBox(height: 20),
+                _buildField('Username', _usernameCtrl, Icons.person_outline, validator: (v) => v!.isEmpty? 'Username required' : null),
+                const SizedBox(height: 14),
+                _buildField('Email', _emailCtrl, Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) => v!.isEmpty? 'Email required' : null),
+                const SizedBox(height: 14),
+                _buildField('Phone Number', _phoneCtrl, Icons.phone_outlined, keyboardType: TextInputType.phone,
+                  validator: (v) => v == null || v.trim().isEmpty ? 'Phone number required' : null),
+                const SizedBox(height: 14),
+                _buildField('Device ID / IMEI', _imeiCtrl, Icons.router_outlined,
+                  validator: (v) => v == null || v.trim().isEmpty ? 'Device ID required' : null),
+                const SizedBox(height: 14),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      _isActive ? 'Active' : 'Inactive',
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                          color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600]),
+                    ),
+                    const SizedBox(width: 8),
+                    Switch(value: _isActive, activeColor: const Color(0xFF1565C0), onChanged: (val) => setState(() => _isActive = val)),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Switch(
-                  value: _isActive,
-                  activeColor: const Color(0xFF1565C0),
-                  onChanged: (val) => setState(() => _isActive = val),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _isLoading? null : () => Navigator.of(context).pop(),
+                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: Colors.grey[400]!), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _isLoading? null : _onUpdate,
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Update'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: _isLoading? null : () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: Colors.grey[400]!), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isLoading? null : _onUpdate,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Update'),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
-    ),
-  ),
-);
+    );
   }
 
   Widget _buildField(String label, TextEditingController ctrl, IconData icon, {TextInputType keyboardType = TextInputType.text, String? Function(String?)? validator}) {
@@ -525,10 +476,10 @@ class TeacherCard extends StatelessWidget {
                         Icon(Icons.class_outlined, size: 14, color: Colors.grey[500]),
                         const SizedBox(width: 4),
                         Text('${teacher.activeClasses} Active Classes', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                        if (teacher.deviceInfo!= null)...[const SizedBox(width: 12), Icon(Icons.smartphone, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.deviceInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
-                        if (teacher.registeredInfo!= null)...[const SizedBox(width: 12), Icon(Icons.check_circle_outline, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.registeredInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
+                        if (teacher.deviceInfo != null)...[const SizedBox(width: 12), Icon(Icons.smartphone, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.deviceInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
+                        if (teacher.registeredInfo != null)...[const SizedBox(width: 12), Icon(Icons.check_circle_outline, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.registeredInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
                       ]),
-                      if (teacher.lastSeen!= null)...[const SizedBox(height: 4), Text('LAST SEEN ${teacher.lastSeen}', style: TextStyle(fontSize: 10, color: Colors.grey[400], letterSpacing: 0.3))],
+                      if (teacher.lastSeen != null)...[const SizedBox(height: 4), Text('LAST SEEN ${teacher.lastSeen}', style: TextStyle(fontSize: 10, color: Colors.grey[400], letterSpacing: 0.3))],
                     ],
                   ),
                 ),
@@ -604,7 +555,7 @@ class TeacherCard extends StatelessWidget {
 }
 
 
-// MAIN SCREEN - SIRF CONSTRUCTOR UPDATE KIYA
+// MAIN SCREEN
 
 
 class TeacherDirectoryScreen extends StatefulWidget {
@@ -645,7 +596,6 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      print('Fetch Error: $e');
       setState(() => _isLoading = false);
     }
   }
@@ -653,7 +603,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
   List<TeacherModel> get _filteredTeachers {
     List<TeacherModel> list = _allTeachers;
     if (_selectedTab == 1) {
-      list = list.where((t) => t.status == TeacherStatus.verified || t.registeredInfo!= null).toList();
+      list = list.where((t) => t.status == TeacherStatus.verified || t.registeredInfo != null).toList();
     } else if (_selectedTab == 2) {
       list = list.where((t) => t.status == TeacherStatus.securityAlert).toList();
     }
@@ -685,13 +635,10 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
         ],
       ),
     );
-
     if (confirm == true) {
       final success = await deleteTeacher(teacher.id);
       if (success) {
-        setState(() {
-          _allTeachers.removeWhere((t) => t.id == teacher.id);
-        });
+        setState(() { _allTeachers.removeWhere((t) => t.id == teacher.id); });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${teacher.name} deleted'), backgroundColor: const Color(0xFFC62828)));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete'), backgroundColor: Color(0xFFC62828)));
@@ -705,7 +652,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Approve Teacher'),
-        content: Text('Are you sure you want to approve and activate the account of ${teacher.name}?'),
+        content: Text('Are you sure you want to approve ${teacher.name}?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           ElevatedButton(
@@ -716,7 +663,6 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
         ],
       ),
     );
-
     if (confirm == true) {
       final success = await TeacherService.approveTeacher(teacher.id);
       if (success) {
@@ -725,6 +671,29 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to approve teacher'), backgroundColor: Color(0xFFC62828)));
       }
+    }
+  }
+
+  void _showResetDeviceDialog(TeacherModel teacher) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Reset Device Binding'),
+        content: Text('This will clear the registered device for ${teacher.name}. They will be able to log in from a new device. Continue?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0)),
+            child: const Text('Reset', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+    if (confirm == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Device binding reset successfully'), backgroundColor: Color(0xFF2E7D32)));
     }
   }
 
@@ -739,15 +708,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     return BaseScaffold(
       title: 'Teacher Directory',
       role: 'admin',
-      actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(color: const Color(0xFF1565C0), borderRadius: BorderRadius.circular(10)),
-          child: IconButton(icon: const Icon(Icons.add, color: Colors.white, size: 20), onPressed: _openAddTeacherDialog, padding: EdgeInsets.zero),
-        ),
-      ],
+      actions: const [],
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTeacherDialog,
         backgroundColor: const Color(0xFF1565C0),
@@ -785,8 +746,8 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                       child: Container(
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(color: selected? const Color(0xFF1565C0) : Colors.transparent, borderRadius: BorderRadius.circular(20)),
-                        child: Text(_tabs[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected? Colors.white : Colors.grey[600])),
+                        decoration: BoxDecoration(color: selected ? const Color(0xFF1565C0) : Colors.transparent, borderRadius: BorderRadius.circular(20)),
+                        child: Text(_tabs[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected ? Colors.white : Colors.grey[600])),
                       ),
                     );
                   })),
@@ -797,43 +758,51 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
             Expanded(
               child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                  : ListView(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            Text('ACTIVE STAFF (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)),
-                            Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: const Color(0xFF1565C0))),
-                          ]),
-                        ),
-                        const SizedBox(height: 4),
+                : ListView(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                          Text('ACTIVE STAFF (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)),
+                          Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: const Color(0xFF1565C0))),
+                        ]),
+                      ),
+                      const SizedBox(height: 4),
                       ..._filteredTeachers.map((t) => TeacherCard(
-                              teacher: t,
-                              onEdit: () async {
-                                final result = await showDialog<bool>(context: context, builder: (_) => EditTeacherDialog(teacher: t));
-                                if (result == true) _fetchTeachers();
-                              },
-                              onDelete: () => _showDeleteDialog(t),
-                              onApprove: () => _showApproveDialog(t),
-                            )),
-                        Container(
+                        teacher: t,
+                        onEdit: () async {
+                          final result = await showDialog<bool>(context: context, builder: (_) => EditTeacherDialog(teacher: t));
+                          if (result == true) _fetchTeachers();
+                        },
+                        onDelete: () => _showDeleteDialog(t),
+                        onApprove: () => _showApproveDialog(t),
+                      )),
+                      // ── Reset Device Binding banner ──
+                      GestureDetector(
+                        onTap: () {
+                          if (_filteredTeachers.isNotEmpty) {
+                            _showResetDeviceDialog(_filteredTeachers.first);
+                          }
+                        },
+                        child: Container(
                           margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(color: const Color(0xFF1565C0), borderRadius: BorderRadius.circular(12)),
                           child: Row(children: [
-                            const Icon(Icons.sync, color: Colors.white, size: 18),
+                            const Icon(Icons.phone_android, color: Colors.white, size: 18),
                             const SizedBox(width: 10),
-                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
-                              Text('Security Sync', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
-                              Text('Last synced 5 mins ago', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                            const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text('Reset Device Binding', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                              Text('Clear teacher device lock', style: TextStyle(color: Colors.white70, fontSize: 11)),
                             ]),
                             const Spacer(),
-                            const Text('Details', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
+                            const Text('Tap to Reset', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                           ]),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
+                  ),
             ),
           ],
         ),

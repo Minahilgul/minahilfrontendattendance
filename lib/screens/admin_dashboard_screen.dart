@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'add_student_screen.dart';
 import 'add_teacher_screen.dart';
 import 'teacher_directory_screen.dart';
-// import 'admin_profile_screen.dart' as profile;
 import 'view_attendance_screen.dart';
 import 'classes_screen.dart';
 import 'pending_approvals_screen.dart';
 import 'admin_report_screen.dart';
 import 'package:go_router/go_router.dart';
 import '../widgets/base_scaffold.dart'; 
+import '../widgets/dashboard_card.dart';
+import '../core/theme/app_colors.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -34,15 +35,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
     return BaseScaffold(
       title: 'Attendance Verification', 
       role: 'admin',
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: const Color(0xFF37474F),
-        mini: true,
-        child: const Icon(Icons.help_outline, color: Colors.white, size: 18),
-      ),
+      
       bottomNav: BottomNavigationBar(
         currentIndex: _selectedIndex,
         type: BottomNavigationBarType.fixed,
+        selectedItemColor: AppColors.primary,
+  unselectedItemColor: AppColors.textSecondary,
+  backgroundColor: AppColors.surface,
+  showUnselectedLabels: true,
+  elevation: 8,
         onTap: (index) {
           setState(() {
             _selectedIndex = index;
@@ -69,10 +70,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Padding(
+      
+        
+          
+            body: Padding(
               padding: const EdgeInsets.all(16),
               child: GridView.count(
                 crossAxisCount: 2,
@@ -83,7 +84,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   DashboardCard(
                     title: 'Manage Classes',
                     iconData: Icons.grid_view_rounded,
-                    iconBgColor: const Color(0xFF2979FF),
+                    type: DashboardCardType.primary,
                     onTap: () {
                       context.push('/classes');
                     },
@@ -91,7 +92,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   DashboardCard(
                     title: 'Teacher Directory',
                     iconData: Icons.shield_outlined,
-                    iconBgColor: const Color(0xFF00BFA5),
+                    type: DashboardCardType.success,
                     onTap: () {
                       context.push('/teachers');
                     },
@@ -99,7 +100,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   DashboardCard(
                     title: 'Pending Approvals',
                     iconData: Icons.group_outlined,
-                    iconBgColor: Color(0xFF00BFA5),
+                     type: DashboardCardType.warning,
                     onTap: () {
                       context.push('/pending');
                     },
@@ -107,7 +108,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   DashboardCard(
                     title: 'Reports & Audit',
                     iconData: Icons.description_outlined,
-                    iconBgColor: Color(0xFF9C27B0),
+                    type: DashboardCardType.purple,
                     onTap: () {
                       context.push('/reports');
                     },
@@ -115,66 +116,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class DashboardCard extends StatelessWidget {
-  final String title;
-  final IconData iconData;
-  final Color iconBgColor;
-  final VoidCallback? onTap;
-
-  const DashboardCard({
-    super.key,
-    required this.title,
-    required this.iconData,
-    required this.iconBgColor,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 62,
-                height: 62,
-                decoration: BoxDecoration(
-                  color: iconBgColor,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  iconData,
-                  color: Colors.white,
-                  size: 30,
-                ),
-              ),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1A1A2E),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
