@@ -236,9 +236,8 @@ class TeacherService {
     }
   }
 
-  // ─────────────────────────────
   // APPROVE TEACHER
-  // ─────────────────────────────
+  
   static Future<bool> approveTeacher(int id) async {
     try {
       final token = await AuthService.getToken();

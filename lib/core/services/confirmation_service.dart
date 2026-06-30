@@ -83,8 +83,10 @@ class ConfirmationService {
         }),
       );
       print("SUBMIT RESPONSE STATUS: ${res.statusCode}");
+      print("SUBMIT RESPONSE BODY: ${res.body}");
       return jsonDecode(res.body);
     } catch (e) {
+          print("SUBMIT RESPONSE ERROR: $e");
       return {'success': false, 'message': 'Connection error: $e'};
     }
   }
