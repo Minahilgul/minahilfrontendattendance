@@ -8,12 +8,10 @@ import '../widgets/base_scaffold.dart';
 import '../core/services/student_profile_service.dart';
 import '../core/services/confirmation_service.dart';
 import '../core/services/auth_service.dart';
+import '../core/theme/app_colors.dart';
 
 // Constants
-const String _baseUrl    = 'http://localhost:8000/api';
-const Color _kGreen      = Color(0xFF0F9D58);
-const Color _kGreenLight = Color(0xFF00BFA5);
-const Color _kBg         = Color(0xFFF5F7FA);
+const String _baseUrl = 'http://localhost:8000/api';
 
 // Model
 class AttendanceRecord {
@@ -34,35 +32,28 @@ class AttendanceRecord {
       );
 }
 
-// Dummy Notifications
+// Notifications — 3 random students ko bheja gaya
 const List<Map<String, String>> _kNotifications = [
   {
     'icon': '📡',
     'title': 'Attendance Session Started',
-    'body': 'Your teacher has started a new attendance session.',
+    'body': 'Ali Hassan: Your teacher has started a new attendance session.',
     'time': 'Just now',
     'type': 'session',
   },
   {
     'icon': '✅',
     'title': 'Attendance Marked',
-    'body': 'Your attendance was recorded successfully.',
+    'body': 'Sara Malik: Your attendance was recorded successfully.',
     'time': '2 hours ago',
     'type': 'confirm',
   },
   {
     'icon': '⚠️',
     'title': 'Low Attendance Warning',
-    'body': 'Your attendance in one class has dropped below 75%.',
+    'body': 'Usman Khan: Your attendance in one class has dropped below 75%.',
     'time': 'Yesterday',
     'type': 'alert',
-  },
-  {
-    'icon': '💬',
-    'title': 'Message from Teacher',
-    'body': 'Mid-term exam schedule has been updated.',
-    'time': '2 days ago',
-    'type': 'message',
   },
 ];
 
@@ -143,10 +134,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF0288D1).withOpacity(0.1),
+                color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.how_to_vote_rounded, color: Color(0xFF0288D1)),
+              child: const Icon(Icons.how_to_vote_rounded, color: AppColors.primary),
             ),
             const SizedBox(width: 10),
             const Expanded(
@@ -175,8 +166,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           // NO
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade50,
-              foregroundColor: Colors.red,
+              backgroundColor: AppColors.danger.withOpacity(0.1),
+              foregroundColor: AppColors.danger,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -191,7 +182,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           // YES
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0F9D58),
+              backgroundColor: AppColors.success,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -222,7 +213,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ? 'Response submitted: ${response.toUpperCase()} ✓'
               : result['message'] ?? 'Failed to submit'),
           backgroundColor:
-              result['success'] == true ? const Color(0xFF0F9D58) : Colors.red,
+              result['success'] == true ? AppColors.success : AppColors.danger,
         ),
       );
     }
@@ -282,7 +273,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, -2))],
       ),
       child: SafeArea(
@@ -304,14 +295,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         clipBehavior: Clip.none,
                         children: [
                           Icon(items[i]['icon'] as IconData,
-                              color: active ? _kGreen : const Color(0xFF9E9E9E)),
+                              color: active ? AppColors.primary : AppColors.textSecondary),
                           if (i == 2)
                             Positioned(
                               right: -4, top: -4,
                               child: Container(
                                 width: 10, height: 10,
                                 decoration: const BoxDecoration(
-                                  color: Colors.red,
+                                  color: AppColors.danger,
                                   shape: BoxShape.circle,
                                 ),
                               ),
@@ -323,7 +314,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         items[i]['label'] as String,
                         style: TextStyle(
                           fontSize: 11,
-                          color: active ? _kGreen : const Color(0xFF9E9E9E),
+                          color: active ? AppColors.primary : AppColors.textSecondary,
                           fontWeight: active ? FontWeight.w700 : FontWeight.w500,
                         ),
                       ),
@@ -345,9 +336,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(color: _kGreen),
+            CircularProgressIndicator(color: AppColors.primary),
             SizedBox(height: 16),
-            Text('Loading your data…', style: TextStyle(color: Colors.grey)),
+            Text('Loading your data…', style: TextStyle(color: AppColors.textSecondary)),
           ],
         ),
       );
@@ -357,13 +348,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.wifi_off_rounded, size: 48, color: Colors.grey),
+            const Icon(Icons.wifi_off_rounded, size: 48, color: AppColors.textSecondary),
             const SizedBox(height: 12),
-            Text('Could not load data', style: TextStyle(color: Colors.grey.shade600)),
+            const Text('Could not load data', style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed: _loadData,
-              style: ElevatedButton.styleFrom(backgroundColor: _kGreen),
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
               child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -424,7 +415,7 @@ class _HomePage extends StatelessWidget {
     final pct     = total > 0 ? ((present / total) * 100).round() : 0;
 
     return Container(
-      color: _kBg,
+      color: AppColors.background,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -436,12 +427,12 @@ class _HomePage extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [_kGreen, _kGreenLight],
+                  colors: [AppColors.primary, AppColors.primaryLight],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: _kGreen.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,23 +463,23 @@ class _HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Listening indicator (confirmation polling)
+            // Listening indicator
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF0288D1).withOpacity(0.08),
+                color: AppColors.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFF0288D1).withOpacity(0.2)),
+                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.sensors_rounded, color: Color(0xFF0288D1), size: 18),
+                  const Icon(Icons.sensors_rounded, color: AppColors.primary, size: 18),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
                       'Listening for teacher confirmation requests…',
                       style: TextStyle(
-                          color: Color(0xFF0288D1),
+                          color: AppColors.primary,
                           fontSize: 12,
                           fontWeight: FontWeight.w500),
                     ),
@@ -498,7 +489,7 @@ class _HomePage extends StatelessWidget {
                     duration: const Duration(seconds: 1),
                     builder: (_, val, __) => Opacity(
                       opacity: val,
-                      child: const Icon(Icons.circle, size: 8, color: Color(0xFF0288D1)),
+                      child: const Icon(Icons.circle, size: 8, color: AppColors.primary),
                     ),
                   ),
                 ],
@@ -512,7 +503,7 @@ class _HomePage extends StatelessWidget {
               child: Column(children: [
                 _InfoRow(label: 'User ID', value: '#$userId'),
                 _InfoRow(label: 'Role',    value: role.toUpperCase()),
-                _InfoRow(label: 'Status',  value: 'Active', valueColor: _kGreen),
+                _InfoRow(label: 'Status',  value: 'Active', valueColor: AppColors.success),
               ]),
             ),
             const SizedBox(height: 16),
@@ -520,11 +511,11 @@ class _HomePage extends StatelessWidget {
               icon: Icons.calendar_month_rounded,
               title: 'THIS MONTH',
               child: Row(children: [
-                _StatBox(label: 'Present', value: present, color: _kGreen,                bg: const Color(0xFFE6F4EA)),
+                _StatBox(label: 'Present', value: present, color: AppColors.success, bg: const Color(0xFFDCFCE7)),
                 const SizedBox(width: 10),
-                _StatBox(label: 'Late',    value: late,    color: const Color(0xFFF59E0B), bg: const Color(0xFFFFF8E1)),
+                _StatBox(label: 'Late',    value: late,    color: AppColors.warning,  bg: const Color(0xFFFEF3C7)),
                 const SizedBox(width: 10),
-                _StatBox(label: 'Absent',  value: absent,  color: Colors.red,              bg: const Color(0xFFFFEBEE)),
+                _StatBox(label: 'Absent',  value: absent,  color: AppColors.danger,   bg: const Color(0xFFFEE2E2)),
               ]),
             ),
           ],
@@ -563,10 +554,10 @@ class _ReportsPageState extends State<_ReportsPage> {
     final filtered = _filter == 'All' ? records : records.where((r) => r.subject == _filter).toList();
 
     return Container(
-      color: _kBg,
+      color: AppColors.background,
       child: RefreshIndicator(
         onRefresh: () async => widget.onRefresh(),
-        color: _kGreen,
+        color: AppColors.primary,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
@@ -576,7 +567,7 @@ class _ReportsPageState extends State<_ReportsPage> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(18),
                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 3))],
                 ),
@@ -590,12 +581,12 @@ class _ReportsPageState extends State<_ReportsPage> {
                           CircularProgressIndicator(
                             value: pct / 100,
                             strokeWidth: 8,
-                            backgroundColor: Colors.grey.shade200,
-                            valueColor: AlwaysStoppedAnimation(pct >= 75 ? _kGreen : Colors.red),
+                            backgroundColor: AppColors.border,
+                            valueColor: AlwaysStoppedAnimation(pct >= 75 ? AppColors.success : AppColors.danger),
                           ),
                           Text('$pct%', style: TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w800,
-                            color: pct >= 75 ? _kGreen : Colors.red,
+                            color: pct >= 75 ? AppColors.success : AppColors.danger,
                           )),
                         ],
                       ),
@@ -606,17 +597,17 @@ class _ReportsPageState extends State<_ReportsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Overall Attendance',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1C1B1F))),
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                           const SizedBox(height: 4),
                           Text('$present present out of $total classes',
-                              style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                           if (pct < 75) ...[
                             const SizedBox(height: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: const Color(0xFFFFEBEE), borderRadius: BorderRadius.circular(8)),
+                              decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(8)),
                               child: const Text('⚠ Below 75% threshold',
-                                  style: TextStyle(fontSize: 11, color: Colors.red, fontWeight: FontWeight.w700)),
+                                  style: TextStyle(fontSize: 11, color: AppColors.danger, fontWeight: FontWeight.w700)),
                             ),
                           ],
                         ],
@@ -640,14 +631,14 @@ class _ReportsPageState extends State<_ReportsPage> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
-                          color: active ? _kGreen : Colors.white,
+                          color: active ? AppColors.primary : AppColors.surface,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: active ? _kGreen : Colors.grey.shade300),
+                          border: Border.all(color: active ? AppColors.primary : AppColors.border),
                         ),
                         child: Text(s,
                             style: TextStyle(
                               fontSize: 12, fontWeight: FontWeight.w600,
-                              color: active ? Colors.white : Colors.grey.shade600,
+                              color: active ? Colors.white : AppColors.textSecondary,
                             )),
                       ),
                     );
@@ -656,14 +647,15 @@ class _ReportsPageState extends State<_ReportsPage> {
               ),
               const SizedBox(height: 16),
               if (filtered.isEmpty)
-                Center(
+                const Center(
                   child: Padding(
-                    padding: const EdgeInsets.only(top: 40),
+                    padding: EdgeInsets.only(top: 40),
                     child: Column(
                       children: [
-                        Icon(Icons.history_edu_rounded, size: 48, color: Colors.grey.shade400),
-                        const SizedBox(height: 12),
-                        Text('No attendance records yet', style: TextStyle(color: Colors.grey.shade500)),
+                        Icon(Icons.history_edu_rounded, size: 48, color: AppColors.textLight),
+                        SizedBox(height: 12),
+                        Text('No attendance records yet',
+                            style: TextStyle(color: AppColors.textSecondary)),
                       ],
                     ),
                   ),
@@ -696,7 +688,7 @@ class _NotificationsPageState extends State<_NotificationsPage> {
     final unread = _read.where((r) => !r).length;
 
     return Container(
-      color: _kBg,
+      color: AppColors.background,
       child: Column(
         children: [
           Padding(
@@ -705,13 +697,15 @@ class _NotificationsPageState extends State<_NotificationsPage> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(children: [
-                  const Text('Notifications', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text('Notifications',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
                   if (unread > 0) ...[
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
-                      child: Text('$unread', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
+                      decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(10)),
+                      child: Text('$unread',
+                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
                     ),
                   ],
                 ]),
@@ -719,7 +713,7 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                   GestureDetector(
                     onTap: () => setState(() { for (int i = 0; i < _read.length; i++) _read[i] = true; }),
                     child: const Text('Mark all read',
-                        style: TextStyle(color: _kGreen, fontSize: 12, fontWeight: FontWeight.w600)),
+                        style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
               ],
             ),
@@ -736,9 +730,12 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: _read[i] ? Colors.white : const Color(0xFFE8F0FE),
+                      color: _read[i] ? AppColors.surface : AppColors.primary.withOpacity(0.06),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border(left: BorderSide(color: _read[i] ? Colors.transparent : _kGreen, width: 4)),
+                      border: Border(
+                          left: BorderSide(
+                              color: _read[i] ? Colors.transparent : AppColors.primary,
+                              width: 4)),
                       boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
                     ),
                     child: Row(
@@ -746,7 +743,9 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                       children: [
                         Container(
                           width: 42, height: 42,
-                          decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(
+                              color: AppColors.background,
+                              borderRadius: BorderRadius.circular(12)),
                           child: Center(child: Text(n['icon']!, style: const TextStyle(fontSize: 20))),
                         ),
                         const SizedBox(width: 12),
@@ -758,12 +757,15 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: _read[i] ? FontWeight.w600 : FontWeight.w800,
-                                    color: const Color(0xFF1C1B1F),
+                                    color: AppColors.textPrimary,
                                   )),
                               const SizedBox(height: 3),
-                              Text(n['body']!, style: const TextStyle(fontSize: 12, color: Colors.grey, height: 1.4)),
+                              Text(n['body']!,
+                                  style: const TextStyle(
+                                      fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
                               const SizedBox(height: 6),
-                              Text(n['time']!, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                              Text(n['time']!,
+                                  style: const TextStyle(fontSize: 11, color: AppColors.textLight)),
                             ],
                           ),
                         ),
@@ -771,7 +773,8 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                           Container(
                             width: 8, height: 8,
                             margin: const EdgeInsets.only(top: 4),
-                            decoration: const BoxDecoration(color: _kGreen, shape: BoxShape.circle),
+                            decoration: const BoxDecoration(
+                                color: AppColors.primary, shape: BoxShape.circle),
                           ),
                       ],
                     ),
@@ -809,7 +812,7 @@ class _ProfilePageState extends State<_ProfilePage> {
   void _showSnackbar(String msg, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
-      backgroundColor: isError ? Colors.red : _kGreen,
+      backgroundColor: isError ? AppColors.danger : AppColors.success,
       behavior: SnackBarBehavior.floating,
     ));
   }
@@ -838,7 +841,7 @@ class _ProfilePageState extends State<_ProfilePage> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(children: [
-                      const Icon(Icons.lock_outline, color: _kGreen),
+                      const Icon(Icons.lock_outline, color: AppColors.primary),
                       const SizedBox(width: 8),
                       const Text('Change Password',
                           style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
@@ -902,7 +905,7 @@ class _ProfilePageState extends State<_ProfilePage> {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _kGreen,
+                            backgroundColor: AppColors.primary,
                             padding: const EdgeInsets.symmetric(vertical: 13),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12)),
@@ -944,15 +947,16 @@ class _ProfilePageState extends State<_ProfilePage> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: const Icon(Icons.lock_outline, color: _kGreen),
+        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
         suffixIcon: IconButton(
-          icon: Icon(show ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+          icon: Icon(show ? Icons.visibility_off : Icons.visibility,
+              color: AppColors.textSecondary),
           onPressed: toggle,
         ),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: _kGreen, width: 2),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
@@ -969,7 +973,7 @@ class _ProfilePageState extends State<_ProfilePage> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
           ),
@@ -995,7 +999,7 @@ class _ProfilePageState extends State<_ProfilePage> {
         : widget.name.substring(0, 2).toUpperCase();
 
     return Container(
-      color: _kBg,
+      color: AppColors.background,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1005,24 +1009,29 @@ class _ProfilePageState extends State<_ProfilePage> {
               width: 80, height: 80,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: LinearGradient(colors: [_kGreen, _kGreenLight]),
+                gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryLight]),
               ),
               child: Center(
                 child: Text(initials,
-                    style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
+                    style: const TextStyle(
+                        color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
               ),
             ),
             const SizedBox(height: 12),
             Text(widget.name,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1C1B1F))),
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
             Text(rollNo != '—' ? rollNo : 'Student',
-                style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
             const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(color: const Color(0xFFE6F4EA), borderRadius: BorderRadius.circular(10)),
+              decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(10)),
               child: const Text('● Active',
-                  style: TextStyle(color: _kGreen, fontSize: 12, fontWeight: FontWeight.w700)),
+                  style: TextStyle(
+                      color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w700)),
             ),
             const SizedBox(height: 24),
 
@@ -1037,7 +1046,7 @@ class _ProfilePageState extends State<_ProfilePage> {
                 _InfoRow(label: 'Class',     value: className),
                 _InfoRow(label: 'Roll No',   value: rollNo),
                 _InfoRow(label: 'Role',      value: widget.role.toUpperCase()),
-                _InfoRow(label: 'Status',    value: 'Active', valueColor: _kGreen),
+                _InfoRow(label: 'Status',    value: 'Active', valueColor: AppColors.success),
               ]),
             ),
             const SizedBox(height: 16),
@@ -1047,7 +1056,7 @@ class _ProfilePageState extends State<_ProfilePage> {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: const BorderSide(color: AppColors.border),
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1056,14 +1065,15 @@ class _ProfilePageState extends State<_ProfilePage> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                          color: _kGreen.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.lock_outline, color: _kGreen, size: 22),
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: const Icon(Icons.lock_outline, color: AppColors.primary, size: 22),
                     ),
                     title: const Text('Change Password',
                         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
                     subtitle: const Text('Update your password',
-                        style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
                     onTap: _openChangePassword,
                   ),
                   const Divider(height: 1, indent: 56),
@@ -1071,14 +1081,16 @@ class _ProfilePageState extends State<_ProfilePage> {
                     leading: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.logout, color: Colors.red, size: 22),
+                          color: AppColors.danger.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: const Icon(Icons.logout, color: AppColors.danger, size: 22),
                     ),
                     title: const Text('Logout',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.red)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.danger)),
                     subtitle: const Text('Sign out from this device',
-                        style: TextStyle(fontSize: 12, color: Colors.grey)),
-                    trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
                     onTap: _logout,
                   ),
                 ]),
@@ -1109,19 +1121,23 @@ class _SectionCard extends StatelessWidget {
     return Card(
       elevation: 0,
       shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16), side: BorderSide(color: Colors.grey.shade200)),
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.border)),
       child: Padding(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              Icon(icon, color: _kGreen, size: 18),
+              Icon(icon, color: AppColors.primary, size: 18),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(title,
                     style: const TextStyle(
-                        fontSize: 11, fontWeight: FontWeight.bold, color: Colors.black54, letterSpacing: 0.8)),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.8)),
               ),
               if (trailing != null) trailing!,
             ]),
@@ -1148,12 +1164,12 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+          Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
           Text(value,
               style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: valueColor ?? const Color(0xFF1C1B1F))),
+                  color: valueColor ?? AppColors.textPrimary)),
         ],
       ),
     );
@@ -1175,9 +1191,11 @@ class _StatBox extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
         child: Column(children: [
-          Text('$value', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+          Text('$value',
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+          Text(label,
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
         ]),
       ),
     );
@@ -1201,7 +1219,8 @@ class _BannerStat extends StatelessWidget {
           Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
           const SizedBox(height: 4),
           Text(value,
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+              style: const TextStyle(
+                  color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -1217,15 +1236,19 @@ class _AttendanceTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPresent = record.status == 'present';
     final isLate    = record.status == 'late';
-    final color = isPresent ? _kGreen : isLate ? const Color(0xFFF59E0B) : Colors.red;
-    final bg    = isPresent ? const Color(0xFFE6F4EA) : isLate ? const Color(0xFFFFF8E1) : const Color(0xFFFFEBEE);
+    final color = isPresent ? AppColors.success : isLate ? AppColors.warning : AppColors.danger;
+    final bg    = isPresent
+        ? const Color(0xFFDCFCE7)
+        : isLate
+            ? const Color(0xFFFEF3C7)
+            : const Color(0xFFFEE2E2);
     final icon  = isPresent ? '✓' : isLate ? '⏱' : '✗';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
       ),
@@ -1237,9 +1260,12 @@ class _AttendanceTile extends StatelessWidget {
               children: [
                 Text(record.subject,
                     style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1C1B1F))),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary)),
                 const SizedBox(height: 3),
-                Text('📅 ${record.date}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text('📅 ${record.date}',
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
               ],
             ),
           ),
