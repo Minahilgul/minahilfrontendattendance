@@ -3,6 +3,7 @@ import '../core/services/auth_service.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:get/get.dart';
 import '../core/services/device_service.dart';
+import '../core/theme/app_colors.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -87,14 +88,14 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffeef2f6),
+      backgroundColor: AppColors.background,
       body: Center(
         child: SingleChildScrollView(
           child: Container(
             width: 380,
             padding: const EdgeInsets.all(25),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -109,12 +110,12 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
+                  children: [
                     Row(
                       children: [
-                        Icon(Icons.shield, color: Colors.blue),
-                        SizedBox(width: 8),
-                        Text(
+                        Icon(Icons.shield, color: AppColors.primary),
+                        const SizedBox(width: 8),
+                        const Text(
                           "Login Portal",
                           style: TextStyle(
                             fontWeight: FontWeight.w600,
@@ -123,26 +124,26 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    Icon(Icons.info_outline, color: Colors.grey),
+                    Icon(Icons.info_outline, color: AppColors.textSecondary),
                   ],
                 ),
                 const SizedBox(height: 25),
-                const Center(
+                Center(
                   child: Text(
                     "Login",
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Center(
+                Center(
                   child: Text(
                     "Enter your credentials to continue",
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: AppColors.textSecondary),
                   ),
                 ),
                 const SizedBox(height: 30),
@@ -157,7 +158,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     hintText: "name@college.edu",
                     prefixIcon: const Icon(Icons.email_outlined),
                     filled: true,
-                    fillColor: const Color(0xfff5f6f8),
+                    fillColor: AppColors.background,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -177,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: const Icon(Icons.visibility_outlined),
                     filled: true,
-                    fillColor: const Color(0xfff5f6f8),
+                    fillColor: AppColors.background,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,
@@ -185,11 +186,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                const Align(
+                Align(
                   alignment: Alignment.centerRight,
                   child: Text(
                     "Forgot password?",
-                    style: TextStyle(color: Colors.blue),
+                    style: TextStyle(color: AppColors.primary),
                   ),
                 ),
                 const SizedBox(height: 25),
@@ -199,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff1f4e79),
+                      backgroundColor: AppColors.primaryDark,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -228,10 +229,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       Get.toNamed('/register-teacher');
                     },
-                    child: const Text(
+                    child: Text(
                       "Register as a Teacher",
                       style: TextStyle(
-                        color: Color(0xff1f4e79),
+                        color: AppColors.primaryDark,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       ),
@@ -239,7 +240,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Center(
+                Center(
                   child: Column(
                     children: [
                       Text(
@@ -247,14 +248,14 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey,
+                          color: AppColors.textSecondary,
                         ),
                       ),
-                      SizedBox(height: 6),
+                      const SizedBox(height: 6),
                       Text(
                         "This is a secure system. Activities are monitored.",
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
                       ),
                     ],
                   ),
