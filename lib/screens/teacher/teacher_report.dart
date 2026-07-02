@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../core/theme/app_colors.dart';
 
 // Data Models 
 
@@ -93,7 +94,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -101,20 +102,20 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
         leading: Padding(
           padding: const EdgeInsets.all(10),
           child: CircleAvatar(
-            backgroundColor: const Color(0xFFE3E8FF),
-            child: const Icon(Icons.bar_chart_rounded,
-                color: Color(0xFF2962FF), size: 18),
+            backgroundColor: AppColors.primary.withOpacity(0.12),
+            child: Icon(Icons.bar_chart_rounded,
+                color: AppColors.primary, size: 18),
           ),
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'Reports & Audit',
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF212121),
+                color: AppColors.textPrimary,
               ),
             ),
             Text(
@@ -122,7 +123,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF9E9E9E),
+                color: AppColors.textLight,
                 letterSpacing: 0.6,
               ),
             ),
@@ -182,49 +183,49 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
                       children: [
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
+                          children: [
                             Text(
                               'Attendance Trends',
                               style: TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.w700,
-                                color: Color(0xFF212121),
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             Text(
                               'Details',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF2962FF),
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 4),
-                        const Text(
+                        Text(
                           'WEEKLY ATTENDANCE %',
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF9E9E9E),
+                            color: AppColors.textLight,
                             letterSpacing: 0.5,
                           ),
                         ),
                         const SizedBox(height: 6),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
-                          children: const [
+                          children: [
                             Text(
                               '88.4%',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF212121),
+                                color: AppColors.textPrimary,
                               ),
                             ),
-                            SizedBox(width: 10),
-                            _TrendBadge(label: '+2.4%', positive: true),
+                            const SizedBox(width: 10),
+                            const _TrendBadge(label: '+2.4%', positive: true),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -265,20 +266,20 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
                   // Audit logs header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text(
                         'Recent Audit Logs',
                         style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF212121),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       Text(
                         'See All',
                         style: TextStyle(
                           fontSize: 13,
-                          color: Color(0xFF2962FF),
+                          color: AppColors.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -298,7 +299,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        backgroundColor: const Color(0xFF2962FF),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 3,
         child: const Icon(Icons.description_rounded),
@@ -348,8 +349,8 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
                         _navItems[i].icon,
                         size: 24,
                         color: isActive
-                            ? const Color(0xFF2962FF)
-                            : const Color(0xFF9E9E9E),
+                            ? AppColors.primary
+                            : AppColors.textLight,
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -359,8 +360,8 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
                           fontWeight:
                               isActive ? FontWeight.w600 : FontWeight.w400,
                           color: isActive
-                              ? const Color(0xFF2962FF)
-                              : const Color(0xFF9E9E9E),
+                              ? AppColors.primary
+                              : AppColors.textLight,
                         ),
                       ),
                     ],
@@ -404,9 +405,9 @@ class _AttendanceLineChart extends StatelessWidget {
               reservedSize: 28,
               getTitlesWidget: (value, meta) => Text(
                 '${value.toInt()}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 9,
-                  color: Color(0xFFBDBDBD),
+                  color: AppColors.textLight,
                 ),
               ),
             ),
@@ -421,9 +422,9 @@ class _AttendanceLineChart extends StatelessWidget {
                 if (idx < 0 || idx >= days.length) return const SizedBox();
                 return Text(
                   days[idx],
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 9,
-                    color: Color(0xFFBDBDBD),
+                    color: AppColors.textLight,
                   ),
                 );
               },
@@ -443,7 +444,7 @@ class _AttendanceLineChart extends StatelessWidget {
           LineChartBarData(
             spots: spots,
             isCurved: true,
-            color: const Color(0xFF2962FF),
+            color: AppColors.primary,
             barWidth: 2.5,
             isStrokeCapRound: true,
             dotData: const FlDotData(show: false),
@@ -453,8 +454,8 @@ class _AttendanceLineChart extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFF2962FF).withOpacity(0.15),
-                  const Color(0xFF2962FF).withOpacity(0.01),
+                  AppColors.primary.withOpacity(0.15),
+                  AppColors.primary.withOpacity(0.01),
                 ],
               ),
             ),
@@ -484,7 +485,7 @@ class _DropdownFilter extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF2962FF),
+        color: AppColors.primary,
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButtonHideUnderline(
@@ -493,7 +494,7 @@ class _DropdownFilter extends StatelessWidget {
           isExpanded: true,
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
               color: Colors.white, size: 18),
-          dropdownColor: const Color(0xFF2962FF),
+          dropdownColor: AppColors.primary,
           style: const TextStyle(
             color: Colors.white,
             fontSize: 12,
@@ -541,20 +542,20 @@ class _StatCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF9E9E9E),
+              color: AppColors.textLight,
               letterSpacing: 0.5,
             ),
           ),
           const SizedBox(height: 6),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF212121),
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 4),
@@ -563,7 +564,7 @@ class _StatCard extends StatelessWidget {
               Icon(
                 positive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
                 size: 12,
-                color: positive ? const Color(0xFF43A047) : const Color(0xFFE53935),
+                color: positive ? AppColors.success : AppColors.danger,
               ),
               const SizedBox(width: 2),
               Expanded(
@@ -572,8 +573,8 @@ class _StatCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     color: positive
-                        ? const Color(0xFF43A047)
-                        : const Color(0xFFE53935),
+                        ? AppColors.success
+                        : AppColors.danger,
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -598,7 +599,7 @@ class _TrendBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color =
-        positive ? const Color(0xFF43A047) : const Color(0xFFE53935);
+        positive ? AppColors.success : AppColors.danger;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
@@ -632,21 +633,21 @@ class _AuditLogCard extends StatelessWidget {
 
     switch (log.status) {
       case TeacherAuditStatus.suspicious:
-        iconBg = const Color(0xFFFFEBEE);
+        iconBg = AppColors.danger.withOpacity(0.1);
         iconData = Icons.warning_rounded;
-        statusColor = const Color(0xFFE53935);
+        statusColor = AppColors.danger;
         statusLabel = 'SUSPICIOUS';
         break;
       case TeacherAuditStatus.verified:
-        iconBg = const Color(0xFFE8F5E9);
+        iconBg = AppColors.success.withOpacity(0.1);
         iconData = Icons.check_circle_rounded;
-        statusColor = const Color(0xFF43A047);
+        statusColor = AppColors.success;
         statusLabel = 'VERIFIED';
         break;
       case TeacherAuditStatus.flagged:
-        iconBg = const Color(0xFFFFF3E0);
+        iconBg = AppColors.warning.withOpacity(0.1);
         iconData = Icons.flag_rounded;
-        statusColor = const Color(0xFFFFA726);
+        statusColor = AppColors.warning;
         statusLabel = 'FLAGGED';
         break;
     }
@@ -677,10 +678,10 @@ class _AuditLogCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         log.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF212121),
+                          color: AppColors.textPrimary,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -708,35 +709,35 @@ class _AuditLogCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   '${log.subject} • ${log.course}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF757575),
+                    color: AppColors.textSecondary,
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.access_time_rounded,
-                        size: 11, color: Color(0xFFBDBDBD)),
+                    Icon(Icons.access_time_rounded,
+                        size: 11, color: AppColors.textLight),
                     const SizedBox(width: 4),
                     Text(
                       log.time,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFFBDBDBD),
+                        color: AppColors.textLight,
                       ),
                     ),
                     const SizedBox(width: 10),
-                    const Icon(Icons.info_outline_rounded,
-                        size: 11, color: Color(0xFFBDBDBD)),
+                    Icon(Icons.info_outline_rounded,
+                        size: 11, color: AppColors.textLight),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
                         log.detail,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
-                          color: Color(0xFFBDBDBD),
+                          color: AppColors.textLight,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
