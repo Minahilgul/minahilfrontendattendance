@@ -4,6 +4,7 @@ import 'teacher_edit_profile_dialog.dart';
 import 'teacher_change_password_dialog.dart';
 import 'teacher_change_email_dialog.dart';
 import 'package:get/get.dart';
+import '../../core/theme/app_colors.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
   const TeacherProfileScreen({Key? key}) : super(key: key);
@@ -44,7 +45,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
           ),
@@ -67,7 +68,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout All', style: TextStyle(color: Colors.white)),
           ),
@@ -88,7 +89,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? AppColors.danger : AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -105,11 +106,11 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        // Teacher color: Green (0xFF0F9D58) 
+        // Teacher color
         title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: const Color(0xFF0F9D58),
+        backgroundColor: AppColors.success,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -121,7 +122,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0F9D58)))
+          ? Center(child: CircularProgressIndicator(color: AppColors.success))
           : _error != null
               ? _buildErrorState()
               : _buildProfileBody(),
@@ -135,9 +136,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            Icon(Icons.error_outline, size: 64, color: AppColors.danger),
             const SizedBox(height: 16),
-            Text(_error ?? 'Unknown error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+            Text(_error ?? 'Unknown error', textAlign: TextAlign.center, style: TextStyle(color: AppColors.danger)),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
           ],
@@ -154,7 +155,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadProfile,
-      color: const Color(0xFF0F9D58),
+      color: AppColors.success,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
@@ -162,9 +163,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             // Header 
             Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFF0F9D58),
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: AppColors.success,
+                borderRadius: const BorderRadius.only(
                   bottomLeft:  Radius.circular(32),
                   bottomRight: Radius.circular(32),
                 ),
@@ -241,8 +242,8 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Profile Information',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F9D58))),
+            Text('Profile Information',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
             const Divider(height: 20),
             _buildInfoRow(Icons.email_outlined, 'Email', email),
             if (phone.isNotEmpty) ...[
@@ -263,17 +264,17 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F9D58).withOpacity(0.08),
+            color: AppColors.success.withOpacity(0.08),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: const Color(0xFF0F9D58)),
+          child: Icon(icon, size: 20, color: AppColors.success),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
               Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
             ],
           ),
@@ -357,14 +358,14 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F9D58).withOpacity(0.08),
+          color: AppColors.success.withOpacity(0.08),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: const Color(0xFF0F9D58), size: 22),
+        child: Icon(icon, color: AppColors.success, size: 22),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
       onTap: onTap,
     );
   }
@@ -381,16 +382,16 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: AppColors.warning.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.devices_outlined, color: Colors.orange, size: 22),
+                child: Icon(Icons.devices_outlined, color: AppColors.warning, size: 22),
               ),
               title: const Text('Logout All Devices',
                   style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: const Text('Sign out from all active sessions',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              subtitle: Text('Sign out from all active sessions',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
               onTap: _logoutAllDevices,
             ),
             const Divider(height: 1, indent: 56),
@@ -398,16 +399,16 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               leading: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
+                  color: AppColors.danger.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.logout, color: Colors.red, size: 22),
+                child: Icon(Icons.logout, color: AppColors.danger, size: 22),
               ),
-              title: const Text('Logout',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.red)),
-              subtitle: const Text('Sign out from this device',
-                  style: TextStyle(fontSize: 12, color: Colors.grey)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              title: Text('Logout',
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.danger)),
+              subtitle: Text('Sign out from this device',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
               onTap: _logout,
             ),
           ],
