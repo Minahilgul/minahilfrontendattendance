@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/teacher_profile_service.dart';
+import '../../core/theme/app_colors.dart';
 
 class ChangeEmailDialog extends StatefulWidget {
   final String currentEmail;
@@ -42,7 +43,7 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
         );
       }
     }
@@ -64,14 +65,14 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
+                color: AppColors.background,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(color: AppColors.border),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Current Email', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text('Current Email', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                   const SizedBox(height: 2),
                   Text(widget.currentEmail,
                       style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
@@ -122,7 +123,7 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0F9D58),
+            backgroundColor: AppColors.success,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           onPressed: _isLoading ? null : _submit,
