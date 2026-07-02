@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/app_colors.dart';
 
 void main() {
   runApp(const StartSessionApp());
@@ -15,7 +16,7 @@ class StartSessionApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2962FF),
+          seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
         fontFamily: 'Roboto',
@@ -45,24 +46,24 @@ class _StartSessionScreenState extends State<StartSessionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
             if (Navigator.canPop(context)) {
               Navigator.pop(context);
             }
           },
         ),
-        title: const Text(
+        title: Text(
           'Start Session',
           style: TextStyle(
-            color: Colors.black87,
+            color: AppColors.textPrimary,
             fontSize: 17,
             fontWeight: FontWeight.w600,
           ),
@@ -122,7 +123,7 @@ class _CurrentClassCard extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: const Color(0xFF1565C0),
+              color: AppColors.primaryDark,
               borderRadius: BorderRadius.circular(14),
             ),
             child: const Icon(
@@ -135,44 +136,44 @@ class _CurrentClassCard extends StatelessWidget {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'CURRENT CLASS',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF9E9E9E),
+                    color: AppColors.textSecondary,
                     letterSpacing: 0.8,
                   ),
                 ),
-                SizedBox(height: 3),
+                const SizedBox(height: 3),
                 Text(
                   'Computer Science 101',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF212121),
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'Data Structures • Section B',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF757575),
+                    color: AppColors.textSecondary,
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(Icons.person_outline_rounded,
-                        size: 13, color: Color(0xFF9E9E9E)),
-                    SizedBox(width: 4),
+                        size: 13, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
                     Text(
                       'Prof. Alan Turing',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF9E9E9E),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -199,31 +200,31 @@ class _DateTimeRow extends StatelessWidget {
           child: _WhiteCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'DATE',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF9E9E9E),
+                    color: AppColors.textSecondary,
                     letterSpacing: 0.8,
                   ),
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
                   '14 Oct',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF212121),
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   '2023',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF9E9E9E),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -235,31 +236,31 @@ class _DateTimeRow extends StatelessWidget {
           child: _WhiteCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   'CURRENT TIME',
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF9E9E9E),
+                    color: AppColors.textSecondary,
                     letterSpacing: 0.8,
                   ),
                 ),
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
                 Text(
                   '09:00',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF212121),
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'AM',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF9E9E9E),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -280,9 +281,9 @@ class _GpsVerifiedSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
+        color: AppColors.success.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF81C784), width: 1.2),
+        border: Border.all(color: AppColors.success.withOpacity(0.5), width: 1.2),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -293,7 +294,7 @@ class _GpsVerifiedSection extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF43A047),
+                  color: AppColors.success,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: const Icon(
@@ -306,29 +307,29 @@ class _GpsVerifiedSection extends StatelessWidget {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       'GPS Verified',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2E7D32),
+                        color: AppColors.success,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       'Inside Campus Boundary',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Color(0xFF43A047),
+                        color: AppColors.success,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(
+              Icon(
                 Icons.check_circle_rounded,
-                color: Color(0xFF43A047),
+                color: AppColors.success,
                 size: 26,
               ),
             ],
@@ -339,24 +340,24 @@ class _GpsVerifiedSection extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFFB2DFDB),
-                  Color(0xFFC8E6C9),
+                  AppColors.primaryLight.withOpacity(0.25),
+                  AppColors.success.withOpacity(0.25),
                 ],
               ),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Icon(
                   Icons.location_on_rounded,
-                  color: Color(0xFF388E3C),
+                  color: AppColors.success,
                   size: 36,
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -365,7 +366,7 @@ class _GpsVerifiedSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF2E7D32),
+                        color: AppColors.success,
                       ),
                     ),
                     Text(
@@ -373,7 +374,7 @@ class _GpsVerifiedSection extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF388E3C),
+                        color: AppColors.success,
                       ),
                     ),
                   ],
@@ -401,16 +402,16 @@ class _StartSessionButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF2962FF),
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
           elevation: 0,
         ),
-        child: Row(
+        child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Text(
               'Start Attendance Session',
               style: TextStyle(
@@ -445,7 +446,7 @@ class _BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -474,8 +475,8 @@ class _BottomNavBar extends StatelessWidget {
                       Icon(
                         item.icon,
                         color: isActive
-                            ? const Color(0xFF2962FF)
-                            : const Color(0xFF9E9E9E),
+                            ? AppColors.primary
+                            : AppColors.textSecondary,
                         size: 24,
                       ),
                       const SizedBox(height: 4),
@@ -483,8 +484,8 @@ class _BottomNavBar extends StatelessWidget {
                         item.label,
                         style: TextStyle(
                           color: isActive
-                              ? const Color(0xFF2962FF)
-                              : const Color(0xFF9E9E9E),
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
                           fontSize: 11,
                           fontWeight: isActive
                               ? FontWeight.w600
@@ -514,7 +515,7 @@ class _WhiteCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
