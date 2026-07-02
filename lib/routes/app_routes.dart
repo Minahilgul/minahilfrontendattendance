@@ -1,37 +1,30 @@
-import 'package:flutter/material.dart';
+
 import 'package:get/get.dart';
 import '../core/services/auth_service.dart';
 
 import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
-import '../screens/admin_dashboard_screen.dart';
-import '../screens/teacher_dashboard.dart';
+import '../screens/admin/admin_dashboard_screen.dart';
+import '../screens/teacher/teacher_dashboard.dart';
 import '../screens/admin/classes_screen.dart'; // folder is lib/screens/admin/
 import '../screens/teacher_directory_screen.dart';
-import '../screens/pending_approvals_screen.dart';
-import '../screens/admin_report_screen.dart';
+import '../screens/admin/pending_approvals_screen.dart';
+import '../screens/admin/admin_report_screen.dart';
 import '../screens/role_screen.dart';
-import '../screens/create_session_page.dart';
+import '../screens/teacher/create_session_page.dart';
 import '../screens/settings_screen.dart';
 import '../screens/student_directory_screen.dart';
-import '../screens/student_dashboard_screen.dart';
-import '../screens/register_teacher_screen.dart';
-import '../screens/teacher_report.dart';
-import '../screens/admin_profile_screen.dart';
-import '../screens/teacher_profile_screen.dart';
-import '../screens/class_roaster.dart';
-import '../screens/mark_attendance.dart';
+import '../screens/student/student_dashboard_screen.dart';
+import '../screens/admin/register_teacher_screen.dart';
+import '../screens/teacher/teacher_report.dart';
+import '../screens/admin/admin_profile_screen.dart';
+import '../screens/teacher/teacher_profile_screen.dart';
+import '../screens/teacher/class_roaster.dart';
+import '../screens/teacher/mark_attendance.dart';
 
-class AuthMiddleware extends GetMiddleware {
-  @override
-  RouteSettings? redirect(String? route) {
-    final token = AuthService.token;
-    if (token == null || token.isEmpty) {
-      return const RouteSettings(name: '/login');
-    }
-    return null;
-  }
-}
+import './auth_middleware.dart';
+
+
 
 class AppRoutes {
   static final routes = [
@@ -46,7 +39,7 @@ class AppRoutes {
     GetPage(
       name: '/admin-dashboard',
       page: () => const AdminDashboardScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/teacher-dashboard',
@@ -59,7 +52,7 @@ class AppRoutes {
           role: role,
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['teacher', 'admin'])],
     ),
     GetPage(
       name: '/student-dashboard',
@@ -74,12 +67,12 @@ class AppRoutes {
           name: name,
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['student'])],
     ),
     GetPage(
       name: '/classes',
       page: () => const ClassesScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/teacher-directory',
@@ -92,67 +85,68 @@ class AppRoutes {
           role: role,
         );
       },
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/approvals',
       page: () => const ApprovalsScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/reports',
       page: () => const ReportsAuditScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/teacher-report',
       page: () => const TeacherReportScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['teacher', 'admin'])],
     ),
     GetPage(
       name: '/create-session',
       page: () => const CreateSessionPage(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['teacher', 'admin'])],
     ),
     GetPage(
       name: '/student-directory',
       page: () => const StudentDirectoryScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['teacher', 'admin'])],
     ),
     GetPage(
       name: '/register-teacher',
       page: () => const RegisterTeacherScreen(),
+      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/admin-profile',
       page: () => const AdminProfileScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/teacher-profile',
       page: () => const TeacherProfileScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles:['teacher', 'admin'])],
     ),
     GetPage(
       name: '/mark-attendance',
       page: () => const MarkAttendanceScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles: ['teacher', 'admin'])],
     ),
     GetPage(
       name: '/roster',
       page: () => const RosterScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles: ['teacher', 'admin'])],
     ),
     // Legacy support
     GetPage(
       name: '/settings',
       page: () => const SettingsScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles: ['admin'])],
     ),
     GetPage(
       name: '/roles',
       page: () => const RoleScreen(),
-      middlewares: [AuthMiddleware()],
+      middlewares: [AuthMiddleware(allowedRoles: ['admin'])],
     ),
   ];
 }

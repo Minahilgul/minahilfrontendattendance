@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../core/services/teacher_service.dart';
-import '../core/services/device_service.dart';
-import '../core/theme/app_colors.dart';
+import '../../core/services/teacher_service.dart';
+import '../../core/services/device_service.dart';
+import '../../core/theme/app_colors.dart';
 
 class AddTeacherScreen extends StatefulWidget {
   const AddTeacherScreen({super.key});

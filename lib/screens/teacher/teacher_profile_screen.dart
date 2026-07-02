@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/services/teacher_profile_service.dart';
+import '../../core/services/teacher_profile_service.dart';
 import 'teacher_edit_profile_dialog.dart';
 import 'teacher_change_password_dialog.dart';
 import 'teacher_change_email_dialog.dart';

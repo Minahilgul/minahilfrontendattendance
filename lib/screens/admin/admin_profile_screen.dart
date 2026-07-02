@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../core/services/admin_profile_service.dart';
-import 'edit_profile_dialog.dart';
-import 'change_password_dialog.dart';
-import 'change_email_dialog.dart';
+import '../../core/services/admin_profile_service.dart';
+import '../edit_profile_dialog.dart';
+import '../change_password_dialog.dart';
+import '../change_email_dialog.dart';
 import 'package:get/get.dart';  
-import '../core/theme/app_colors.dart';
+import '../../core/theme/app_colors.dart';
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({Key? key}) : super(key: key);
@@ -54,7 +54,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     );
     if (confirmed == true) {
       await _profileService.logout();
-      if (mounted) context.go('/login');
+      if (mounted) Get.offAllNamed('/login');
       
     }
   }
@@ -79,7 +79,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     if (confirmed == true) {
       try {
         await _profileService.logoutAllDevices();
-        if (mounted) context.go('/login');
+        if (mounted) Get.offAllNamed('/login');
         
       } catch (e) {
         if (mounted) _showSnackbar(e.toString(), isError: true);

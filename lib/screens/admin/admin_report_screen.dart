@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../widgets/base_scaffold.dart';
-import '../core/services/admin_report_service.dart';
-import '../core/theme/app_colors.dart';
+import '../../widgets/base_scaffold.dart';
+import '../../core/services/admin_report_service.dart';
+import '../../core/theme/app_colors.dart';
 
 
 // MODELS

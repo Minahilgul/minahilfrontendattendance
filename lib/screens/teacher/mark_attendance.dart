@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import '../core/services/attendance_service.dart';
-import '../core/theme/app_colors.dart';
+import '../../core/services/attendance_service.dart';
+import '../../core/theme/app_colors.dart';
 
 void main() {
   runApp(const MarkAttendanceApp());

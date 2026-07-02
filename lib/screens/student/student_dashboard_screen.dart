@@ -4,14 +4,14 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../widgets/base_scaffold.dart';
-import '../core/services/student_profile_service.dart';
-import '../core/services/confirmation_service.dart';
-import '../core/services/auth_service.dart';
-import '../core/theme/app_colors.dart';
+import '../../widgets/base_scaffold.dart';
+import '../../core/services/student_profile_service.dart';
+import '../../core/services/confirmation_service.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/theme/app_colors.dart';
 
 // Constants
-const String _baseUrl = 'http://localhost:8000/api';
+const String _baseUrl = 'http://attia.ddev.site/api';
 
 // Model
 class AttendanceRecord {

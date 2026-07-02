@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'add_student_screen.dart';
 import 'add_teacher_screen.dart';
-import 'teacher_directory_screen.dart';
-import 'view_attendance_screen.dart';
+import '../teacher_directory_screen.dart';
+import '../view_attendance_screen.dart';
 import 'classes_screen.dart';
 import 'pending_approvals_screen.dart';
 import 'admin_report_screen.dart';
 import 'package:get/get.dart';
-import '../widgets/base_scaffold.dart'; 
-import '../widgets/dashboard_card.dart';
-import '../core/theme/app_colors.dart';
+import '../../widgets/base_scaffold.dart'; 
+import '../../widgets/dashboard_card.dart';
+import '../../core/theme/app_colors.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});

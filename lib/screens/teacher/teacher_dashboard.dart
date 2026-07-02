@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import 'settings_screen.dart';
-import '../widgets/base_scaffold.dart';
-import '../core/services/session_service.dart';
-import '../core/services/auth_service.dart';
-import 'student_selection_screen.dart';
+import '../settings_screen.dart';
+import '../../widgets/base_scaffold.dart';
+import '../../core/services/session_service.dart';
+import '../../core/services/auth_service.dart';
+import '../student_selection_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'session_report_screen.dart';
-import 'attendance_report_screen.dart';
-import '../core/services/confirmation_service.dart';
-import '../core/theme/app_colors.dart';
-import '../widgets/dashboard_card.dart';
+import '../attendance_report_screen.dart';
+import '../../core/services/confirmation_service.dart';
+import '../../core/theme/app_colors.dart';
+import '../../widgets/dashboard_card.dart';
 
 class TeacherDashboardScreen extends StatefulWidget {
   final int userId;

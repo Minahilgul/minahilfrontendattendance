@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/services/teacher_profile_service.dart';
+import '../../core/services/teacher_profile_service.dart';
 
 class ChangePasswordDialog extends StatefulWidget {
   final TeacherProfileService profileService;

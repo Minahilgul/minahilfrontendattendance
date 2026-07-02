@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_storage/get_storage.dart';
-import '../core/services/auth_service.dart';
-import '../core/services/session_service.dart';
-import '../core/services/class_service.dart';
-import '../widgets/base_scaffold.dart';
-import '../core/theme/app_colors.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/session_service.dart';
+import '../../core/services/class_service.dart';
+import '../../widgets/base_scaffold.dart';
+import '../../core/theme/app_colors.dart';
 
 class CreateSessionPage extends StatefulWidget {
   const CreateSessionPage({super.key});

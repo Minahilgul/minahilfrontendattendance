@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../core/services/teacher_service.dart';
-import '../core/services/device_service.dart';
+import '../../core/services/teacher_service.dart';
+import '../../core/services/device_service.dart';
 
 
 class RegisterTeacherScreen extends StatefulWidget {
