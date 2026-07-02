@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/services/teacher_profile_service.dart';
+import '../../core/theme/app_colors.dart';
 
 class ChangePasswordDialog extends StatefulWidget {
   final TeacherProfileService profileService;
@@ -42,7 +43,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
         );
       }
     }
@@ -125,7 +126,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0F9D58),
+            backgroundColor: AppColors.success,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           onPressed: _isLoading ? null : _submit,
