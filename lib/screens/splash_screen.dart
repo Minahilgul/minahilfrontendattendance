@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:get_storage/get_storage.dart';
 import '../core/services/auth_service.dart';
 import 'package:get/get.dart';
+import '../core/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -74,11 +75,11 @@ class _SplashScreenState extends State<SplashScreen>
         width: double.infinity,
         height: double.infinity,
 
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xffe3f2fd),
-              Color(0xffffffff),
+              AppColors.background,
+              AppColors.surface,
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -96,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen>
                 decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: AppColors.primary.withOpacity(0.3),
                       blurRadius: 30,
                       spreadRadius: 5,
                     )
@@ -110,24 +111,24 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 40),
 
-              const Text(
+              Text(
                 "DAVS",
                 style: TextStyle(
                   fontSize: 34,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xff1f4e79),
+                  color: AppColors.primaryDark,
                   letterSpacing: 2,
                 ),
               ),
 
               const SizedBox(height: 10),
 
-              const Text(
+              Text(
                 "Distributed Attendance Verification System",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: AppColors.textSecondary,
                 ),
               ),
 
@@ -137,9 +138,9 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 10),
 
-              const Text(
+              Text(
                 "Initializing System...",
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: AppColors.textSecondary),
               ),
             ],
           ),

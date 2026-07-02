@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/system_setting_service.dart';
+import '../core/theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -67,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg), backgroundColor: Color(0xFF0F9D58))
+      SnackBar(content: Text(msg), backgroundColor: AppColors.success)
     );
   }
 
@@ -77,7 +78,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       title: 'System Settings',
       role: 'admin',
       body: isLoading
-      ? Center(child: CircularProgressIndicator(color: Color(0xFF0F9D58)))
+      ? Center(child: CircularProgressIndicator(color: AppColors.success))
         : settings.isEmpty
        ? Center(child: Text('No settings found'))
         : ListView.builder(
@@ -91,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               return Container(
                 margin: EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.card,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 8)],
                 ),
@@ -100,7 +101,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: Text(setting['key'], style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                   subtitle: Padding(
                     padding: EdgeInsets.only(top: 4),
-                    child: Text(setting['description']?? '', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                    child: Text(setting['description']?? '', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -120,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       SizedBox(width: 8),
                       IconButton(
-                        icon: Icon(Icons.save, color: Color(0xFF0F9D58)),
+                        icon: Icon(Icons.save, color: AppColors.success),
                         onPressed: () => updateSetting(setting['id'], controller.text),
                       ),
                     ],
