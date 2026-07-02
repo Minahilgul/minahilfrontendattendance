@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/session_service.dart';
+import '../core/theme/app_colors.dart';
 
 class StudentSelectionScreen extends StatefulWidget {
   final int sessionId;
@@ -66,7 +67,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('${selectedIds.length} students save ho gaye!'),
-          backgroundColor: const Color(0xFF0F9D58),
+          backgroundColor: AppColors.success,
         ),
       );
       Navigator.pop(context);
@@ -74,7 +75,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Error'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.danger,
         ),
       );
     }
@@ -83,9 +84,9 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0F9D58),
+        backgroundColor: AppColors.success,
         foregroundColor: Colors.white,
         title: const Text('Students Select Karo',
             style: TextStyle(fontWeight: FontWeight.bold)),
@@ -114,12 +115,12 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            color: const Color(0xFFE8F5E9),
+            color: AppColors.success.withOpacity(0.12),
             child: Text(
               'Session ID: ${widget.sessionId}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: Color(0xFF2E7D32),
+                color: AppColors.success,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -137,8 +138,8 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
 
   Widget _buildList() {
     if (isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF0F9D58)),
+      return Center(
+        child: CircularProgressIndicator(color: AppColors.success),
       );
     }
 
@@ -147,14 +148,14 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            Icon(Icons.error_outline, color: AppColors.danger, size: 48),
             const SizedBox(height: 12),
-            Text(error!, style: const TextStyle(color: Colors.red)),
+            Text(error!, style: TextStyle(color: AppColors.danger)),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadStudents,
               style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F9D58)),
+                  backgroundColor: AppColors.success),
               child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -163,9 +164,9 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
     }
 
     if (students.isEmpty) {
-      return const Center(
+      return Center(
         child: Text('Koi student nahi mila.',
-            style: TextStyle(color: Colors.grey, fontSize: 16)),
+            style: TextStyle(color: AppColors.textSecondary, fontSize: 16)),
       );
     }
 
@@ -192,10 +193,10 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
           },
           child: Container(
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFFE8F5E9) : Colors.white,
+              color: isSelected ? AppColors.success.withOpacity(0.12) : AppColors.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isSelected ? const Color(0xFF0F9D58) : Colors.transparent,
+                color: isSelected ? AppColors.success : Colors.transparent,
                 width: 1.5,
               ),
               boxShadow: [
@@ -212,12 +213,12 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
               // Avatar
               leading: CircleAvatar(
                 backgroundColor: isSelected
-                    ? const Color(0xFF0F9D58)
-                    : const Color(0xFFE0E0E0),
+                    ? AppColors.success
+                    : AppColors.border,
                 child: Text(
                   name[0].toUpperCase(),
                   style: TextStyle(
-                    color: isSelected ? Colors.white : Colors.black54,
+                    color: isSelected ? Colors.white : AppColors.textSecondary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -230,12 +231,12 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
               subtitle: rollNo.isNotEmpty
                   ? Text('Roll No: $rollNo',
                       style:
-                          const TextStyle(fontSize: 12, color: Colors.grey))
+                          TextStyle(fontSize: 12, color: AppColors.textSecondary))
                   : null,
               // Checkbox on right
               trailing: Checkbox(
                 value: isSelected,
-                activeColor: const Color(0xFF0F9D58),
+                activeColor: AppColors.success,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4)),
                 onChanged: (val) {
@@ -259,7 +260,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
@@ -273,13 +274,13 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E9),
+              color: AppColors.success.withOpacity(0.12),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               '${selectedIds.length} selected',
-              style: const TextStyle(
-                color: Color(0xFF0F9D58),
+              style: TextStyle(
+                color: AppColors.success,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -289,7 +290,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
             child: ElevatedButton(
               onPressed: isSaving ? null : _saveStudents,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F9D58),
+                backgroundColor: AppColors.success,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
