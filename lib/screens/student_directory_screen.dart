@@ -820,20 +820,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
     return BaseScaffold(
       title: 'Student Directory',
       role: _currentRole,
-      actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-              color: AppColors.success,
-              borderRadius: BorderRadius.circular(10)),
-          child: IconButton(
-              icon: const Icon(Icons.add, color: Colors.white, size: 20),
-              onPressed: _openAddStudentDialog,
-              padding: EdgeInsets.zero),
-        ),
-      ],
+      actions: [],
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddStudentDialog,
         backgroundColor: AppColors.success,
