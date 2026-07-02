@@ -740,15 +740,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     return BaseScaffold(
       title: 'Teacher Directory',
       role: 'admin',
-      actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(color: AppColors.primaryDark, borderRadius: BorderRadius.circular(10)),
-          child: IconButton(icon: const Icon(Icons.add, color: Colors.white, size: 20), onPressed: _openAddTeacherDialog, padding: EdgeInsets.zero),
-        ),
-      ],
+      actions: [],
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTeacherDialog,
         backgroundColor: AppColors.primaryDark,
