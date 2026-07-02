@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 
 class StudentProfileService {
-  static const String baseUrl = 'http://attia.ddev.site/api';
+  static const String baseUrl = 'http://localhost:8000/api';
   final _storage = GetStorage();
 
   Future<String?> _getToken() async {

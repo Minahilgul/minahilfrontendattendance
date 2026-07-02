@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 
 class AdminReportService {
-  static const String _baseUrl = 'http://attia.ddev.site/api';
+  static const String _baseUrl = 'http://localhost:8000/api';
 
   static String? _getToken() => GetStorage().read('token');
 

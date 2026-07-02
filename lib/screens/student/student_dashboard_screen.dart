@@ -11,7 +11,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 
 // Constants
-const String _baseUrl = 'http://attia.ddev.site/api';
+const String _baseUrl = 'http://localhost:8000/api';
 
 // Model
 class AttendanceRecord {
