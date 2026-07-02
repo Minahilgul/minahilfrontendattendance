@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../core/services/auth_service.dart';
+import '../../core/theme/app_colors.dart';
 
 class SessionReportScreen extends StatefulWidget {
   const SessionReportScreen({super.key});
@@ -16,12 +17,12 @@ class SessionReportScreenState extends State<SessionReportScreen> {
   bool _loading = true;
   String? _error;
 
-  static const Color _green    = Color(0xFF0F9D58);
-  static const Color _red      = Color(0xFFE53935);
-  static const Color _primary  = Color(0xFF1565C0);
-  static const Color _textMid  = Color(0xFF6B7280);
-  static const Color _textDark = Color(0xFF212121);
-  static const Color _card     = Colors.white;
+  static const Color _green    = AppColors.success;
+  static const Color _red      = AppColors.danger;
+  static const Color _primary  = AppColors.primary;
+  static const Color _textMid  = AppColors.textSecondary;
+  static const Color _textDark = AppColors.textPrimary;
+  static const Color _card     = AppColors.surface;
 
   @override
   void initState() {
@@ -97,7 +98,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(newVal ? 'Session Active ✓' : 'Session Inactive'),
-            backgroundColor: newVal ? _green : Colors.grey,
+            backgroundColor: newVal ? _green : AppColors.textLight,
             duration: const Duration(seconds: 1),
           ));
         }
@@ -113,9 +114,9 @@ class SessionReportScreenState extends State<SessionReportScreen> {
           }
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Update failed — please try again'),
-            backgroundColor: Colors.red,
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Update failed — please try again'),
+            backgroundColor: AppColors.danger,
           ));
         }
       }
@@ -136,7 +137,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: _card,
         elevation: 0,
@@ -211,11 +212,11 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(32),
                 decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(16)),
-                child: const Column(children: [
-                  Icon(Icons.inbox_rounded, size: 40, color: Colors.grey),
-                  SizedBox(height: 8),
+                child: Column(children: [
+                  Icon(Icons.inbox_rounded, size: 40, color: AppColors.textLight),
+                  const SizedBox(height: 8),
                   Text('No sessions created yet.',
-                      style: TextStyle(color: Colors.grey, fontSize: 15)),
+                      style: TextStyle(color: AppColors.textLight, fontSize: 15)),
                 ]),
               )
             : Column(children: _sessions.map((s) => _buildSessionCard(s)).toList()),
@@ -234,10 +235,10 @@ class SessionReportScreenState extends State<SessionReportScreen> {
         const SizedBox(height: 8),
 
         logs.isEmpty
-            ? const Center(
+            ? Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32),
-                  child: Text('No logs yet.', style: TextStyle(color: Colors.grey, fontSize: 15)),
+                  padding: const EdgeInsets.all(32),
+                  child: Text('No logs yet.', style: TextStyle(color: AppColors.textLight, fontSize: 15)),
                 ),
               )
             : Column(children: logs.map((log) => _buildLogCard(log)).toList()),
@@ -290,7 +291,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                           style: const TextStyle(
                               color: _textDark, fontWeight: FontWeight.bold, fontSize: 14)),
                       Text(s['date'] ?? '-',
-                          style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          style: TextStyle(color: AppColors.textLight, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -367,7 +368,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
       children: [
         Icon(icon, size: 13, color: _textMid),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(label, style: TextStyle(color: AppColors.textLight, fontSize: 12)),
       ],
     );
   }
@@ -390,13 +391,13 @@ class SessionReportScreenState extends State<SessionReportScreen> {
             child: const Icon(Icons.bar_chart_rounded, color: _green, size: 26),
           ),
           const SizedBox(width: 12),
-          const Column(
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Reports & Audit',
+              const Text('Reports & Audit',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: _textDark)),
               Text('ADMIN DASHBOARD',
-                  style: TextStyle(fontSize: 11, color: Colors.grey, letterSpacing: 1)),
+                  style: TextStyle(fontSize: 11, color: AppColors.textLight, letterSpacing: 1)),
             ],
           ),
         ],
@@ -430,19 +431,19 @@ class SessionReportScreenState extends State<SessionReportScreen> {
               const Text('Attendance Trends',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: _textDark)),
               Text('Last 7 Days',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                  style: TextStyle(fontSize: 12, color: AppColors.textLight)),
             ],
           ),
           const SizedBox(height: 8),
           Text('${avg.toStringAsFixed(1)}%',
               style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: _textDark)),
-          const Text('Weekly Attendance %',
-              style: TextStyle(fontSize: 12, color: Colors.grey)),
+          Text('Weekly Attendance %',
+              style: TextStyle(fontSize: 12, color: AppColors.textLight)),
           const SizedBox(height: 16),
           SizedBox(
             height: 80,
             child: weeklyData.isEmpty
-                ? const Center(child: Text('No data yet', style: TextStyle(color: Colors.grey)))
+                ? Center(child: Text('No data yet', style: TextStyle(color: AppColors.textLight)))
                 : Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -466,7 +467,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                           const SizedBox(height: 4),
                           Text(d['day'],
                               style: TextStyle(
-                                  fontSize: 10, color: isToday ? _green : Colors.grey)),
+                                  fontSize: 10, color: isToday ? _green : AppColors.textLight)),
                         ],
                       );
                     }).toList(),
@@ -501,7 +502,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                 Text(value,
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color)),
                 Text(title,
-                    style: const TextStyle(fontSize: 10, color: Colors.grey), maxLines: 2),
+                    style: TextStyle(fontSize: 10, color: AppColors.textLight), maxLines: 2),
               ],
             ),
           ),
@@ -522,8 +523,8 @@ class SessionReportScreenState extends State<SessionReportScreen> {
       case 'completed': statusColor = _primary; statusLabel = 'VERIFIED'; break;
       case 'present':   statusColor = _green;   statusLabel = 'PRESENT';  break;
       case 'absent':    statusColor = _red;     statusLabel = 'ABSENT';   break;
-      case 'late':      statusColor = const Color(0xFFF57C00); statusLabel = 'LATE'; break;
-      default:          statusColor = Colors.grey; statusLabel = status.toUpperCase();
+      case 'late':      statusColor = AppColors.warning; statusLabel = 'LATE'; break;
+      default:          statusColor = AppColors.textLight; statusLabel = status.toUpperCase();
     }
 
     return Container(
@@ -556,19 +557,19 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                     style: const TextStyle(
                         fontWeight: FontWeight.w600, fontSize: 13, color: _textDark)),
                 Text(log['subtitle'] ?? '',
-                    style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                    style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                 const SizedBox(height: 2),
                 Row(children: [
-                  const Icon(Icons.access_time, size: 11, color: Colors.grey),
+                  Icon(Icons.access_time, size: 11, color: AppColors.textLight),
                   const SizedBox(width: 3),
                   Text(log['time'] ?? '',
-                      style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                   const SizedBox(width: 8),
                   Icon(isSession ? Icons.videocam_rounded : Icons.check_circle,
-                      size: 11, color: Colors.grey),
+                      size: 11, color: AppColors.textLight),
                   const SizedBox(width: 3),
                   Text(isSession ? 'Session' : 'Attendance',
-                      style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                      style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                 ]),
               ],
             ),
@@ -592,9 +593,9 @@ class SessionReportScreenState extends State<SessionReportScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+          Icon(Icons.error_outline, size: 48, color: AppColors.danger),
           const SizedBox(height: 12),
-          Text(_error!, style: const TextStyle(color: Colors.red)),
+          Text(_error!, style: TextStyle(color: AppColors.danger)),
           const SizedBox(height: 16),
           ElevatedButton(onPressed: _loadAll, child: const Text('Retry')),
         ],
