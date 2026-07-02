@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -982,7 +982,7 @@ class _ProfilePageState extends State<_ProfilePage> {
     );
     if (confirmed == true) {
       await _service.logout();
-      if (mounted) context.go('/login');
+      if (mounted) Get.offAllNamed('/login');
     }
   }
 

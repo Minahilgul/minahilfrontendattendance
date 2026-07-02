@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../core/services/auth_service.dart';
+import '../core/theme/app_colors.dart';
 
 class AttendanceReportScreen extends StatefulWidget {
   final int? teacherId;
@@ -28,14 +29,14 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   late Animation<double> _fadeAnim;
   final TextEditingController _searchController = TextEditingController();
 
-  static const Color _bg      = Color(0xFFF5F6FA);
-  static const Color _card    = Colors.white;
-  static const Color _primary = Color(0xFF2979FF);
-  static const Color _textDark= Color(0xFF1A1A2E);
-  static const Color _textMid = Color(0xFF6B7280);
-  static const Color _green   = Color(0xFF0F9D58);
-  static const Color _red     = Color(0xFFE53935);
-  static const Color _orange  = Color(0xFFF57C00);
+  static const Color _bg      = AppColors.background;
+  static const Color _card    = AppColors.surface;
+  static const Color _primary = AppColors.primary;
+  static const Color _textDark= AppColors.textPrimary;
+  static const Color _textMid = AppColors.textSecondary;
+  static const Color _green   = AppColors.success;
+  static const Color _red     = AppColors.danger;
+  static const Color _orange  = AppColors.warning;
 
   @override
   void initState() {

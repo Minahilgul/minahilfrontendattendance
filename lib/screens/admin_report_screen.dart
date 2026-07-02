@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/admin_report_service.dart';
+import '../core/theme/app_colors.dart';
 
 
 // MODELS
@@ -63,10 +64,10 @@ class StudentRecord {
 
 Color _statusColor(StudentStatus s) {
   switch (s) {
-    case StudentStatus.critical: return const Color(0xFFE53935);
-    case StudentStatus.warning:  return const Color(0xFFF57C00);
-    case StudentStatus.good:     return const Color(0xFF2E7D32);
-    case StudentStatus.noData:   return const Color(0xFF9E9E9E);
+    case StudentStatus.critical: return AppColors.danger;
+    case StudentStatus.warning:  return AppColors.warning;
+    case StudentStatus.good:     return AppColors.success;
+    case StudentStatus.noData:   return AppColors.textLight;
   }
 }
 
@@ -119,16 +120,16 @@ class StatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: Color(0xFF9E9E9E), letterSpacing: 0.6)),
+            Text(label.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textLight, letterSpacing: 0.6)),
             const SizedBox(height: 8),
-            Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: Color(0xFF1A1A2E))),
+            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
             const SizedBox(height: 4),
             Row(children: [
               Icon(trendPositive ? Icons.arrow_upward : Icons.arrow_downward, size: 12,
-                  color: trendPositive ? const Color(0xFF2E7D32) : const Color(0xFFE53935)),
+                  color: trendPositive ? AppColors.success : AppColors.danger),
               const SizedBox(width: 3),
               Flexible(child: Text(sub, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                  color: trendPositive ? const Color(0xFF2E7D32) : const Color(0xFFE53935)), overflow: TextOverflow.ellipsis)),
+                  color: trendPositive ? AppColors.success : AppColors.danger), overflow: TextOverflow.ellipsis)),
             ]),
           ],
         ),
@@ -176,31 +177,31 @@ class StudentListItem extends StatelessWidget {
                 // Name + Roll No
                 Row(children: [
                   Flexible(child: Text(record.studentName,
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E)),
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                       overflow: TextOverflow.ellipsis)),
                   if (record.rollNo != '-') ...[
                     const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: const Color(0xFFF5F7FA), borderRadius: BorderRadius.circular(4)),
-                      child: Text('#${record.rollNo}', style: const TextStyle(fontSize: 10, color: Color(0xFF757575), fontWeight: FontWeight.w600)),
+                      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(4)),
+                      child: Text('#${record.rollNo}', style: TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w600)),
                     ),
                   ]
                 ]),
                 const SizedBox(height: 3),
                 // Class
                 Row(children: [
-                  const Icon(Icons.class_outlined, size: 12, color: Color(0xFF9E9E9E)),
+                  Icon(Icons.class_outlined, size: 12, color: AppColors.textLight),
                   const SizedBox(width: 4),
-                  Text(record.className, style: const TextStyle(fontSize: 11, color: Color(0xFF757575))),
+                  Text(record.className, style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                 ]),
                 const SizedBox(height: 2),
                 // Teacher
                 Row(children: [
-                  const Icon(Icons.person_outline, size: 12, color: Color(0xFF9E9E9E)),
+                  Icon(Icons.person_outline, size: 12, color: AppColors.textLight),
                   const SizedBox(width: 4),
                   Flexible(child: Text(record.teacherName,
-                      style: const TextStyle(fontSize: 11, color: Color(0xFF757575)), overflow: TextOverflow.ellipsis)),
+                      style: TextStyle(fontSize: 11, color: AppColors.textSecondary), overflow: TextOverflow.ellipsis)),
                 ]),
                 const SizedBox(height: 8),
                 // Present / Absent pills
@@ -208,28 +209,28 @@ class StudentListItem extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2E7D32).withOpacity(0.1),
+                      color: AppColors.success.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.check_circle, size: 12, color: Color(0xFF2E7D32)),
+                      Icon(Icons.check_circle, size: 12, color: AppColors.success),
                       const SizedBox(width: 4),
                       Text('${record.present} Present',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF2E7D32))),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.success)),
                     ]),
                   ),
                   const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE53935).withOpacity(0.1),
+                      color: AppColors.danger.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(mainAxisSize: MainAxisSize.min, children: [
-                      const Icon(Icons.cancel, size: 12, color: Color(0xFFE53935)),
+                      Icon(Icons.cancel, size: 12, color: AppColors.danger),
                       const SizedBox(width: 4),
                       Text('${record.absent} Absent',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE53935))),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
                     ]),
                   ),
                   const Spacer(),
@@ -278,7 +279,7 @@ class AttendanceLineChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (chartData.isEmpty) {
-      return const Center(child: Text('No data', style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 13)));
+      return Center(child: Text('No data', style: TextStyle(color: AppColors.textLight, fontSize: 13)));
     }
 
     final spots = chartData.asMap().entries
@@ -302,28 +303,28 @@ class AttendanceLineChart extends StatelessWidget {
         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         leftTitles: AxisTitles(sideTitles: SideTitles(
           showTitles: true, interval: 25, reservedSize: 28,
-          getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: const TextStyle(fontSize: 10, color: Color(0xFFBDBDBD))),
+          getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: TextStyle(fontSize: 10, color: AppColors.textLight)),
         )),
         bottomTitles: AxisTitles(sideTitles: SideTitles(
           showTitles: true, reservedSize: 22,
           getTitlesWidget: (v, _) {
             final i = v.toInt();
             if (i < 0 || i >= labels.length) return const SizedBox();
-            return Text(labels[i], style: const TextStyle(fontSize: 9, color: Color(0xFFBDBDBD)));
+            return Text(labels[i], style: TextStyle(fontSize: 9, color: AppColors.textLight));
           },
         )),
       ),
       lineBarsData: [LineChartBarData(
         spots: spots, isCurved: true, curveSmoothness: 0.35,
-        color: const Color(0xFF1565C0), barWidth: 2.5, isStrokeCapRound: true,
+        color: AppColors.primary, barWidth: 2.5, isStrokeCapRound: true,
         dotData: const FlDotData(show: false),
         belowBarData: BarAreaData(show: true, gradient: LinearGradient(
-          colors: [const Color(0xFF1565C0).withOpacity(0.15), const Color(0xFF1565C0).withOpacity(0.0)],
+          colors: [AppColors.primary.withOpacity(0.15), AppColors.primary.withOpacity(0.0)],
           begin: Alignment.topCenter, end: Alignment.bottomCenter,
         )),
       )],
       lineTouchData: LineTouchData(touchTooltipData: LineTouchTooltipData(
-        getTooltipColor: (_) => const Color(0xFF1565C0),
+        getTooltipColor: (_) => AppColors.primary,
         getTooltipItems: (spots) => spots.map((s) => LineTooltipItem(
           '${s.y.toStringAsFixed(1)}%',
           const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
@@ -442,17 +443,17 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
       ],
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        backgroundColor: const Color(0xFF1565C0),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.download_outlined),
       ),
       body: Container(
-        color: const Color(0xFFF5F7FA),
+        color: AppColors.background,
         child: RefreshIndicator(
           onRefresh: _loadAll,
-          color: const Color(0xFF1565C0),
+          color: AppColors.primary,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.only(bottom: 80),
@@ -488,35 +489,35 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          const Text('Attendance Trends', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E))),
+                          Text('Attendance Trends', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                           TextButton(
                             onPressed: () {},
-                            style: TextButton.styleFrom(foregroundColor: const Color(0xFF1565C0), padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                            style: TextButton.styleFrom(foregroundColor: AppColors.primary, padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                             child: const Text('Details', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                           ),
                         ]),
                         const SizedBox(height: 4),
-                        const Text('ATTENDANCE %', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF9E9E9E), letterSpacing: 0.5)),
+                        Text('ATTENDANCE %', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textLight, letterSpacing: 0.5)),
                         const SizedBox(height: 4),
                         _loadingStats
-                            ? const SizedBox(height: 40, child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF1565C0)))))
+                            ? SizedBox(height: 40, child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))))
                             : Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                                Text(_attendancePct, style: const TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: Color(0xFF1A1A2E))),
+                                Text(_attendancePct, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
                                 const SizedBox(width: 8),
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 6),
                                   child: Row(children: [
                                     Icon(_trendPositive ? Icons.arrow_upward : Icons.arrow_downward, size: 13,
-                                        color: _trendPositive ? const Color(0xFF2E7D32) : const Color(0xFFE53935)),
+                                        color: _trendPositive ? AppColors.success : AppColors.danger),
                                     const SizedBox(width: 2),
                                     Text(_trendLabel, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
-                                        color: _trendPositive ? const Color(0xFF2E7D32) : const Color(0xFFE53935))),
+                                        color: _trendPositive ? AppColors.success : AppColors.danger)),
                                   ]),
                                 ),
                               ]),
                         const SizedBox(height: 12),
                         SizedBox(height: 140, child: _loadingChart
-                            ? const Center(child: CircularProgressIndicator(color: Color(0xFF1565C0), strokeWidth: 2))
+                            ? Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2))
                             : AttendanceLineChart(chartData: _chartData)),
                       ],
                     ),
@@ -571,11 +572,11 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                   child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Text(
                       _selectedClassName == 'All Classes' ? 'All Students' : '$_selectedClassName Students',
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E)),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                     ),
                     TextButton(
                       onPressed: () => setState(() => _showAllStudents = !_showAllStudents),
-                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF1565C0), padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                      style: TextButton.styleFrom(foregroundColor: AppColors.primary, padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
                       child: Text(_showAllStudents ? 'Hide' : 'See All', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
                     ),
                   ]),
@@ -584,7 +585,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: _loadingStudents
-                      ? const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator(color: Color(0xFF1565C0))))
+                      ? Center(child: Padding(padding: const EdgeInsets.all(32), child: CircularProgressIndicator(color: AppColors.primary)))
                       : _students.isEmpty
                           ? _emptyState()
                           : _showAllStudents
@@ -605,7 +606,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
     onTap: onTap,
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(color: const Color(0xFF1565C0), borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Text(label, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600)),
         const SizedBox(width: 4),
@@ -618,7 +619,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
     child: Container(
       height: 90,
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
-      child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF1565C0)))),
+      child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))),
     ),
   );
 
@@ -651,12 +652,12 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                     width: 26,
                     height: 26,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF5F7FA),
+                      color: AppColors.background,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Center(
                       child: Text('${i + 1}',
-                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF757575))),
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -666,11 +667,11 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(s.studentName,
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E)),
+                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                             overflow: TextOverflow.ellipsis),
                         const SizedBox(height: 2),
                         Text('${s.className}  •  Roll# ${s.rollNo}',
-                            style: const TextStyle(fontSize: 11, color: Color(0xFF9E9E9E))),
+                            style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                       ],
                     ),
                   ),
@@ -680,39 +681,39 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF9E9E9E).withOpacity(0.12),
+                        color: AppColors.textLight.withOpacity(0.12),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.remove_circle_outline, size: 14, color: Color(0xFF9E9E9E)),
-                        SizedBox(width: 4),
-                        Text('No Data', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF9E9E9E))),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.remove_circle_outline, size: 14, color: AppColors.textLight),
+                        const SizedBox(width: 4),
+                        Text('No Data', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textLight)),
                       ]),
                     )
                   else if (isPresent)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2E7D32).withOpacity(0.1),
+                        color: AppColors.success.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.check_circle, size: 14, color: Color(0xFF2E7D32)),
-                        SizedBox(width: 4),
-                        Text('Present', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF2E7D32))),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                        const SizedBox(width: 4),
+                        Text('Present', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.success)),
                       ]),
                     )
                   else
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFE53935).withOpacity(0.1),
+                        color: AppColors.danger.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: const Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.cancel, size: 14, color: Color(0xFFE53935)),
-                        SizedBox(width: 4),
-                        Text('Absent', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFE53935))),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(Icons.cancel, size: 14, color: AppColors.danger),
+                        const SizedBox(width: 4),
+                        Text('Absent', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
                       ]),
                     ),
                 ],
@@ -729,10 +730,10 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   Widget _emptyState() => Container(
     padding: const EdgeInsets.all(32),
     alignment: Alignment.center,
-    child: const Column(children: [
-      Icon(Icons.people_outline, size: 40, color: Color(0xFFBDBDBD)),
-      SizedBox(height: 12),
-      Text('No students found', style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 14)),
+    child: Column(children: [
+      Icon(Icons.people_outline, size: 40, color: AppColors.textLight),
+      const SizedBox(height: 12),
+      Text('No students found', style: TextStyle(color: AppColors.textLight, fontSize: 14)),
     ]),
   );
 
@@ -749,12 +750,12 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
         const Divider(),
         ListTile(
           title: const Text('All Classes'),
-          trailing: _selectedClassId == null ? const Icon(Icons.check, color: Color(0xFF1565C0)) : null,
+          trailing: _selectedClassId == null ? Icon(Icons.check, color: AppColors.primary) : null,
           onTap: () { setState(() { _selectedClassId = null; _selectedClassName = 'All Classes'; }); Navigator.pop(context); _onFilterChanged(); },
         ),
         ..._classes.map((c) => ListTile(
           title: Text(c['class_name'] ?? ''),
-          trailing: _selectedClassId == c['id'] ? const Icon(Icons.check, color: Color(0xFF1565C0)) : null,
+          trailing: _selectedClassId == c['id'] ? Icon(Icons.check, color: AppColors.primary) : null,
           onTap: () { setState(() { _selectedClassId = c['id']; _selectedClassName = c['class_name'] ?? ''; }); Navigator.pop(context); _onFilterChanged(); },
         )),
         const SizedBox(height: 16),
@@ -773,12 +774,12 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
         const Divider(),
         ListTile(
           title: const Text('All Faculty'),
-          trailing: _selectedTeacherId == null ? const Icon(Icons.check, color: Color(0xFF1565C0)) : null,
+          trailing: _selectedTeacherId == null ? Icon(Icons.check, color: AppColors.primary) : null,
           onTap: () { setState(() { _selectedTeacherId = null; _selectedTeacherName = 'All Faculty'; }); Navigator.pop(context); _onFilterChanged(); },
         ),
         ..._teachers.map((t) => ListTile(
           title: Text(t['name'] ?? ''),
-          trailing: _selectedTeacherId == t['id'] ? const Icon(Icons.check, color: Color(0xFF1565C0)) : null,
+          trailing: _selectedTeacherId == t['id'] ? Icon(Icons.check, color: AppColors.primary) : null,
           onTap: () { setState(() { _selectedTeacherId = t['id']; _selectedTeacherName = t['name'] ?? ''; }); Navigator.pop(context); _onFilterChanged(); },
         )),
         const SizedBox(height: 16),
@@ -797,7 +798,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
         const Divider(),
         ..._daysOptions.entries.map((e) => ListTile(
           title: Text(e.key),
-          trailing: _selectedDaysLabel == e.key ? const Icon(Icons.check, color: Color(0xFF1565C0)) : null,
+          trailing: _selectedDaysLabel == e.key ? Icon(Icons.check, color: AppColors.primary) : null,
           onTap: () { setState(() { _selectedDays = e.value; _selectedDaysLabel = e.key; }); Navigator.pop(context); _onFilterChanged(); },
         )),
         const SizedBox(height: 16),

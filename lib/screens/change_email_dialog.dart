@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/admin_profile_service.dart';
+import '../core/theme/app_colors.dart';
 
 
 class ChangeEmailDialog extends StatefulWidget {
@@ -37,7 +38,7 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger, behavior: SnackBarBehavior.floating),
         );
       }
     } finally {
@@ -58,27 +59,27 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                const Icon(Icons.email_outlined, color: Color(0xFF2C3E87)),
+                Icon(Icons.email_outlined, color: AppColors.primary),
                 const SizedBox(width: 8),
                 const Text('Change Email', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const Spacer(),
                 IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
               ]),
               const SizedBox(height: 8),
-              Text('Current: ${widget.currentEmail}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
+              Text('Current: ${widget.currentEmail}', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
               const SizedBox(height: 20),
               TextFormField(
                 controller: _passwordController,
                 obscureText: !_showPassword,
                 decoration: InputDecoration(
                   labelText: 'Current Password',
-                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF2C3E87)),
+                  prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
                   suffixIcon: IconButton(
-                    icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, color: Colors.grey),
+                    icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary),
                     onPressed: () => setState(() => _showPassword = !_showPassword),
                   ),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2C3E87), width: 2)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
                 validator: (v) => (v == null || v.isEmpty) ? 'Current password is required' : null,
@@ -89,9 +90,9 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   labelText: 'New Email Address',
-                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF2C3E87)),
+                  prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2C3E87), width: 2)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
                 validator: (v) {
@@ -115,7 +116,7 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2C3E87),
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../core/services/teacher_service.dart';
 import '../core/services/device_service.dart';
+
 
 class RegisterTeacherScreen extends StatefulWidget {
   const RegisterTeacherScreen({super.key});
@@ -86,7 +87,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context); // close dialog
-                context.go('/login'); // go to login
+                Get.offAllNamed('/login'); // go to login
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xff1f4e79),
@@ -128,7 +129,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: () => context.pop(),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Center(

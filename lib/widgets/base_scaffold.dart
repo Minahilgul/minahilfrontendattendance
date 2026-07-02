@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../core/theme/app_colors.dart';
 
@@ -116,42 +116,42 @@ class BaseScaffold extends StatelessWidget {
                   title: const Text('Dashboard'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/admin-dashboard');
+                    Get.toNamed('/admin-dashboard');
                   }),
               ListTile(
                   leading: const Icon(Icons.people),
                   title: const Text('Teacher Directory'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/teachers');
+                    Get.toNamed('/teacher-directory');
                   }),
               ListTile(
                   leading: const Icon(Icons.person_outline),
                   title: const Text('Student Directory'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/add-student');
+                    Get.toNamed('/student-directory');
                   }),
               ListTile(
                   leading: const Icon(Icons.class_),
                   title: const Text('Manage Classes'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/classes');
+                    Get.toNamed('/classes');
                   }),
               ListTile(
                   leading: const Icon(Icons.pending_actions),
                   title: const Text('Pending Approvals'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/pending');
+                    Get.toNamed('/approvals');
                   }),
               ListTile(
                   leading: const Icon(Icons.settings),
                   title: const Text('System Settings'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/settings');
+                    Get.toNamed('/settings');
                   }),
             ],
 
@@ -162,21 +162,21 @@ class BaseScaffold extends StatelessWidget {
                   title: const Text('Dashboard'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/teacher-dashboard');
+                    Get.toNamed('/teacher-dashboard');
                   }),
               ListTile(
                   leading: const Icon(Icons.class_),
                   title: const Text('My Classes'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/classes');
+                    Get.toNamed('/classes');
                   }),
               ListTile(
                   leading: const Icon(Icons.checklist),
                   title: const Text('Attendance'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/attendance');
+                    Get.toNamed('/mark-attendance');
                   }),
               ListTile(
                 leading: const Icon(Icons.person_outline,
@@ -184,7 +184,7 @@ class BaseScaffold extends StatelessWidget {
                 title: const Text('Student Directory'),
                 onTap: () {
                   Navigator.pop(context);
-                  context.push('/add-student');
+                  Get.toNamed('/student-directory');
                 },
               ),
             ],
@@ -234,14 +234,14 @@ class BaseScaffold extends StatelessWidget {
                   title: const Text('Profile'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/profile');
+                    Get.toNamed('/admin-profile');
                   }),
               ListTile(
                   leading: const Icon(Icons.bar_chart),
                   title: const Text('Reports'),
                   onTap: () {
                     Navigator.pop(context);
-                    context.push('/reports');
+                    Get.toNamed('/reports');
                   }),
             ],
 
@@ -255,7 +255,7 @@ class BaseScaffold extends StatelessWidget {
                 await storage.erase();
                 if (context.mounted) {
                   Navigator.pop(context);
-                  context.go('/login');
+                  Get.offAllNamed('/login');
                 }
               },
             ),

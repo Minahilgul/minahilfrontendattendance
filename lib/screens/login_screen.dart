@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/services/auth_service.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../core/services/device_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -63,11 +63,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       
       if (role == 'admin') {
-        context.go('/admin-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+        Get.offAllNamed('/admin-dashboard', arguments: {'userId': userId, 'role': role, 'name': userName});
       } else if (role == 'teacher') {
-        context.go('/teacher-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+        Get.offAllNamed('/teacher-dashboard', arguments: {'userId': userId, 'role': role, 'name': userName});
       } else {
-        context.go('/student-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+        Get.offAllNamed('/student-dashboard', arguments: {'userId': userId, 'role': role, 'name': userName});
       }
       
     } else {
@@ -226,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: TextButton(
                     onPressed: () {
-                      context.push('/register-teacher');
+                      Get.toNamed('/register-teacher');
                     },
                     child: const Text(
                       "Register as a Teacher",

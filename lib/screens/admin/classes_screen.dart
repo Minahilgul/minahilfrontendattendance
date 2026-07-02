@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:attendence_verification/core/services/auth_service.dart';
 import 'package:get_storage/get_storage.dart';
-import '../core/services/class_service.dart';
-import '../widgets/base_scaffold.dart';
-import '../core/theme/app_colors.dart';
+import '../../core/services/class_service.dart';
+import '../../widgets/base_scaffold.dart';
+import '../../core/theme/app_colors.dart';
 
 
 // DATA MODEL
@@ -205,7 +205,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
         await _loadData();
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${item.name} deleted'), backgroundColor: AppColors.danger));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Failed to delete'), backgroundColor: AppColors.danger));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete'), backgroundColor: AppColors.danger));
       }
     }
   }
@@ -228,26 +228,26 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
         child: Column(
           children: [
             Container(
-              color: Colors.white,
+              color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: TextField(
                 controller: _searchController,
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Search by class or teacher',
-                  hintStyle: TextStyle(fontSize: 14, color: AppColors.textLight),
-                  prefixIcon: Icon(Icons.search, color: AppColors.textLight, size: 20),
+                  hintStyle: const TextStyle(fontSize: 14, color: AppColors.textLight),
+                  prefixIcon: const Icon(Icons.search, color: AppColors.textLight, size: 20),
                   filled: true,
                   fillColor: AppColors.background,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.primary, width: 1.5)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
                 ),
               ),
             ),
             Container(
-              color: Colors.white,
+              color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: TabBar(
                 controller: _tabController,
@@ -258,7 +258,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerColor: Colors.transparent,
                 labelColor: Colors.white,
-                unselectedLabelColor: Colors.black54,
+                unselectedLabelColor: AppColors.textSecondary,
                 labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                 unselectedLabelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w400),
                 padding: EdgeInsets.zero,
@@ -274,7 +274,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
                       builder: (context, _) {
                         final classes = _getFilteredClasses(_tabController.index);
                         if (classes.isEmpty) {
-                          return const Center(child: Text('No classes found', style: TextStyle(color: Colors.black38, fontSize: 14)));
+                          return const Center(child: Text('No classes found', style: TextStyle(color: AppColors.textLight, fontSize: 14)));
                         }
                         return ListView.separated(
                           padding: const EdgeInsets.all(16),
@@ -347,7 +347,7 @@ class ClassCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))]),
+      decoration: BoxDecoration(color: AppColors.card, borderRadius: BorderRadius.circular(12), boxShadow: [BoxShadow(color: AppColors.textPrimary.withOpacity(0.05), blurRadius: 4, offset: const Offset(0, 2))]),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Row(
@@ -364,17 +364,17 @@ class ClassCard extends StatelessWidget {
                     if (item.isPendingTerm)...[const SizedBox(width: 6), _StatusBadge(label: 'Pending Term', color: AppColors.warning, isOutlined: true)],
                   ]),
                   const SizedBox(height: 6),
-                  Text(item.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Colors.black87)),
+                  Text(item.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                   const SizedBox(height: 3),
-                  Text('• ${item.teacher}', style: const TextStyle(fontSize: 13, color: Colors.black54)),
+                  Text('• ${item.teacher}', style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                   const SizedBox(height: 6),
-                  Row(children: [const Icon(Icons.people_outline, size: 15, color: Colors.black45), const SizedBox(width: 4), Text('${item.studentCount} Students', style: const TextStyle(fontSize: 12, color: Colors.black45))]),
+                  Row(children: [const Icon(Icons.people_outline, size: 15, color: AppColors.textLight), const SizedBox(width: 4), Text('${item.studentCount} Students', style: const TextStyle(fontSize: 12, color: AppColors.textLight))]),
                 ],
               ),
             ),
             const SizedBox(width: 4),
             PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, size: 20, color: Colors.black45),
+              icon: const Icon(Icons.more_vert, size: 20, color: AppColors.textLight),
               padding: EdgeInsets.zero,
               onSelected: (value) {
                 if (value == 'edit') onEdit?.call();
@@ -383,7 +383,7 @@ class ClassCard extends StatelessWidget {
               itemBuilder: (_) => [
                 const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 8), Text('Edit')])),
                 const PopupMenuItem(value: 'view', child: Row(children: [Icon(Icons.visibility_outlined, size: 18), SizedBox(width: 8), Text('View Details')])),
-                PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: AppColors.danger), const SizedBox(width: 8), Text('Delete', style: TextStyle(color: AppColors.danger))])),
+                const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
               ],
             ),
           ],
@@ -437,7 +437,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate() || _selectedTeacherId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Please select teacher'), backgroundColor: AppColors.danger)
+        const SnackBar(content: Text('Please select teacher'), backgroundColor: AppColors.danger)
       );
       return;
     }
@@ -457,9 +457,9 @@ class _AddClassDialogState extends State<AddClassDialog> {
     setState(() => _isLoading = false);
     if (success) {
       Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Class created successfully!'), backgroundColor: AppColors.success));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Class created successfully!'), backgroundColor: AppColors.success));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Failed to create class. Please try again.'), backgroundColor: AppColors.danger));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to create class. Please try again.'), backgroundColor: AppColors.danger));
     }
   }
 
@@ -467,7 +467,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -476,16 +476,16 @@ class _AddClassDialogState extends State<AddClassDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Add Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87)),
+              const Text('Add Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               const SizedBox(height: 20),
 
               DropdownButtonFormField<String>(
                 value: _selectedTeacherId,
                 decoration: InputDecoration(
                   labelText: 'Teacher Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.primary, width: 1.5)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 ),
                 items: widget.teachers.map((teacher) {
@@ -493,7 +493,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
                   final String teacherName = teacher['username']?.toString() ?? 'Unknown';
                   return DropdownMenuItem<String>(
                     value: teacherIdStr,
-                    child: Text(teacherName, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                    child: Text(teacherName, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
                   );
                 }).toList(),
                 onChanged: (value) => setState(() => _selectedTeacherId = value),
@@ -512,7 +512,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: _isLoading? null : () => Navigator.of(context).pop(), style: TextButton.styleFrom(foregroundColor: Colors.black54, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('Cancel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+                  TextButton(onPressed: _isLoading? null : () => Navigator.of(context).pop(), style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('Cancel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
                   const SizedBox(width: 8),
                   ElevatedButton(onPressed: _isLoading? null : _onSave, style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), elevation: 0), child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Save', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600))),
                 ],
@@ -557,7 +557,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
   Future<void> _onUpdate() async {
     if (!_formKey.currentState!.validate() || _selectedTeacherId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Please select teacher'), backgroundColor: AppColors.danger)
+        const SnackBar(content: Text('Please select teacher'), backgroundColor: AppColors.danger)
       );
       return;
     }
@@ -575,9 +575,9 @@ class _EditClassDialogState extends State<EditClassDialog> {
     setState(() => _isLoading = false);
     if (success) {
       Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Class updated successfully!'), backgroundColor: AppColors.success));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Class updated successfully!'), backgroundColor: AppColors.success));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Failed to update class'), backgroundColor: AppColors.danger));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to update class'), backgroundColor: AppColors.danger));
     }
   }
 
@@ -585,7 +585,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.surface,
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -594,16 +594,16 @@ class _EditClassDialogState extends State<EditClassDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Edit Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Colors.black87)),
+              const Text('Edit Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
               const SizedBox(height: 20),
 
               DropdownButtonFormField<String>(
                 value: _selectedTeacherId,
                 decoration: InputDecoration(
                   labelText: 'Teacher Name',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.primary, width: 1.5)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 ),
                 items: widget.teachers.map((teacher) {
@@ -611,7 +611,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
                   final String teacherName = teacher['username']?.toString() ?? 'Unknown';
                   return DropdownMenuItem<String>(
                     value: teacherIdStr,
-                    child: Text(teacherName, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                    child: Text(teacherName, style: const TextStyle(fontSize: 14, color: AppColors.textPrimary)),
                   );
                 }).toList(),
                 onChanged: (value) => setState(() => _selectedTeacherId = value),
@@ -630,7 +630,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: _isLoading? null : () => Navigator.of(context).pop(), style: TextButton.styleFrom(foregroundColor: Colors.black54, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('Cancel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
+                  TextButton(onPressed: _isLoading? null : () => Navigator.of(context).pop(), style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('Cancel', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
                   const SizedBox(width: 8),
                   ElevatedButton(onPressed: _isLoading? null : _onUpdate, style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), elevation: 0), child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Update', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600))),
                 ],
@@ -657,23 +657,23 @@ class _DialogTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.black54)),
+        Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
         const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           keyboardType: keyboardType,
           validator: validator,
-          style: const TextStyle(fontSize: 14, color: Colors.black87),
+          style: const TextStyle(fontSize: 14, color: AppColors.textPrimary),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: const TextStyle(fontSize: 14, color: Color(0xFFBDBD)),
             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             filled: true,
             fillColor: const Color(0xFFFA),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.primary, width: 1.5)),
-            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.danger)),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+            errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.danger)),
           ),
         ),
       ],

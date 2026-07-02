@@ -5,6 +5,7 @@ import '../core/services/auth_service.dart';
 import '../core/services/session_service.dart';
 import '../core/services/class_service.dart';
 import '../widgets/base_scaffold.dart';
+import '../core/theme/app_colors.dart';
 
 class CreateSessionPage extends StatefulWidget {
   const CreateSessionPage({super.key});
@@ -161,10 +162,10 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
           builder: (context) => AlertDialog(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Row(
-              children: const [
-                Icon(Icons.check_circle_rounded, color: Colors.green, size: 28),
-                SizedBox(width: 8),
-                Text('Success'),
+              children: [
+                Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
+                const SizedBox(width: 8),
+                const Text('Success'),
               ],
             ),
             content: Text(result['message'] ?? 'Attendance session created successfully!'),
@@ -196,10 +197,10 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Row(
-          children: const [
-            Icon(Icons.error_outline_rounded, color: Colors.red, size: 28),
-            SizedBox(width: 8),
-            Text('Error'),
+          children: [
+            Icon(Icons.error_outline_rounded, color: AppColors.danger, size: 28),
+            const SizedBox(width: 8),
+            const Text('Error'),
           ],
         ),
         content: Text(message),
@@ -219,7 +220,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
       title: "Create Session",
       role: _userRole ?? "admin",
       body: Container(
-        color: const Color(0xFFF8F9FA),
+        color: AppColors.background,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
@@ -230,23 +231,23 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF2979FF), Color(0xFF1565C0)],
+                  gradient: LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryDark],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF2979FF).withOpacity(0.3),
+                      color: AppColors.primary.withOpacity(0.3),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: Column(
+                child: const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
+                  children: [
                     Text(
                       "Start Classroom Attendance",
                       style: TextStyle(
@@ -303,7 +304,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                           children: [
                             Text(
                               _classesError!,
-                              style: const TextStyle(color: Colors.red, fontSize: 13),
+                              style: TextStyle(color: AppColors.danger, fontSize: 13),
                             ),
                             TextButton.icon(
                               onPressed: _fetchClasses,
@@ -324,7 +325,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                           decoration: InputDecoration(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                             filled: true,
-                            fillColor: const Color(0xFFF8F9FA),
+                            fillColor: AppColors.background,
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
                               borderSide: BorderSide(color: Colors.grey.shade300),
@@ -335,7 +336,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFF2979FF), width: 1.5),
+                              borderSide: BorderSide(color: AppColors.primary, width: 1.5),
                             ),
                           ),
                           items: _classes.map((c) {
@@ -392,7 +393,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                             )
                           else
                             IconButton(
-                              icon: const Icon(Icons.my_location, size: 18, color: Color(0xFF2979FF)),
+                              icon: Icon(Icons.my_location, size: 18, color: AppColors.primary),
                               onPressed: _getCurrentLocation,
                               constraints: const BoxConstraints(),
                               padding: EdgeInsets.zero,
@@ -405,18 +406,18 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFFEBEE),
+                            color: AppColors.danger.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFFFCDD2)),
+                            border: Border.all(color: AppColors.danger.withOpacity(0.3)),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.error_outline, color: Colors.red),
+                              Icon(Icons.error_outline, color: AppColors.danger),
                               const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
                                   _gpsError!,
-                                  style: const TextStyle(color: Colors.red, fontSize: 13),
+                                  style: TextStyle(color: AppColors.danger, fontSize: 13),
                                 ),
                               ),
                             ],
@@ -428,10 +429,10 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE8F5E9),
+                                color: AppColors.success.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.check_circle_rounded, color: Colors.green),
+                              child: Icon(Icons.check_circle_rounded, color: AppColors.success),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -474,7 +475,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                       ? null
                       : _submitSession,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2979FF),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     disabledBackgroundColor: Colors.grey.shade300,
                     shape: RoundedRectangleBorder(

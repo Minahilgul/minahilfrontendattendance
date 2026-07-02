@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/admin_profile_service.dart';
+import '../core/theme/app_colors.dart';
 
 
 class EditProfileDialog extends StatefulWidget {
@@ -45,7 +46,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger, behavior: SnackBarBehavior.floating),
         );
       }
     } finally {
@@ -66,7 +67,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(children: [
-                const Icon(Icons.edit_outlined, color: Color(0xFF2C3E87)),
+                Icon(Icons.edit_outlined, color: AppColors.primary),
                 const SizedBox(width: 8),
                 const Text('Edit Profile', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 const Spacer(),
@@ -109,7 +110,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _submit,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2C3E87),
+                      backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
@@ -129,9 +130,9 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
   InputDecoration _inputDecoration(String label, IconData icon) {
     return InputDecoration(
       labelText: label,
-      prefixIcon: Icon(icon, color: const Color(0xFF2C3E87)),
+      prefixIcon: Icon(icon, color: AppColors.primary),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2C3E87), width: 2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     );
   }

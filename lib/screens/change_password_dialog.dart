@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/services/admin_profile_service.dart';
+import '../core/theme/app_colors.dart';
 
 
 class ChangePasswordDialog extends StatefulWidget {
@@ -41,7 +42,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger, behavior: SnackBarBehavior.floating),
         );
       }
     } finally {
@@ -63,14 +64,14 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(children: [
-                  const Icon(Icons.lock_outline, color: Color(0xFF2C3E87)),
+                  Icon(Icons.lock_outline, color: AppColors.primary),
                   const SizedBox(width: 8),
                   const Text('Change Password', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
                 ]),
                 const SizedBox(height: 8),
-                const Text('Enter your current password and choose a new one.', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                Text('Enter your current password and choose a new one.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 20),
                 _buildPasswordField('Current Password', _currentPassController, _showCurrent, () => setState(() => _showCurrent = !_showCurrent),
                   validator: (v) => (v == null || v.isEmpty) ? 'Current password is required' : null,
@@ -105,7 +106,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _submit,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2C3E87),
+                        backgroundColor: AppColors.primary,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
@@ -130,10 +131,10 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
       validator: validator,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF2C3E87)),
-        suffixIcon: IconButton(icon: Icon(showPass ? Icons.visibility_off : Icons.visibility, color: Colors.grey), onPressed: toggle),
+        prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
+        suffixIcon: IconButton(icon: Icon(showPass ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary), onPressed: toggle),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2C3E87), width: 2)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );

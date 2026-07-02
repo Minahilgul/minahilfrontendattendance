@@ -38,10 +38,7 @@ class DashboardCard extends StatelessWidget {
         return AppColors.danger;
 
       case DashboardCardType.purple:
-        return const Color(0xFF7C3AED);
-
-      case DashboardCardType.purple:
-  return AppColors.purple; 
+        return AppColors.purple;
           
     }
   }

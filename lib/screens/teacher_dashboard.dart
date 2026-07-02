@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import 'settings_screen.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/session_service.dart';
@@ -360,13 +360,13 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             title: 'My Profile',
             iconData: Icons.group_rounded,
             type: DashboardCardType.primary,
-            onTap: () => context.push('/teacher-profile'),
+            onTap: () => Get.toNamed('/teacher-profile'),
           ),
           DashboardCard(
             title: 'Class Roaster',
             iconData: Icons.group_rounded,
             type: DashboardCardType.primary,
-            onTap: () => context.push('/roster'),
+            onTap: () => Get.toNamed('/roster'),
           ),
           DashboardCard(
             title: 'Reports',
@@ -613,11 +613,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 onTap: () {
                   setState(() => _selectedIndex = index);
                   if (index == 1) {
-                    context.push('/classes');
+                    Get.toNamed('/classes');
                   } else if (index == 2) {
-                    context.push('/teacher-reports');
+                    Get.toNamed('/teacher-report');
                   } else if (index == 3) {
-                    context.push('/settings');
+                    Get.toNamed('/settings');
                   }
                 },
                 child: SizedBox(

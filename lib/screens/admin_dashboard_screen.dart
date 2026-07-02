@@ -6,7 +6,7 @@ import 'view_attendance_screen.dart';
 import 'classes_screen.dart';
 import 'pending_approvals_screen.dart';
 import 'admin_report_screen.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 import '../widgets/base_scaffold.dart'; 
 import '../widgets/dashboard_card.dart';
 import '../core/theme/app_colors.dart';
@@ -53,13 +53,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
             case 0:
               break;
             case 1:
-              context.push('/classes');
+              Get.toNamed('/classes');
               break;
             case 2:
-              context.push('/reports');
+              Get.toNamed('/reports');
               break;
             case 3:
-              context.push('/profile');
+              Get.toNamed('/admin-profile');
               break;
           }
         },
@@ -86,7 +86,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     iconData: Icons.grid_view_rounded,
                     type: DashboardCardType.primary,
                     onTap: () {
-                      context.push('/classes');
+                      Get.toNamed('/classes');
                     },
                   ),
                   DashboardCard(
@@ -94,7 +94,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     iconData: Icons.shield_outlined,
                     type: DashboardCardType.success,
                     onTap: () {
-                      context.push('/teachers');
+                      Get.toNamed('/teacher-directory');
                     },
                   ),
                   DashboardCard(
@@ -102,7 +102,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     iconData: Icons.group_outlined,
                      type: DashboardCardType.warning,
                     onTap: () {
-                      context.push('/pending');
+                      Get.toNamed('/approvals');
                     },
                   ),
                   DashboardCard(
@@ -110,7 +110,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     iconData: Icons.description_outlined,
                     type: DashboardCardType.purple,
                     onTap: () {
-                      context.push('/reports');
+                      Get.toNamed('/reports');
                     },
                   ),
                 ],

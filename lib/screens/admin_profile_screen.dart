@@ -3,27 +3,28 @@ import '../core/services/admin_profile_service.dart';
 import 'edit_profile_dialog.dart';
 import 'change_password_dialog.dart';
 import 'change_email_dialog.dart';
-import 'package:go_router/go_router.dart';  
+import 'package:get/get.dart';  
+import '../core/theme/app_colors.dart';
 
 class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({Key? key}) : super(key: key);
-
+ 
   @override
   State<AdminProfileScreen> createState() => _AdminProfileScreenState();
 }
-
+ 
 class _AdminProfileScreenState extends State<AdminProfileScreen> {
   final AdminProfileService _profileService = AdminProfileService();
   Map<String, dynamic>? _adminData;
   bool _isLoading = true;
   String? _error;
-
+ 
   @override
   void initState() {
     super.initState();
     _loadProfile();
   }
-
+ 
   Future<void> _loadProfile() async {
     setState(() { _isLoading = true; _error = null; });
     try {
@@ -33,7 +34,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       setState(() { _error = e.toString(); _isLoading = false; });
     }
   }
-
+ 
   Future<void> _logout() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -44,7 +45,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
           ),
@@ -57,7 +58,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       
     }
   }
-
+ 
   Future<void> _logoutAllDevices() async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -68,7 +69,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout All', style: TextStyle(color: Colors.white)),
           ),
@@ -85,32 +86,32 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       }
     }
   }
-
+ 
   void _showSnackbar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: isError ? Colors.red : Colors.green,
+        backgroundColor: isError ? AppColors.danger : AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
   }
-
+ 
   String _getInitials(String name) {
     final parts = name.trim().split(' ');
     if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     if (parts.isNotEmpty && parts[0].isNotEmpty) return parts[0][0].toUpperCase();
     return 'A';
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: const Color(0xFF2C3E87),
+        backgroundColor: AppColors.primary,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -122,13 +123,13 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         ],
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2C3E87)))
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
           : _error != null
               ? _buildErrorState()
               : _buildProfileBody(),
     );
   }
-
+ 
   Widget _buildErrorState() {
     return Center(
       child: Padding(
@@ -136,9 +137,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            Icon(Icons.error_outline, size: 64, color: AppColors.danger),
             const SizedBox(height: 16),
-            Text(_error ?? 'Unknown error', textAlign: TextAlign.center, style: const TextStyle(color: Colors.red)),
+            Text(_error ?? 'Unknown error', textAlign: TextAlign.center, style: TextStyle(color: AppColors.danger)),
             const SizedBox(height: 16),
             ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
           ],
@@ -146,16 +147,16 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       ),
     );
   }
-
+ 
   Widget _buildProfileBody() {
     final name = _adminData?['name'] ?? 'Admin';
     final email = _adminData?['email'] ?? '';
     final phone = _adminData?['phone'] ?? '';
     final lastLogin = _adminData?['last_login'];
-
+ 
     return RefreshIndicator(
       onRefresh: _loadProfile,
-      color: const Color(0xFF2C3E87),
+      color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
@@ -163,9 +164,9 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             // Header card
             Container(
               width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFF2C3E87),
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: AppColors.primary,
+                borderRadius: const BorderRadius.only(
                   bottomLeft: Radius.circular(32),
                   bottomRight: Radius.circular(32),
                 ),
@@ -210,38 +211,38 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                 ],
               ),
             ),
-
+ 
             const SizedBox(height: 20),
-
+ 
             // Info card
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _buildInfoCard(email, phone),
             ),
-
+ 
             const SizedBox(height: 16),
-
+ 
             // Actions
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _buildActionsCard(name, email, phone),
             ),
-
+ 
             const SizedBox(height: 16),
-
+ 
             // Logout section
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _buildLogoutCard(),
             ),
-
+ 
             const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
-
+ 
   Widget _buildInfoCard(String email, String phone) {
     return Card(
       elevation: 2,
@@ -251,7 +252,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Profile Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF2C3E87))),
+            Text('Profile Information', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const Divider(height: 20),
             _buildInfoRow(Icons.email_outlined, 'Email', email),
             if (phone.isNotEmpty) ...[
@@ -265,24 +266,24 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       ),
     );
   }
-
+ 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF2C3E87).withOpacity(0.08),
+            color: AppColors.primary.withOpacity(0.08),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: const Color(0xFF2C3E87)),
+          child: Icon(icon, size: 20, color: AppColors.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text(label, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
               Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
             ],
           ),
@@ -290,7 +291,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       ],
     );
   }
-
+ 
   Widget _buildActionsCard(String name, String email, String phone) {
     return Card(
       elevation: 2,
@@ -343,24 +344,24 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       ),
     );
   }
-
+ 
   Widget _buildActionTile({required IconData icon, required String title, required String subtitle, required VoidCallback onTap}) {
     return ListTile(
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: const Color(0xFF2C3E87).withOpacity(0.08),
+          color: AppColors.primary.withOpacity(0.08),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: const Color(0xFF2C3E87), size: 22),
+        child: Icon(icon, color: AppColors.primary, size: 22),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-      subtitle: Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+      subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+      trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
       onTap: onTap,
     );
   }
-
+ 
   Widget _buildLogoutCard() {
     return Card(
       elevation: 2,
@@ -372,24 +373,24 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                child: const Icon(Icons.devices_outlined, color: Colors.orange, size: 22),
+                decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: Icon(Icons.devices_outlined, color: AppColors.warning, size: 22),
               ),
               title: const Text('Logout All Devices', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: const Text('Sign out from all active sessions', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              subtitle: Text('Sign out from all active sessions', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
               onTap: _logoutAllDevices,
             ),
             const Divider(height: 1, indent: 56),
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                child: const Icon(Icons.logout, color: Colors.red, size: 22),
+                decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+                child: Icon(Icons.logout, color: AppColors.danger, size: 22),
               ),
-              title: const Text('Logout', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: Colors.red)),
-              subtitle: const Text('Sign out from this device', style: TextStyle(fontSize: 12, color: Colors.grey)),
-              trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+              title: Text('Logout', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.danger)),
+              subtitle: Text('Sign out from this device', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+              trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
               onTap: _logout,
             ),
           ],

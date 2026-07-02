@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../core/services/attendance_service.dart';
+import '../core/theme/app_colors.dart';
 
 void main() {
   runApp(const MarkAttendanceApp());
@@ -17,7 +18,7 @@ class MarkAttendanceApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2962FF),
+          seedColor: AppColors.primary,
           brightness: Brightness.light,
         ),
         fontFamily: 'Roboto',
@@ -150,34 +151,34 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () {
             if (Navigator.canPop(context)) Navigator.pop(context);
           },
         ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
+          children: [
             Text(
               'CS101: Intro to UI Design',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.black87),
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
             ),
             Text(
               'MONDAY, OCT 25 • 10:00 AM',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF9E9E9E), letterSpacing: 0.3),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: AppColors.textSecondary, letterSpacing: 0.3),
             ),
           ],
         ),
-        actions: const [
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: Icon(Icons.check_circle_rounded, color: Color(0xFF43A047), size: 26),
+            padding: const EdgeInsets.only(right: 12),
+            child: Icon(Icons.check_circle_rounded, color: AppColors.success, size: 26),
           ),
         ],
       ),
@@ -185,7 +186,7 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
         child: Column(
           children: [
             Container(
-              color: Colors.white,
+              color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,9 +195,9 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text('$_markedCount / ${_students.length} Marked',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF424242))),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
                       Text('${(_progress * 100).round()}%',
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: Color(0xFF2962FF))),
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.primary)),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -205,8 +206,8 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
                     child: LinearProgressIndicator(
                       value: _progress,
                       minHeight: 8,
-                      backgroundColor: const Color(0xFFE3E8FF),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF2962FF)),
+                      backgroundColor: AppColors.border,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -215,10 +216,10 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(color: const Color(0xFFF5F5F5), borderRadius: BorderRadius.circular(8)),
-                      child: const Center(
+                      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(8)),
+                      child: Center(
                         child: Text('Mark remaining as present? Auto-fill',
-                            style: TextStyle(fontSize: 13, color: Color(0xFF2962FF), fontWeight: FontWeight.w500)),
+                            style: TextStyle(fontSize: 13, color: AppColors.primary, fontWeight: FontWeight.w500)),
                       ),
                     ),
                   ),
@@ -261,7 +262,7 @@ class _StudentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: Offset(0, 3))],
       ),
@@ -279,18 +280,18 @@ class _StudentCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      Text(student.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF212121))),
+                      Text(student.name, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
                       if (student.isNext)...[
                         const SizedBox(width: 8),
                         Container(
                           padding: EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                          decoration: BoxDecoration(color: Color(0xFF2962FF), borderRadius: BorderRadius.circular(4)),
+                          decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(4)),
                           child: Text('NEXT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ]),
                     const SizedBox(height: 3),
-                    Text(student.id, style: TextStyle(fontSize: 12, color: Color(0xFF9E9E9E))),
+                    Text(student.id, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   ],
                 ),
               ),
@@ -299,11 +300,11 @@ class _StudentCard extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              Expanded(child: _AttendanceButton(label: 'Present', isSelected: student.status == AttendanceStatus.present, selectedColor: Color(0xFF43A047), onTap: () => onStatusChanged(AttendanceStatus.present))),
+              Expanded(child: _AttendanceButton(label: 'Present', isSelected: student.status == AttendanceStatus.present, selectedColor: AppColors.success, onTap: () => onStatusChanged(AttendanceStatus.present))),
               const SizedBox(width: 8),
-              Expanded(child: _AttendanceButton(label: 'Late', isSelected: student.status == AttendanceStatus.late, selectedColor: Color(0xFFFFA726), onTap: () => onStatusChanged(AttendanceStatus.late))),
+              Expanded(child: _AttendanceButton(label: 'Late', isSelected: student.status == AttendanceStatus.late, selectedColor: AppColors.warning, onTap: () => onStatusChanged(AttendanceStatus.late))),
               const SizedBox(width: 8),
-              Expanded(child: _AttendanceButton(label: 'Absent', isSelected: student.status == AttendanceStatus.absent, selectedColor: Color(0xFFE53935), onTap: () => onStatusChanged(AttendanceStatus.absent))),
+              Expanded(child: _AttendanceButton(label: 'Absent', isSelected: student.status == AttendanceStatus.absent, selectedColor: AppColors.danger, onTap: () => onStatusChanged(AttendanceStatus.absent))),
             ],
           ),
         ],
@@ -327,8 +328,8 @@ class _AttendanceButton extends StatelessWidget {
       child: AnimatedContainer(
         duration: Duration(milliseconds: 180),
         height: 40,
-        decoration: BoxDecoration(color: isSelected? selectedColor : Color(0xFFF0F0F0), borderRadius: BorderRadius.circular(8)),
-        child: Center(child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isSelected? Colors.white : Color(0xFF9E9E9E)))),
+        decoration: BoxDecoration(color: isSelected? selectedColor : AppColors.border, borderRadius: BorderRadius.circular(8)),
+        child: Center(child: Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: isSelected? Colors.white : AppColors.textSecondary))),
       ),
     );
   }
@@ -343,7 +344,7 @@ class _BottomSaveSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color: AppColors.surface,
       padding: EdgeInsets.fromLTRB(16, 12, 16, 16),
       child: SafeArea(
         top: false,
@@ -354,13 +355,13 @@ class _BottomSaveSection extends StatelessWidget {
               height: 50,
               child: ElevatedButton.icon(
                 onPressed: onSave, // YAHAN API CALL
-                style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF2962FF), foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 icon: Icon(Icons.save_rounded, size: 20),
                 label: Text('Save Attendance', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
               ),
             ),
             const SizedBox(height: 8),
-            Text('$studentsRemaining STUDENTS REMAINING', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF9E9E9E), letterSpacing: 0.5)),
+            Text('$studentsRemaining STUDENTS REMAINING', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.textSecondary, letterSpacing: 0.5)),
           ],
         ),
       ),

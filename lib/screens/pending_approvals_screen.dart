@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/base_scaffold.dart';
 import '../core/services/student_service.dart';
+import '../core/theme/app_colors.dart';
 
 
 // DATA MODEL
@@ -48,9 +49,9 @@ class ApprovalCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE8EAED), width: 0.8),
+        border: Border.all(color: AppColors.border, width: 0.8),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -85,35 +86,35 @@ class ApprovalCard extends StatelessWidget {
                     children: [
                       Text(
                         request.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A2E),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Icon(Icons.badge_outlined,
-                              size: 13, color: Color(0xFF9E9E9E)),
+                          Icon(Icons.badge_outlined,
+                              size: 13, color: AppColors.textSecondary),
                           const SizedBox(width: 4),
                           Text(
                             '${request.studentId} • ${request.classInfo}',
-                            style: const TextStyle(
-                                fontSize: 12, color: Color(0xFF757575)),
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.textSecondary),
                           ),
                         ],
                       ),
                       const SizedBox(height: 3),
                       Row(
                         children: [
-                          const Icon(Icons.person_outline,
-                              size: 13, color: Color(0xFF9E9E9E)),
+                          Icon(Icons.person_outline,
+                              size: 13, color: AppColors.textSecondary),
                           const SizedBox(width: 4),
                           Text(
                             'Requested by: ${request.requestedBy}',
-                            style: const TextStyle(
-                                fontSize: 12, color: Color(0xFF9E9E9E)),
+                            style: TextStyle(
+                                fontSize: 12, color: AppColors.textSecondary),
                           ),
                         ],
                       ),
@@ -122,9 +123,9 @@ class ApprovalCard extends StatelessWidget {
                 ),
                 Text(
                   request.timeAgo,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
-                    color: Color(0xFFBDBDBD),
+                    color: AppColors.textLight,
                     fontWeight: FontWeight.w500,
                     letterSpacing: 0.3,
                   ),
@@ -132,7 +133,7 @@ class ApprovalCard extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: Color(0xFFF0F0F0)),
+          Divider(height: 1, color: AppColors.border),
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
             child: Row(
@@ -145,9 +146,9 @@ class ApprovalCard extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600)),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFE53935),
-                      side: const BorderSide(
-                          color: Color(0xFFE53935), width: 1.2),
+                      foregroundColor: AppColors.danger,
+                      side: BorderSide(
+                          color: AppColors.danger, width: 1.2),
                       padding: const EdgeInsets.symmetric(vertical: 11),
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8)),
@@ -163,7 +164,7 @@ class ApprovalCard extends StatelessWidget {
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.w600)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1565C0),
+                      backgroundColor: AppColors.primaryDark,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 11),
                       elevation: 0,
@@ -305,13 +306,13 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
       setState(() => _requests.removeWhere((r) => r.id == req.id));
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('${req.name} approved'),
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.success,
         duration: const Duration(seconds: 2),
       ));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Failed to approve student'),
-        backgroundColor: Colors.red,
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Failed to approve student'),
+        backgroundColor: AppColors.danger,
       ));
     }
   }
@@ -323,13 +324,13 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
       setState(() => _requests.removeWhere((r) => r.id == req.id));
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('${req.name} rejected'),
-        backgroundColor: const Color(0xFFC62828),
+        backgroundColor: AppColors.danger,
         duration: const Duration(seconds: 2),
       ));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Failed to reject student'),
-        backgroundColor: Colors.red,
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Failed to reject student'),
+        backgroundColor: AppColors.danger,
       ));
     }
   }
@@ -343,12 +344,12 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
       setState(() => _requests.clear());
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('${ids.length} requests approved'),
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: AppColors.success,
       ));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('Failed to approve all students'),
-        backgroundColor: Colors.red,
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: const Text('Failed to approve all students'),
+        backgroundColor: AppColors.danger,
       ));
     }
   }
@@ -378,18 +379,18 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
         ),
       ],
       body: Container(
-        color: const Color(0xFFF5F7FA),
+        color: AppColors.background,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Search ──
             Container(
-              color: Colors.white,
+              color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
               child: Container(
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF0F2F5),
+                  color: AppColors.background,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: TextField(
@@ -398,14 +399,14 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                   style: const TextStyle(fontSize: 13),
                   decoration: InputDecoration(
                     hintText: 'Search students, classes, or IDs',
-                    hintStyle: const TextStyle(
-                        color: Color(0xFFBDBDBD), fontSize: 13),
-                    prefixIcon: const Icon(Icons.search,
-                        color: Color(0xFFBDBDBD), size: 20),
+                    hintStyle: TextStyle(
+                        color: AppColors.textLight, fontSize: 13),
+                    prefixIcon: Icon(Icons.search,
+                        color: AppColors.textLight, size: 20),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
-                            icon: const Icon(Icons.clear,
-                                size: 18, color: Color(0xFFBDBDBD)),
+                            icon: Icon(Icons.clear,
+                                size: 18, color: AppColors.textLight),
                             onPressed: () {
                               _searchCtrl.clear();
                               setState(() => _searchQuery = '');
@@ -421,20 +422,20 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
             ),
             // ── Tabs ──
             Container(
-              color: Colors.white,
+              color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: TabBar(
                 controller: _tabController,
                 isScrollable: true,
                 tabAlignment: TabAlignment.start,
                 labelColor: Colors.white,
-                unselectedLabelColor: const Color(0xFF757575),
+                unselectedLabelColor: AppColors.textSecondary,
                 labelStyle: const TextStyle(
                     fontSize: 13, fontWeight: FontWeight.w600),
                 unselectedLabelStyle: const TextStyle(
                     fontSize: 13, fontWeight: FontWeight.w500),
                 indicator: BoxDecoration(
-                  color: const Color(0xFF1565C0),
+                  color: AppColors.primaryDark,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
@@ -462,24 +463,24 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                             mainAxisAlignment:
                                 MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'QUEUE',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
-                                  color: Color(0xFF9E9E9E),
+                                  color: AppColors.textSecondary,
                                   letterSpacing: 0.8,
                                 ),
                               ),
                               if (filtered.isNotEmpty)
                                 GestureDetector(
                                   onTap: _approveAll,
-                                  child: const Text(
+                                  child: Text(
                                     '✓ Approve All',
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.w600,
-                                      color: Color(0xFF1565C0),
+                                      color: AppColors.primaryDark,
                                     ),
                                   ),
                                 ),
@@ -534,7 +535,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.check_circle_outline, size: 64, color: Colors.grey[300]),
+          Icon(Icons.check_circle_outline, size: 64, color: AppColors.border),
           const SizedBox(height: 16),
           Text(
             _searchQuery.isNotEmpty
@@ -543,7 +544,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
-              color: Colors.grey[500],
+              color: AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 6),
@@ -551,7 +552,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
             _searchQuery.isNotEmpty
                 ? 'Try a different search term'
                 : 'No pending approvals at this time',
-            style: TextStyle(fontSize: 13, color: Colors.grey[400]),
+            style: TextStyle(fontSize: 13, color: AppColors.textLight),
           ),
         ],
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/services/teacher_service.dart';
-import '../core/services/device_service.dart'; 
+import '../core/services/device_service.dart';
+import '../core/theme/app_colors.dart';
 
 class AddTeacherScreen extends StatefulWidget {
   const AddTeacherScreen({super.key});
@@ -48,7 +49,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add Teacher"),
-        backgroundColor: const Color(0xff1f4e79),
+        backgroundColor: AppColors.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -110,12 +111,12 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                 TextFormField(
                   controller: deviceIdController,
                   readOnly: true, // user cannot edit — auto filled
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: "Device ID (Auto Detected)",
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.devices),
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.devices),
                     filled: true,
-                    fillColor: Color(0xFFF5F5F5),
+                    fillColor: AppColors.background,
                   ),
                 ),
 
@@ -126,7 +127,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                   child: ElevatedButton(
                     onPressed: _submitTeacher,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xff1f4e79),
+                      backgroundColor: AppColors.primary,
                     ),
                     child: const Text(
                       "Add Teacher",
@@ -157,9 +158,9 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
 
     if (result['success'] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Teacher added successfully!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Text('Teacher added successfully!'),
+          backgroundColor: AppColors.success,
         ),
       );
       Navigator.of(context).pop(true);
@@ -167,7 +168,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Failed to add teacher'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.danger,
         ),
       );
     }

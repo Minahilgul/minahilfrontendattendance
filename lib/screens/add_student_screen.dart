@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/student_service.dart';
+import '../core/theme/app_colors.dart';
 
 class AddStudentScreen extends StatefulWidget {
   final String? teacherId;
@@ -44,7 +45,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Add Student"),
-        backgroundColor: const Color(0xff1f4e79),
+        backgroundColor: AppColors.primary,
       ),
       body: Column(
         children: [
@@ -57,7 +58,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                 icon: const Icon(Icons.person_add),
                 label: const Text("Add New Student"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xff1f4e79),
+                  backgroundColor: AppColors.primary,
                 ),
                 onPressed: () => _showAddStudentPopup(context),
               ),

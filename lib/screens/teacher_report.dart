@@ -1,6 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 
 // Data Models 
 
@@ -331,11 +331,11 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
                 onTap: () {
                   setState(() => _navIndex = i);
                   if (i == 0) {
-                    context.push('/teacher-dashboard');
+                    Get.toNamed('/teacher-dashboard');
                   } else if (i == 1) {
-                    context.push('/classes');
+                    Get.toNamed('/classes');
                   } else if (i == 3) {
-                    context.push('/settings');
+                    Get.toNamed('/settings');
                   }
                 },
                 behavior: HitTestBehavior.opaque,

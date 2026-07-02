@@ -3,7 +3,7 @@ import '../core/services/teacher_profile_service.dart';
 import 'teacher_edit_profile_dialog.dart';
 import 'teacher_change_password_dialog.dart';
 import 'teacher_change_email_dialog.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 
 class TeacherProfileScreen extends StatefulWidget {
   const TeacherProfileScreen({Key? key}) : super(key: key);
@@ -53,7 +53,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     );
     if (confirmed == true) {
       await _profileService.logout();
-      if (mounted) context.go('/login');
+      if (mounted) Get.offAllNamed('/login');
     }
   }
 
@@ -77,7 +77,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     if (confirmed == true) {
       try {
         await _profileService.logoutAllDevices();
-        if (mounted) context.go('/login');
+        if (mounted) Get.offAllNamed('/login');
       } catch (e) {
         if (mounted) _showSnackbar(e.toString(), isError: true);
       }

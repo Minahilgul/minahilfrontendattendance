@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:get_storage/get_storage.dart';
 import '../core/services/auth_service.dart';
-import 'package:go_router/go_router.dart';
+import 'package:get/get.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -50,14 +50,14 @@ class _SplashScreenState extends State<SplashScreen>
     if (token != null && role != null) {
       int userId = int.tryParse(userIdStr ?? '') ?? 0;
       if (role == 'admin') {
-        context.go('/admin-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+        Get.offAllNamed('/admin-dashboard', arguments: {'userId': userId, 'role': role, 'name': userName});
       } else if (role == 'teacher') {
-        context.go('/teacher-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+        Get.offAllNamed('/teacher-dashboard', arguments: {'userId': userId, 'role': role, 'name': userName});
       } else {
-        context.go('/student-dashboard', extra: {'userId': userId, 'role': role, 'name': userName});
+        Get.offAllNamed('/student-dashboard', arguments: {'userId': userId, 'role': role, 'name': userName});
       }
     } else {
-      context.go('/login');
+      Get.offAllNamed('/login');
     }
   }
 
