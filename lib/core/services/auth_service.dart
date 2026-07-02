@@ -3,11 +3,10 @@ import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 import 'device_service.dart';
 
-
 class AuthService {
   // 🔥 BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakho
-  static const String baseUrl = 'http://attia.ddev.site/api';
-  // static const String baseUrl = 'http://attia.ddev.site/api';
+  static const String baseUrl = 'http://localhost:8000/api';
+  // static const String baseUrl = 'http://localhost:8000/api';
 
   static Map<String, dynamic>? currentUser;
   static String? token;
@@ -25,7 +24,11 @@ class AuthService {
           "Content-Type": "application/json",
           "Accept": "application/json",
         },
-        body: jsonEncode({"email": email, "password": password,"device_id": deviceId,}),
+        body: jsonEncode({
+          "email": email,
+          "password": password,
+          "device_id": deviceId,
+        }),
       );
 
       print("DEVICE ID: $deviceId");
@@ -51,10 +54,7 @@ class AuthService {
         print("Token saved: $token");
         return data;
       } else {
-        return {
-          "success": false,
-          "message": data['message'] ?? 'Login failed'
-        };
+        return {"success": false, "message": data['message'] ?? 'Login failed'};
       }
     } catch (e) {
       print("LOGIN ERROR: $e");

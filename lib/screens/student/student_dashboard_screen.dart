@@ -11,7 +11,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 
 // Constants
-const String _baseUrl = 'http://attia.ddev.site/api';
+const String _baseUrl = 'http://localhost:8000/api';
 
 // Model
 class AttendanceRecord {
@@ -27,8 +27,8 @@ class AttendanceRecord {
 
   factory AttendanceRecord.fromJson(Map<String, dynamic> j) => AttendanceRecord(
         subject: j['class_name'] ?? 'Class ${j['class_id']}',
-        date:    j['attendance_date'] ?? '',
-        status:  j['status'] ?? 'absent',
+        date: j['attendance_date'] ?? '',
+        status: j['status'] ?? 'absent',
       );
 }
 
@@ -59,7 +59,7 @@ const List<Map<String, String>> _kNotifications = [
 
 // Main Widget
 class StudentDashboardScreen extends StatefulWidget {
-  final int    userId;
+  final int userId;
   final String role;
   final String name;
 
@@ -137,7 +137,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 color: AppColors.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.how_to_vote_rounded, color: AppColors.primary),
+              child: const Icon(Icons.how_to_vote_rounded,
+                  color: AppColors.primary),
             ),
             const SizedBox(width: 10),
             const Expanded(
@@ -169,11 +170,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               backgroundColor: AppColors.danger.withOpacity(0.1),
               foregroundColor: AppColors.danger,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             icon: const Icon(Icons.close_rounded, size: 18),
-            label: const Text('NO', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            label: const Text('NO',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             onPressed: () async {
               await _submitResponse(requestId, 'no');
               if (mounted) Navigator.pop(context);
@@ -185,11 +188,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               backgroundColor: AppColors.success,
               foregroundColor: Colors.white,
               elevation: 0,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             icon: const Icon(Icons.check_rounded, size: 18),
-            label: const Text('YES', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+            label: const Text('YES',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             onPressed: () async {
               await _submitResponse(requestId, 'yes');
               if (mounted) Navigator.pop(context);
@@ -226,7 +231,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final token = await _getToken();
       final headers = {
@@ -254,27 +262,35 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
       setState(() {
         _studentInfo = info;
-        _allRecords  = records;
-        _loading     = false;
+        _allRecords = records;
+        _loading = false;
       });
     } catch (e) {
-      setState(() { _loading = false; _error = e.toString(); });
+      setState(() {
+        _loading = false;
+        _error = e.toString();
+      });
     }
   }
 
   // ── Bottom Nav ───────────────────────────────
   Widget _buildBottomNav() {
     final items = const [
-      {'icon': Icons.home_rounded,          'label': 'Home'},
-      {'icon': Icons.bar_chart_rounded,     'label': 'Reports'},
+      {'icon': Icons.home_rounded, 'label': 'Home'},
+      {'icon': Icons.bar_chart_rounded, 'label': 'Reports'},
       {'icon': Icons.notifications_rounded, 'label': 'Alerts'},
-      {'icon': Icons.person_rounded,        'label': 'Profile'},
+      {'icon': Icons.person_rounded, 'label': 'Profile'},
     ];
 
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, -2))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, -2))
+        ],
       ),
       child: SafeArea(
         top: false,
@@ -295,12 +311,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         clipBehavior: Clip.none,
                         children: [
                           Icon(items[i]['icon'] as IconData,
-                              color: active ? AppColors.primary : AppColors.textSecondary),
+                              color: active
+                                  ? AppColors.primary
+                                  : AppColors.textSecondary),
                           if (i == 2)
                             Positioned(
-                              right: -4, top: -4,
+                              right: -4,
+                              top: -4,
                               child: Container(
-                                width: 10, height: 10,
+                                width: 10,
+                                height: 10,
                                 decoration: const BoxDecoration(
                                   color: AppColors.danger,
                                   shape: BoxShape.circle,
@@ -314,8 +334,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         items[i]['label'] as String,
                         style: TextStyle(
                           fontSize: 11,
-                          color: active ? AppColors.primary : AppColors.textSecondary,
-                          fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                          color: active
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                          fontWeight:
+                              active ? FontWeight.w700 : FontWeight.w500,
                         ),
                       ),
                     ],
@@ -338,7 +361,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           children: [
             CircularProgressIndicator(color: AppColors.primary),
             SizedBox(height: 16),
-            Text('Loading your data…', style: TextStyle(color: AppColors.textSecondary)),
+            Text('Loading your data…',
+                style: TextStyle(color: AppColors.textSecondary)),
           ],
         ),
       );
@@ -348,13 +372,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.wifi_off_rounded, size: 48, color: AppColors.textSecondary),
+            const Icon(Icons.wifi_off_rounded,
+                size: 48, color: AppColors.textSecondary),
             const SizedBox(height: 12),
-            const Text('Could not load data', style: TextStyle(color: AppColors.textSecondary)),
+            const Text('Could not load data',
+                style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed: _loadData,
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+              style:
+                  ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
               child: const Text('Retry', style: TextStyle(color: Colors.white)),
             ),
           ],
@@ -363,18 +390,36 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     }
 
     switch (_selectedIndex) {
-      case 0: return _HomePage(name: widget.name, userId: widget.userId, role: widget.role, records: _allRecords);
-      case 1: return _ReportsPage(records: _allRecords, onRefresh: _loadData);
-      case 2: return _NotificationsPage();
-      case 3: return _ProfilePage(name: widget.name, userId: widget.userId, role: widget.role, studentInfo: _studentInfo);
-      default: return const SizedBox();
+      case 0:
+        return _HomePage(
+            name: widget.name,
+            userId: widget.userId,
+            role: widget.role,
+            records: _allRecords);
+      case 1:
+        return _ReportsPage(records: _allRecords, onRefresh: _loadData);
+      case 2:
+        return _NotificationsPage();
+      case 3:
+        return _ProfilePage(
+            name: widget.name,
+            userId: widget.userId,
+            role: widget.role,
+            studentInfo: _studentInfo);
+      default:
+        return const SizedBox();
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
-      title: ['Student Dashboard', 'My Reports', 'Notifications', 'My Profile'][_selectedIndex],
+      title: [
+        'Student Dashboard',
+        'My Reports',
+        'Notifications',
+        'My Profile'
+      ][_selectedIndex],
       role: widget.role,
       bottomNav: _buildBottomNav(),
       onDrawerNavTap: (index) => setState(() => _selectedIndex = index),
@@ -382,7 +427,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 }
-
 
 // ════════════════════════════════════════════
 // PAGE 1 — HOME
@@ -403,16 +447,18 @@ class _HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final today    = DateTime.now();
-    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final today = DateTime.now();
+    final todayStr =
+        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     final todayRecord = records.where((r) => r.date == todayStr).toList();
-    final todayStatus = todayRecord.isNotEmpty ? todayRecord.first.status : 'not_marked';
+    final todayStatus =
+        todayRecord.isNotEmpty ? todayRecord.first.status : 'not_marked';
 
     final present = records.where((r) => r.status == 'present').length;
-    final absent  = records.where((r) => r.status == 'absent').length;
-    final late    = records.where((r) => r.status == 'late').length;
-    final total   = records.length;
-    final pct     = total > 0 ? ((present / total) * 100).round() : 0;
+    final absent = records.where((r) => r.status == 'absent').length;
+    final late = records.where((r) => r.status == 'late').length;
+    final total = records.length;
+    final pct = total > 0 ? ((present / total) * 100).round() : 0;
 
     return Container(
       color: AppColors.background,
@@ -432,13 +478,21 @@ class _HomePage extends StatelessWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [BoxShadow(color: AppColors.primary.withOpacity(0.3), blurRadius: 12, offset: const Offset(0, 4))],
+                boxShadow: [
+                  BoxShadow(
+                      color: AppColors.primary.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4))
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Welcome, $name! 👋',
-                      style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold)),
                   const SizedBox(height: 4),
                   const Text('Student Portal • Attendance Verification System',
                       style: TextStyle(color: Colors.white70, fontSize: 13)),
@@ -448,14 +502,19 @@ class _HomePage extends StatelessWidget {
                       Expanded(
                         child: _BannerStat(
                           label: "Today's Status",
-                          value: todayStatus == 'present' ? '✅ Present'
-                               : todayStatus == 'absent'  ? '❌ Absent'
-                               : todayStatus == 'late'    ? '⏱ Late'
-                               : '⏳ Not Marked',
+                          value: todayStatus == 'present'
+                              ? '✅ Present'
+                              : todayStatus == 'absent'
+                                  ? '❌ Absent'
+                                  : todayStatus == 'late'
+                                      ? '⏱ Late'
+                                      : '⏳ Not Marked',
                         ),
                       ),
                       Container(width: 1, height: 40, color: Colors.white30),
-                      Expanded(child: _BannerStat(label: 'Overall', value: '$pct%', center: true)),
+                      Expanded(
+                          child: _BannerStat(
+                              label: 'Overall', value: '$pct%', center: true)),
                     ],
                   ),
                 ],
@@ -473,7 +532,8 @@ class _HomePage extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.sensors_rounded, color: AppColors.primary, size: 18),
+                  const Icon(Icons.sensors_rounded,
+                      color: AppColors.primary, size: 18),
                   const SizedBox(width: 8),
                   const Expanded(
                     child: Text(
@@ -489,7 +549,8 @@ class _HomePage extends StatelessWidget {
                     duration: const Duration(seconds: 1),
                     builder: (_, val, __) => Opacity(
                       opacity: val,
-                      child: const Icon(Icons.circle, size: 8, color: AppColors.primary),
+                      child: const Icon(Icons.circle,
+                          size: 8, color: AppColors.primary),
                     ),
                   ),
                 ],
@@ -502,8 +563,11 @@ class _HomePage extends StatelessWidget {
               title: 'ACCOUNT DETAILS',
               child: Column(children: [
                 _InfoRow(label: 'User ID', value: '#$userId'),
-                _InfoRow(label: 'Role',    value: role.toUpperCase()),
-                _InfoRow(label: 'Status',  value: 'Active', valueColor: AppColors.success),
+                _InfoRow(label: 'Role', value: role.toUpperCase()),
+                _InfoRow(
+                    label: 'Status',
+                    value: 'Active',
+                    valueColor: AppColors.success),
               ]),
             ),
             const SizedBox(height: 16),
@@ -511,11 +575,23 @@ class _HomePage extends StatelessWidget {
               icon: Icons.calendar_month_rounded,
               title: 'THIS MONTH',
               child: Row(children: [
-                _StatBox(label: 'Present', value: present, color: AppColors.success, bg: const Color(0xFFDCFCE7)),
+                _StatBox(
+                    label: 'Present',
+                    value: present,
+                    color: AppColors.success,
+                    bg: const Color(0xFFDCFCE7)),
                 const SizedBox(width: 10),
-                _StatBox(label: 'Late',    value: late,    color: AppColors.warning,  bg: const Color(0xFFFEF3C7)),
+                _StatBox(
+                    label: 'Late',
+                    value: late,
+                    color: AppColors.warning,
+                    bg: const Color(0xFFFEF3C7)),
                 const SizedBox(width: 10),
-                _StatBox(label: 'Absent',  value: absent,  color: AppColors.danger,   bg: const Color(0xFFFEE2E2)),
+                _StatBox(
+                    label: 'Absent',
+                    value: absent,
+                    color: AppColors.danger,
+                    bg: const Color(0xFFFEE2E2)),
               ]),
             ),
           ],
@@ -524,7 +600,6 @@ class _HomePage extends StatelessWidget {
     );
   }
 }
-
 
 // ════════════════════════════════════════════
 // PAGE 2 — REPORTS
@@ -547,11 +622,13 @@ class _ReportsPageState extends State<_ReportsPage> {
   Widget build(BuildContext context) {
     final records = widget.records;
     final present = records.where((r) => r.status == 'present').length;
-    final total   = records.length;
-    final pct     = total > 0 ? ((present / total) * 100).round() : 0;
+    final total = records.length;
+    final pct = total > 0 ? ((present / total) * 100).round() : 0;
 
     final subjects = ['All', ...records.map((r) => r.subject).toSet().toList()];
-    final filtered = _filter == 'All' ? records : records.where((r) => r.subject == _filter).toList();
+    final filtered = _filter == 'All'
+        ? records
+        : records.where((r) => r.subject == _filter).toList();
 
     return Container(
       color: AppColors.background,
@@ -569,12 +646,18 @@ class _ReportsPageState extends State<_ReportsPage> {
                 decoration: BoxDecoration(
                   color: AppColors.surface,
                   borderRadius: BorderRadius.circular(18),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 3))],
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3))
+                  ],
                 ),
                 child: Row(
                   children: [
                     SizedBox(
-                      width: 80, height: 80,
+                      width: 80,
+                      height: 80,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
@@ -582,12 +665,18 @@ class _ReportsPageState extends State<_ReportsPage> {
                             value: pct / 100,
                             strokeWidth: 8,
                             backgroundColor: AppColors.border,
-                            valueColor: AlwaysStoppedAnimation(pct >= 75 ? AppColors.success : AppColors.danger),
+                            valueColor: AlwaysStoppedAnimation(pct >= 75
+                                ? AppColors.success
+                                : AppColors.danger),
                           ),
-                          Text('$pct%', style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w800,
-                            color: pct >= 75 ? AppColors.success : AppColors.danger,
-                          )),
+                          Text('$pct%',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w800,
+                                color: pct >= 75
+                                    ? AppColors.success
+                                    : AppColors.danger,
+                              )),
                         ],
                       ),
                     ),
@@ -597,17 +686,28 @@ class _ReportsPageState extends State<_ReportsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text('Overall Attendance',
-                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                              style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary)),
                           const SizedBox(height: 4),
                           Text('$present present out of $total classes',
-                              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary)),
                           if (pct < 75) ...[
                             const SizedBox(height: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: BorderRadius.circular(8)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                  color: const Color(0xFFFEE2E2),
+                                  borderRadius: BorderRadius.circular(8)),
                               child: const Text('⚠ Below 75% threshold',
-                                  style: TextStyle(fontSize: 11, color: AppColors.danger, fontWeight: FontWeight.w700)),
+                                  style: TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.danger,
+                                      fontWeight: FontWeight.w700)),
                             ),
                           ],
                         ],
@@ -624,21 +724,28 @@ class _ReportsPageState extends State<_ReportsPage> {
                   itemCount: subjects.length,
                   separatorBuilder: (_, __) => const SizedBox(width: 8),
                   itemBuilder: (_, i) {
-                    final s      = subjects[i];
+                    final s = subjects[i];
                     final active = _filter == s;
                     return GestureDetector(
                       onTap: () => setState(() => _filter = s),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
                         decoration: BoxDecoration(
                           color: active ? AppColors.primary : AppColors.surface,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: active ? AppColors.primary : AppColors.border),
+                          border: Border.all(
+                              color: active
+                                  ? AppColors.primary
+                                  : AppColors.border),
                         ),
                         child: Text(s,
                             style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w600,
-                              color: active ? Colors.white : AppColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: active
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
                             )),
                       ),
                     );
@@ -652,7 +759,8 @@ class _ReportsPageState extends State<_ReportsPage> {
                     padding: EdgeInsets.only(top: 40),
                     child: Column(
                       children: [
-                        Icon(Icons.history_edu_rounded, size: 48, color: AppColors.textLight),
+                        Icon(Icons.history_edu_rounded,
+                            size: 48, color: AppColors.textLight),
                         SizedBox(height: 12),
                         Text('No attendance records yet',
                             style: TextStyle(color: AppColors.textSecondary)),
@@ -669,7 +777,6 @@ class _ReportsPageState extends State<_ReportsPage> {
     );
   }
 }
-
 
 // ════════════════════════════════════════════
 // PAGE 3 — NOTIFICATIONS
@@ -698,22 +805,36 @@ class _NotificationsPageState extends State<_NotificationsPage> {
               children: [
                 Row(children: [
                   const Text('Notifications',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.textPrimary)),
                   if (unread > 0) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: AppColors.danger, borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: AppColors.danger,
+                          borderRadius: BorderRadius.circular(10)),
                       child: Text('$unread',
-                          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800)),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800)),
                     ),
                   ],
                 ]),
                 if (unread > 0)
                   GestureDetector(
-                    onTap: () => setState(() { for (int i = 0; i < _read.length; i++) _read[i] = true; }),
+                    onTap: () => setState(() {
+                      for (int i = 0; i < _read.length; i++) _read[i] = true;
+                    }),
                     child: const Text('Mark all read',
-                        style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600)),
+                        style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600)),
                   ),
               ],
             ),
@@ -730,23 +851,34 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                     margin: const EdgeInsets.only(bottom: 10),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: _read[i] ? AppColors.surface : AppColors.primary.withOpacity(0.06),
+                      color: _read[i]
+                          ? AppColors.surface
+                          : AppColors.primary.withOpacity(0.06),
                       borderRadius: BorderRadius.circular(14),
                       border: Border(
                           left: BorderSide(
-                              color: _read[i] ? Colors.transparent : AppColors.primary,
+                              color: _read[i]
+                                  ? Colors.transparent
+                                  : AppColors.primary,
                               width: 4)),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
+                      boxShadow: [
+                        BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 8)
+                      ],
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
-                          width: 42, height: 42,
+                          width: 42,
+                          height: 42,
                           decoration: BoxDecoration(
                               color: AppColors.background,
                               borderRadius: BorderRadius.circular(12)),
-                          child: Center(child: Text(n['icon']!, style: const TextStyle(fontSize: 20))),
+                          child: Center(
+                              child: Text(n['icon']!,
+                                  style: const TextStyle(fontSize: 20))),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -756,25 +888,33 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                               Text(n['title']!,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    fontWeight: _read[i] ? FontWeight.w600 : FontWeight.w800,
+                                    fontWeight: _read[i]
+                                        ? FontWeight.w600
+                                        : FontWeight.w800,
                                     color: AppColors.textPrimary,
                                   )),
                               const SizedBox(height: 3),
                               Text(n['body']!,
                                   style: const TextStyle(
-                                      fontSize: 12, color: AppColors.textSecondary, height: 1.4)),
+                                      fontSize: 12,
+                                      color: AppColors.textSecondary,
+                                      height: 1.4)),
                               const SizedBox(height: 6),
                               Text(n['time']!,
-                                  style: const TextStyle(fontSize: 11, color: AppColors.textLight)),
+                                  style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.textLight)),
                             ],
                           ),
                         ),
                         if (!_read[i])
                           Container(
-                            width: 8, height: 8,
+                            width: 8,
+                            height: 8,
                             margin: const EdgeInsets.only(top: 4),
                             decoration: const BoxDecoration(
-                                color: AppColors.primary, shape: BoxShape.circle),
+                                color: AppColors.primary,
+                                shape: BoxShape.circle),
                           ),
                       ],
                     ),
@@ -789,7 +929,6 @@ class _NotificationsPageState extends State<_NotificationsPage> {
   }
 }
 
-
 // ════════════════════════════════════════════
 // PAGE 4 — PROFILE
 // ════════════════════════════════════════════
@@ -800,7 +939,11 @@ class _ProfilePage extends StatefulWidget {
   final String role;
   final Map<String, dynamic>? studentInfo;
 
-  const _ProfilePage({required this.name, required this.userId, required this.role, this.studentInfo});
+  const _ProfilePage(
+      {required this.name,
+      required this.userId,
+      required this.role,
+      this.studentInfo});
 
   @override
   State<_ProfilePage> createState() => _ProfilePageState();
@@ -818,9 +961,9 @@ class _ProfilePageState extends State<_ProfilePage> {
   }
 
   Future<void> _openChangePassword() async {
-    final formKey   = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
     final currentPw = TextEditingController();
-    final newPw     = TextEditingController();
+    final newPw = TextEditingController();
     final confirmPw = TextEditingController();
 
     await showDialog(
@@ -832,7 +975,8 @@ class _ProfilePageState extends State<_ProfilePage> {
 
         return StatefulBuilder(
           builder: (ctx, setS) => Dialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Form(
@@ -844,7 +988,8 @@ class _ProfilePageState extends State<_ProfilePage> {
                       const Icon(Icons.lock_outline, color: AppColors.primary),
                       const SizedBox(width: 8),
                       const Text('Change Password',
-                          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.bold)),
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.close),
@@ -854,15 +999,15 @@ class _ProfilePageState extends State<_ProfilePage> {
                     const SizedBox(height: 16),
                     _dialogPwField('Current Password', currentPw, showCurrent,
                         () => setS(() => showCurrent = !showCurrent),
-                        validator: (v) => (v == null || v.isEmpty) ? 'Required' : null),
+                        validator: (v) =>
+                            (v == null || v.isEmpty) ? 'Required' : null),
                     const SizedBox(height: 12),
                     _dialogPwField('New Password', newPw, showNew,
-                        () => setS(() => showNew = !showNew),
-                        validator: (v) {
-                          if (v == null || v.isEmpty) return 'Required';
-                          if (v.length < 8) return 'Min 8 characters';
-                          return null;
-                        }),
+                        () => setS(() => showNew = !showNew), validator: (v) {
+                      if (v == null || v.isEmpty) return 'Required';
+                      if (v.length < 8) return 'Min 8 characters';
+                      return null;
+                    }),
                     const SizedBox(height: 12),
                     _dialogPwField('Confirm Password', confirmPw, showConfirm,
                         () => setS(() => showConfirm = !showConfirm),
@@ -897,11 +1042,15 @@ class _ProfilePageState extends State<_ProfilePage> {
                                     );
                                     if (ctx.mounted) Navigator.pop(ctx);
                                     if (mounted) {
-                                      _showSnackbar('Password changed successfully');
+                                      _showSnackbar(
+                                          'Password changed successfully');
                                     }
                                   } catch (e) {
-                                    if (ctx.mounted) setS(() => loading = false);
-                                    if (mounted) _showSnackbar(e.toString(), isError: true);
+                                    if (ctx.mounted)
+                                      setS(() => loading = false);
+                                    if (mounted)
+                                      _showSnackbar(e.toString(),
+                                          isError: true);
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
@@ -912,7 +1061,8 @@ class _ProfilePageState extends State<_ProfilePage> {
                           ),
                           child: loading
                               ? const SizedBox(
-                                  width: 20, height: 20,
+                                  width: 20,
+                                  height: 20,
                                   child: CircularProgressIndicator(
                                       color: Colors.white, strokeWidth: 2))
                               : const Text('Update',
@@ -958,7 +1108,8 @@ class _ProfilePageState extends State<_ProfilePage> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       ),
     );
   }
@@ -968,10 +1119,13 @@ class _ProfilePageState extends State<_ProfilePage> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
+        title:
+            const Text('Logout', style: TextStyle(fontWeight: FontWeight.bold)),
         content: const Text('Are you sure you want to logout?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Cancel')),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
@@ -988,13 +1142,14 @@ class _ProfilePageState extends State<_ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final info      = widget.studentInfo;
-    final email     = info?['email'] ?? '—';
-    final phone     = info?['phone'] ?? '—';
-    final className = info?['class_name']?.toString() ?? info?['class']?.toString() ?? '—';
-    final rollNo    = info?['roll_no'] ?? info?['roll_number'] ?? '—';
-    final parts     = widget.name.trim().split(' ');
-    final initials  = parts.length >= 2
+    final info = widget.studentInfo;
+    final email = info?['email'] ?? '—';
+    final phone = info?['phone'] ?? '—';
+    final className =
+        info?['class_name']?.toString() ?? info?['class']?.toString() ?? '—';
+    final rollNo = info?['roll_no'] ?? info?['roll_number'] ?? '—';
+    final parts = widget.name.trim().split(' ');
+    final initials = parts.length >= 2
         ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
         : widget.name.substring(0, 2).toUpperCase();
 
@@ -1006,7 +1161,8 @@ class _ProfilePageState extends State<_ProfilePage> {
           children: [
             // Avatar
             Container(
-              width: 80, height: 80,
+              width: 80,
+              height: 80,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
@@ -1015,23 +1171,31 @@ class _ProfilePageState extends State<_ProfilePage> {
               child: Center(
                 child: Text(initials,
                     style: const TextStyle(
-                        color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800)),
               ),
             ),
             const SizedBox(height: 12),
             Text(widget.name,
                 style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary)),
             Text(rollNo != '—' ? rollNo : 'Student',
-                style: const TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                style: const TextStyle(
+                    color: AppColors.textSecondary, fontSize: 13)),
             const SizedBox(height: 6),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
               decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(10)),
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(10)),
               child: const Text('● Active',
                   style: TextStyle(
-                      color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w700)),
+                      color: AppColors.success,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700)),
             ),
             const SizedBox(height: 24),
 
@@ -1041,12 +1205,15 @@ class _ProfilePageState extends State<_ProfilePage> {
               title: 'PERSONAL INFO',
               child: Column(children: [
                 _InfoRow(label: 'Full Name', value: widget.name),
-                _InfoRow(label: 'Email',     value: email),
-                _InfoRow(label: 'Phone',     value: phone),
-                _InfoRow(label: 'Class',     value: className),
-                _InfoRow(label: 'Roll No',   value: rollNo),
-                _InfoRow(label: 'Role',      value: widget.role.toUpperCase()),
-                _InfoRow(label: 'Status',    value: 'Active', valueColor: AppColors.success),
+                _InfoRow(label: 'Email', value: email),
+                _InfoRow(label: 'Phone', value: phone),
+                _InfoRow(label: 'Class', value: className),
+                _InfoRow(label: 'Roll No', value: rollNo),
+                _InfoRow(label: 'Role', value: widget.role.toUpperCase()),
+                _InfoRow(
+                    label: 'Status',
+                    value: 'Active',
+                    valueColor: AppColors.success),
               ]),
             ),
             const SizedBox(height: 16),
@@ -1067,13 +1234,17 @@ class _ProfilePageState extends State<_ProfilePage> {
                       decoration: BoxDecoration(
                           color: AppColors.primary.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.lock_outline, color: AppColors.primary, size: 22),
+                      child: const Icon(Icons.lock_outline,
+                          color: AppColors.primary, size: 22),
                     ),
                     title: const Text('Change Password',
-                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                        style: TextStyle(
+                            fontWeight: FontWeight.w600, fontSize: 14)),
                     subtitle: const Text('Update your password',
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary)),
+                    trailing: const Icon(Icons.chevron_right,
+                        color: AppColors.textSecondary),
                     onTap: _openChangePassword,
                   ),
                   const Divider(height: 1, indent: 56),
@@ -1083,14 +1254,19 @@ class _ProfilePageState extends State<_ProfilePage> {
                       decoration: BoxDecoration(
                           color: AppColors.danger.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.logout, color: AppColors.danger, size: 22),
+                      child: const Icon(Icons.logout,
+                          color: AppColors.danger, size: 22),
                     ),
                     title: const Text('Logout',
                         style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 14, color: AppColors.danger)),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: AppColors.danger)),
                     subtitle: const Text('Sign out from this device',
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                    trailing: const Icon(Icons.chevron_right, color: AppColors.textSecondary),
+                        style: TextStyle(
+                            fontSize: 12, color: AppColors.textSecondary)),
+                    trailing: const Icon(Icons.chevron_right,
+                        color: AppColors.textSecondary),
                     onTap: _logout,
                   ),
                 ]),
@@ -1103,7 +1279,6 @@ class _ProfilePageState extends State<_ProfilePage> {
   }
 }
 
-
 // ════════════════════════════════════════════
 // SHARED SMALL WIDGETS
 // ════════════════════════════════════════════
@@ -1114,7 +1289,11 @@ class _SectionCard extends StatelessWidget {
   final Widget child;
   final Widget? trailing;
 
-  const _SectionCard({required this.icon, required this.title, required this.child, this.trailing});
+  const _SectionCard(
+      {required this.icon,
+      required this.title,
+      required this.child,
+      this.trailing});
 
   @override
   Widget build(BuildContext context) {
@@ -1164,7 +1343,9 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 13, color: AppColors.textSecondary)),
           Text(value,
               style: TextStyle(
                   fontSize: 13,
@@ -1182,20 +1363,27 @@ class _StatBox extends StatelessWidget {
   final Color color;
   final Color bg;
 
-  const _StatBox({required this.label, required this.value, required this.color, required this.bg});
+  const _StatBox(
+      {required this.label,
+      required this.value,
+      required this.color,
+      required this.bg});
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
+        decoration:
+            BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
         child: Column(children: [
           Text('$value',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: color)),
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.w800, color: color)),
           const SizedBox(height: 4),
           Text(label,
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: color)),
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w600, color: color)),
         ]),
       ),
     );
@@ -1207,20 +1395,25 @@ class _BannerStat extends StatelessWidget {
   final String value;
   final bool center;
 
-  const _BannerStat({required this.label, required this.value, this.center = false});
+  const _BannerStat(
+      {required this.label, required this.value, this.center = false});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Column(
-        crossAxisAlignment: center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            center ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          Text(label,
+              style: const TextStyle(color: Colors.white70, fontSize: 11)),
           const SizedBox(height: 4),
           Text(value,
               style: const TextStyle(
-                  color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -1235,14 +1428,22 @@ class _AttendanceTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPresent = record.status == 'present';
-    final isLate    = record.status == 'late';
-    final color = isPresent ? AppColors.success : isLate ? AppColors.warning : AppColors.danger;
-    final bg    = isPresent
+    final isLate = record.status == 'late';
+    final color = isPresent
+        ? AppColors.success
+        : isLate
+            ? AppColors.warning
+            : AppColors.danger;
+    final bg = isPresent
         ? const Color(0xFFDCFCE7)
         : isLate
             ? const Color(0xFFFEF3C7)
             : const Color(0xFFFEE2E2);
-    final icon  = isPresent ? '✓' : isLate ? '⏱' : '✗';
+    final icon = isPresent
+        ? '✓'
+        : isLate
+            ? '⏱'
+            : '✗';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1250,7 +1451,9 @@ class _AttendanceTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8)
+        ],
       ),
       child: Row(
         children: [
@@ -1265,16 +1468,19 @@ class _AttendanceTile extends StatelessWidget {
                         color: AppColors.textPrimary)),
                 const SizedBox(height: 3),
                 Text('📅 ${record.date}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                    style: const TextStyle(
+                        fontSize: 12, color: AppColors.textSecondary)),
               ],
             ),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(20)),
+            decoration: BoxDecoration(
+                color: bg, borderRadius: BorderRadius.circular(20)),
             child: Text(
               '$icon ${record.status[0].toUpperCase()}${record.status.substring(1)}',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
+              style: TextStyle(
+                  fontSize: 12, fontWeight: FontWeight.w700, color: color),
             ),
           ),
         ],

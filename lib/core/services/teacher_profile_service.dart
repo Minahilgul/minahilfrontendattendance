@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 
 class TeacherProfileService {
-  static const String baseUrl = 'http://attia.ddev.site/api';
+  static const String baseUrl = 'http://localhost:8000/api';
   final _storage = GetStorage();
 
   Future<String?> _getToken() async {
@@ -18,10 +18,10 @@ class TeacherProfileService {
   }
 
   Map<String, String> _headers(String token) => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': 'Bearer $token',
-  };
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
 
   void _handleError(http.Response response) {
     final body = jsonDecode(response.body);
@@ -29,7 +29,8 @@ class TeacherProfileService {
     if (body['errors'] != null) {
       final errors = body['errors'] as Map<String, dynamic>;
       final firstError = errors.values.first;
-      if (firstError is List && firstError.isNotEmpty) throw Exception(firstError.first);
+      if (firstError is List && firstError.isNotEmpty)
+        throw Exception(firstError.first);
     }
     throw Exception(message);
   }
@@ -48,7 +49,8 @@ class TeacherProfileService {
       final body = jsonDecode(response.body);
       return body['data'] ?? body;
     }
-    if (response.statusCode == 401) throw Exception('Session expired. Please login again.');
+    if (response.statusCode == 401)
+      throw Exception('Session expired. Please login again.');
     _handleError(response);
     throw Exception('Failed to load profile');
   }
