@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import '../core/services/student_service.dart';
 import '../widgets/base_scaffold.dart';
+import '../core/theme/app_colors.dart';
 
 
 // DATA MODELS
@@ -40,7 +41,7 @@ class StudentModel {
     return StudentModel(
       id: json['id'] ?? 0,
       initials: initials.isEmpty ? 'ST' : initials,
-      avatarColor: const Color(0xFF0F9D58),
+      avatarColor: AppColors.success,
       name: name,
       role: json['role'] ?? 'Student',
       email: json['email'],
@@ -133,18 +134,18 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all required fields'),
-          backgroundColor: Color(0xFFC62828),
+        SnackBar(
+          content: const Text('Please fill all required fields'),
+          backgroundColor: AppColors.danger,
         ),
       );
       return;
     }
     if (_selectedClass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please select a class'),
-            backgroundColor: Color(0xFFC62828)),
+        SnackBar(
+            content: const Text('Please select a class'),
+            backgroundColor: AppColors.danger),
       );
       return;
     }
@@ -164,14 +165,14 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(result['message'] ?? 'Student added successfully!'),
-            backgroundColor: const Color(0xFF2E7D32)),
+            backgroundColor: AppColors.success),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
             content: Text(result['message'] ??
                 'Failed to add student. Please try again.'),
-            backgroundColor: const Color(0xFFC62828)),
+            backgroundColor: AppColors.danger),
       );
     }
   }
@@ -194,7 +195,7 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                         TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
                 Text('Fill in the details to add a new student',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const SizedBox(height: 20),
                 _buildField('Username', _usernameCtrl, Icons.person_outline,
                     validator: (v) =>
@@ -259,11 +260,11 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                         style: OutlinedButton.styleFrom(
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey[400]!),
+                            side: BorderSide(color: AppColors.border),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
-                        child: const Text('Cancel',
-                            style: TextStyle(color: Colors.black87)),
+                        child: Text('Cancel',
+                            style: TextStyle(color: AppColors.textPrimary)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -271,7 +272,7 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _onSave,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F9D58),
+                            backgroundColor: AppColors.success,
                             foregroundColor: Colors.white,
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
@@ -409,18 +410,18 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
   Future<void> _onUpdate() async {
     if (!_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please fill all required fields'),
-          backgroundColor: Color(0xFFC62828),
+        SnackBar(
+          content: const Text('Please fill all required fields'),
+          backgroundColor: AppColors.danger,
         ),
       );
       return;
     }
     if (_selectedClass.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please select a class'),
-            backgroundColor: Color(0xFFC62828)),
+        SnackBar(
+            content: const Text('Please select a class'),
+            backgroundColor: AppColors.danger),
       );
       return;
     }
@@ -442,13 +443,13 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
         SnackBar(
             content:
                 Text('${widget.student.name} updated successfully!'),
-            backgroundColor: const Color(0xFF2E7D32)),
+            backgroundColor: AppColors.success),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Failed to update student'),
-            backgroundColor: Color(0xFFC62828)),
+        SnackBar(
+            content: const Text('Failed to update student'),
+            backgroundColor: AppColors.danger),
       );
     }
   }
@@ -471,7 +472,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                         TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
                 Text('Update student details',
-                    style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+                    style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
                 const SizedBox(height: 20),
                 _buildField('Username', _usernameCtrl, Icons.person_outline,
                     validator: (v) =>
@@ -538,11 +539,11 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                         style: OutlinedButton.styleFrom(
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
-                            side: BorderSide(color: Colors.grey[400]!),
+                            side: BorderSide(color: AppColors.border),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
-                        child: const Text('Cancel',
-                            style: TextStyle(color: Colors.black87)),
+                        child: Text('Cancel',
+                            style: TextStyle(color: AppColors.textPrimary)),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -550,7 +551,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _onUpdate,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F9D58),
+                            backgroundColor: AppColors.success,
                             foregroundColor: Colors.white,
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
@@ -615,9 +616,9 @@ class StudentCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE0E0E0), width: 0.5),
+        border: Border.all(color: AppColors.border, width: 0.5),
         boxShadow: [
           BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -644,35 +645,35 @@ class StudentCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(student.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A2E))),
+                          color: AppColors.textPrimary)),
                   const SizedBox(height: 2),
                   if (student.email != null)
                     Text(student.email!,
                         style:
-                            TextStyle(fontSize: 12, color: Colors.grey[600])),
+                            TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   if (student.phone != null && student.phone!.isNotEmpty)
                     Text('Phone: ${student.phone}',
                         style:
-                            TextStyle(fontSize: 12, color: Colors.grey[600])),
+                            TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   if (student.className != null || student.rollNo != null)
                     Text(
                         'Class: ${student.className ?? 'N/A'} | Roll No: ${student.rollNo ?? 'N/A'}',
                         style:
-                            TextStyle(fontSize: 12, color: Colors.grey[600])),
+                            TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   const SizedBox(height: 4),
                   Text('Role: ${student.role}',
-                      style: const TextStyle(
+                      style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F9D58))),
+                          color: AppColors.success)),
                 ],
               ),
             ),
             PopupMenuButton<String>(
-              icon: Icon(Icons.more_vert, color: Colors.grey[400], size: 20),
+              icon: Icon(Icons.more_vert, color: AppColors.textLight, size: 20),
               padding: EdgeInsets.zero,
               onSelected: (value) {
                 if (value == 'edit') onEdit?.call();
@@ -686,12 +687,12 @@ class StudentCard extends StatelessWidget {
                       SizedBox(width: 8),
                       Text('Edit')
                     ])),
-                const PopupMenuItem(
+                PopupMenuItem(
                     value: 'delete',
                     child: Row(children: [
-                      Icon(Icons.delete_outline, size: 18, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('Delete', style: TextStyle(color: Colors.red))
+                      Icon(Icons.delete_outline, size: 18, color: AppColors.danger),
+                      const SizedBox(width: 8),
+                      Text('Delete', style: TextStyle(color: AppColors.danger))
                     ])),
               ],
             ),
@@ -789,7 +790,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE53935)),
+                backgroundColor: AppColors.danger),
             child:
                 const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
@@ -805,11 +806,11 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
         });
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text('${student.name} deleted'),
-            backgroundColor: const Color(0xFFC62828)));
+            backgroundColor: AppColors.danger));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Failed to delete'),
-            backgroundColor: Color(0xFFC62828)));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: const Text('Failed to delete'),
+            backgroundColor: AppColors.danger));
       }
     }
   }
@@ -825,7 +826,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-              color: const Color(0xFF0F9D58),
+              color: AppColors.success,
               borderRadius: BorderRadius.circular(10)),
           child: IconButton(
               icon: const Icon(Icons.add, color: Colors.white, size: 20),
@@ -835,7 +836,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
       ],
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddStudentDialog,
-        backgroundColor: const Color(0xFF0F9D58),
+        backgroundColor: AppColors.success,
         foregroundColor: Colors.white,
         elevation: 4,
         shape:
@@ -843,23 +844,23 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
         child: const Icon(Icons.add),
       ),
       body: Container(
-        color: const Color(0xFFF5F7FA),
+        color: AppColors.background,
         child: Column(
           children: [
             Container(
-              color: Colors.white,
+              color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('Manage students and accounts',
                       style:
-                          TextStyle(fontSize: 12, color: Colors.grey[500])),
+                          TextStyle(fontSize: 12, color: AppColors.textSecondary)),
                   const SizedBox(height: 12),
                   Container(
                     height: 44,
                     decoration: BoxDecoration(
-                        color: const Color(0xFFF0F2F5),
+                        color: AppColors.background,
                         borderRadius: BorderRadius.circular(10)),
                     child: TextField(
                       controller: _searchCtrl,
@@ -868,9 +869,9 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
                       decoration: InputDecoration(
                           hintText: 'Search by name',
                           hintStyle: TextStyle(
-                              color: Colors.grey[400], fontSize: 13),
+                              color: AppColors.textLight, fontSize: 13),
                           prefixIcon: Icon(Icons.search,
-                              color: Colors.grey[400], size: 20),
+                              color: AppColors.textLight, size: 20),
                           border: InputBorder.none,
                           contentPadding:
                               const EdgeInsets.symmetric(vertical: 12)),
@@ -886,7 +887,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
                       ? Center(
                           child: Text('No students found',
                               style: TextStyle(
-                                  color: Colors.grey[500], fontSize: 15)))
+                                  color: AppColors.textSecondary, fontSize: 15)))
                       : ListView.builder(
                           padding:
                               const EdgeInsets.symmetric(vertical: 12),
