@@ -16,10 +16,10 @@ class StudentProfileService {
   }
 
   Map<String, String> _headers(String token) => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': 'Bearer $token',
-  };
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
 
   void _handleError(http.Response response) {
     final body = jsonDecode(response.body);
@@ -27,7 +27,8 @@ class StudentProfileService {
     if (body['errors'] != null) {
       final errors = body['errors'] as Map<String, dynamic>;
       final firstError = errors.values.first;
-      if (firstError is List && firstError.isNotEmpty) throw Exception(firstError.first);
+      if (firstError is List && firstError.isNotEmpty)
+        throw Exception(firstError.first);
     }
     throw Exception(message);
   }
@@ -41,7 +42,8 @@ class StudentProfileService {
     if (token == null) throw Exception('Not authenticated');
 
     final response = await http.post(
-      Uri.parse('$baseUrl/student/profile/change-password'),  //  student endpoint
+      Uri.parse(
+          '$baseUrl/student/profile/change-password'), //  student endpoint
       headers: _headers(token),
       body: jsonEncode({
         'current_password': currentPassword,
