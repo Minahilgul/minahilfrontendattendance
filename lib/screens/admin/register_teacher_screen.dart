@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/services/teacher_service.dart';
 import '../../core/services/device_service.dart';
+import '../../core/theme/app_colors.dart';
 
 
 class RegisterTeacherScreen extends StatefulWidget {
@@ -76,10 +77,10 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
         builder: (context) => AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Row(
-            children: const [
-              Icon(Icons.check_circle_rounded, color: Colors.green, size: 28),
-              SizedBox(width: 8),
-              Text('Success'),
+            children: [
+              Icon(Icons.check_circle_rounded, color: AppColors.success, size: 28),
+              const SizedBox(width: 8),
+              const Text('Success'),
             ],
           ),
           content: Text(result['message'] ?? 'Registration successful. Admin approval required.'),
@@ -90,7 +91,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                 Get.offAllNamed('/login'); // go to login
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xff1f4e79),
+                backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -104,7 +105,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result['message'] ?? 'Registration failed.'),
-          backgroundColor: Colors.red[700],
+          backgroundColor: AppColors.danger,
         ),
       );
     }
@@ -122,7 +123,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffeef2f6),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text("Teacher Registration", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
         backgroundColor: Colors.transparent,
@@ -165,11 +166,11 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                     ),
                   ),
                   const SizedBox(height: 6),
-                  const Center(
+                  Center(
                     child: Text(
                       "Register your device for attendance verification",
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -184,7 +185,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                       hintText: "Enter your full name",
                       prefixIcon: const Icon(Icons.person_outline),
                       filled: true,
-                      fillColor: const Color(0xfff5f6f8),
+                      fillColor: AppColors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -211,7 +212,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                       hintText: "name@college.edu",
                       prefixIcon: const Icon(Icons.email_outlined),
                       filled: true,
-                      fillColor: const Color(0xfff5f6f8),
+                      fillColor: AppColors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -236,7 +237,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                         onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
                       ),
                       filled: true,
-                      fillColor: const Color(0xfff5f6f8),
+                      fillColor: AppColors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -256,7 +257,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                       hintText: "Enter phone number",
                       prefixIcon: const Icon(Icons.phone_outlined),
                       filled: true,
-                      fillColor: const Color(0xfff5f6f8),
+                      fillColor: AppColors.background,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -282,7 +283,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                             padding: EdgeInsets.all(12.0),
                             child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
                           )
-                        : const Icon(Icons.lock_clock_outlined, color: Colors.green),
+                        : Icon(Icons.lock_clock_outlined, color: AppColors.success),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,
@@ -299,7 +300,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                     child: ElevatedButton(
                       onPressed: (_isLoading || _isLoadingDevice) ? null : _register,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff1f4e79),
+                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
