@@ -123,11 +123,12 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
       Position pos = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
 
       int successCount = 0;
+      String? errorMessage;
 
       for (final student in _students) {
         if (student.status == AttendanceStatus.none) continue;
 
-        final success = await AttendanceService.saveAttendance(
+        final result = await AttendanceService.saveAttendance(
           sessionId: sessionId,
           studentId: student.studentId,
           latitude: pos.latitude,
@@ -135,15 +136,36 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
           status: student.status.name, // present/late/absent
         );
 
-        if (success) successCount++;
+        if (result['success'] == true) {
+          successCount++;
+        } else {
+          errorMessage = result['message'];
+        }
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$successCount students ki attendance save ho gayi')),
-      );
+      if (successCount > 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$successCount students ki attendance save ho gayi'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      }
+
+      if (errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: AppColors.danger,
+        ),
       );
     }
   }

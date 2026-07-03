@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class AttendanceService {
-  static Future<bool> saveAttendance({
+  static Future<Map<String, dynamic>> saveAttendance({
     required int sessionId,
     required int studentId,
     required double latitude,
@@ -29,10 +29,14 @@ class AttendanceService {
       print("MARK ATTENDANCE STATUS: ${response.statusCode}");
       print("MARK ATTENDANCE RESPONSE: ${response.body}");
 
-      return response.statusCode == 200 || response.statusCode == 201;
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return {
+        'success': response.statusCode == 200 || response.statusCode == 201,
+        'message': data['message'] ?? 'Unknown response from server'
+      };
     } catch (e) {
       print("SAVE ATTENDANCE SERVICE ERROR: $e");
-      return false;
+      return {'success': false, 'message': 'Connection error: $e'};
     }
   }
 }
