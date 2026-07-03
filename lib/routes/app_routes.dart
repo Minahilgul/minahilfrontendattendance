@@ -115,7 +115,6 @@ class AppRoutes {
     GetPage(
       name: '/register-teacher',
       page: () => const RegisterTeacherScreen(),
-      middlewares: [AuthMiddleware(allowedRoles:['admin'])],
     ),
     GetPage(
       name: '/admin-profile',

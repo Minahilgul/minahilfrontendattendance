@@ -53,6 +53,16 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
       return;
     }
 
+    if (selectedIds.length < 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Minimum 10 students are required to submit attendance.'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+
     setState(() => isSaving = true);
 
     final result = await SessionService.saveSessionStudents(
@@ -257,6 +267,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
   }
 
   Widget _buildBottomBar() {
+    final bool hasMinStudents = selectedIds.length >= 10;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
       decoration: BoxDecoration(
@@ -269,45 +280,75 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
           ),
         ],
       ),
-      child: Row(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              '${selectedIds.length} selected',
-              style: TextStyle(
-                color: AppColors.success,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ElevatedButton(
-              onPressed: isSaving ? null : _saveStudents,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.success,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-              ),
-              child: isSaving
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                          color: Colors.white, strokeWidth: 2),
-                    )
-                  : const Text('Session Banao',
+          if (!hasMinStudents && selectedIds.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 16),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Minimum 10 students are required to submit attendance.',
                       style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white)),
+                        color: AppColors.danger,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: hasMinStudents
+                      ? AppColors.success.withOpacity(0.12)
+                      : (selectedIds.isEmpty ? AppColors.border : AppColors.danger.withOpacity(0.12)),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '${selectedIds.length} selected',
+                  style: TextStyle(
+                    color: hasMinStudents
+                        ? AppColors.success
+                        : (selectedIds.isEmpty ? AppColors.textSecondary : AppColors.danger),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: isSaving ? null : _saveStudents,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: hasMinStudents ? AppColors.success : Colors.grey.shade400,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: isSaving
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text('Session Banao',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
+                ),
+              ),
+            ],
           ),
         ],
       ),

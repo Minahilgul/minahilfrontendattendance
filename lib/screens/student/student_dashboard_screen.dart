@@ -32,6 +32,38 @@ class AttendanceRecord {
       );
 }
 
+class StudentNotification {
+  final int id;
+  final int studentId;
+  final int sessionId;
+  final String message;
+  final String type;
+  final bool isRead;
+  final String createdAt;
+
+  const StudentNotification({
+    required this.id,
+    required this.studentId,
+    required this.sessionId,
+    required this.message,
+    required this.type,
+    required this.isRead,
+    required this.createdAt,
+  });
+
+  factory StudentNotification.fromJson(Map<String, dynamic> json) {
+    return StudentNotification(
+      id: json['id'] ?? 0,
+      studentId: json['student_id'] ?? 0,
+      sessionId: json['session_id'] ?? 0,
+      message: json['message'] ?? '',
+      type: json['type'] ?? '',
+      isRead: (json['is_read'] ?? 0) == 1,
+      createdAt: json['created_at'] ?? '',
+    );
+  }
+}
+
 // Notifications — 3 random students ko bheja gaya
 const List<Map<String, String>> _kNotifications = [
   {
@@ -82,6 +114,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   bool _loading = true;
   String? _error;
 
+  List<StudentNotification> _notifications = [];
+  int _unreadCount = 0;
+
   // ── Confirmation polling ──
   Timer? _confirmationPoller;
   int get studentId => widget.userId;
@@ -99,27 +134,87 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     super.dispose();
   }
 
-  // ── Polling methods ──────────────────────────
+  // ── Polling & Notifications methods ──────────────────────────
   void _startPolling() {
     _confirmationPoller = Timer.periodic(
       const Duration(seconds: 5),
-      (_) => _checkForConfirmation(),
+      (_) => _loadNotifications(),
     );
   }
 
-  Future<void> _checkForConfirmation() async {
-    final token = await AuthService.getToken();
-    print("TOKEN: $token");
-    print("POLLING... studentId: $studentId");
-    final result = await ConfirmationService.getPending(studentId);
-    print("POLL RESULT: $result");
-    if (result['pending'] == true && mounted) {
-      _confirmationPoller?.cancel();
-      await _showConfirmationDialog(
-        result['request_id'],
-        result['session_id'],
+  Future<void> _loadNotifications() async {
+    try {
+      final token = await _getToken();
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/notifications/${widget.userId}'),
+        headers: headers,
       );
-      _startPolling();
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true) {
+          final list = body['data'] as List? ?? [];
+          if (mounted) {
+            setState(() {
+              _notifications = list.map((e) => StudentNotification.fromJson(e)).toList();
+              _unreadCount = body['unread_count'] ?? 0;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      print("Error loading notifications: $e");
+    }
+  }
+
+  Future<void> _markAllRead() async {
+    try {
+      final token = await _getToken();
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.post(
+        Uri.parse('$_baseUrl/notifications/${widget.userId}/mark-read'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        _loadNotifications();
+      }
+    } catch (e) {
+      print("Error marking notifications as read: $e");
+    }
+  }
+
+  Future<void> _handleNotificationTap(StudentNotification n) async {
+    await _markAllRead();
+    if (n.type == 'teacher_verification') {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+      final result = await ConfirmationService.getPending(studentId);
+      if (mounted) Navigator.pop(context); // Close loading spinner
+      if (result['pending'] == true && mounted) {
+        await _showConfirmationDialog(
+          result['request_id'],
+          result['session_id'],
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No pending confirmation request found or request expired.')),
+        );
+      }
     }
   }
 
@@ -236,6 +331,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       _error = null;
     });
     try {
+      await _loadNotifications();
       final token = await _getToken();
       final headers = {
         'Content-Type': 'application/json',
@@ -314,16 +410,29 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                               color: active
                                   ? AppColors.primary
                                   : AppColors.textSecondary),
-                          if (i == 2)
+                          if (i == 2 && _unreadCount > 0)
                             Positioned(
-                              right: -4,
-                              top: -4,
+                              right: -8,
+                              top: -8,
                               child: Container(
-                                width: 10,
-                                height: 10,
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                                 decoration: const BoxDecoration(
                                   color: AppColors.danger,
                                   shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '$_unreadCount',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -399,7 +508,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       case 1:
         return _ReportsPage(records: _allRecords, onRefresh: _loadData);
       case 2:
-        return _NotificationsPage();
+        return _NotificationsPage(
+          notifications: _notifications,
+          unreadCount: _unreadCount,
+          onMarkAllRead: _markAllRead,
+          onNotificationTapped: _handleNotificationTap,
+        );
       case 3:
         return _ProfilePage(
             name: widget.name,
@@ -782,18 +896,21 @@ class _ReportsPageState extends State<_ReportsPage> {
 // PAGE 3 — NOTIFICATIONS
 // ════════════════════════════════════════════
 
-class _NotificationsPage extends StatefulWidget {
-  @override
-  State<_NotificationsPage> createState() => _NotificationsPageState();
-}
+class _NotificationsPage extends StatelessWidget {
+  final List<StudentNotification> notifications;
+  final int unreadCount;
+  final VoidCallback onMarkAllRead;
+  final Function(StudentNotification) onNotificationTapped;
 
-class _NotificationsPageState extends State<_NotificationsPage> {
-  final List<bool> _read = List.filled(_kNotifications.length, false);
+  const _NotificationsPage({
+    required this.notifications,
+    required this.unreadCount,
+    required this.onMarkAllRead,
+    required this.onNotificationTapped,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final unread = _read.where((r) => !r).length;
-
     return Container(
       color: AppColors.background,
       child: Column(
@@ -809,7 +926,7 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary)),
-                  if (unread > 0) ...[
+                  if (unreadCount > 0) ...[
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -817,7 +934,7 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                       decoration: BoxDecoration(
                           color: AppColors.danger,
                           borderRadius: BorderRadius.circular(10)),
-                      child: Text('$unread',
+                      child: Text('$unreadCount',
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 11,
@@ -825,11 +942,9 @@ class _NotificationsPageState extends State<_NotificationsPage> {
                     ),
                   ],
                 ]),
-                if (unread > 0)
+                if (unreadCount > 0)
                   GestureDetector(
-                    onTap: () => setState(() {
-                      for (int i = 0; i < _read.length; i++) _read[i] = true;
-                    }),
+                    onTap: onMarkAllRead,
                     child: const Text('Mark all read',
                         style: TextStyle(
                             color: AppColors.primary,
@@ -840,88 +955,99 @@ class _NotificationsPageState extends State<_NotificationsPage> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              itemCount: _kNotifications.length,
-              itemBuilder: (_, i) {
-                final n = _kNotifications[i];
-                return GestureDetector(
-                  onTap: () => setState(() => _read[i] = true),
-                  child: Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: _read[i]
-                          ? AppColors.surface
-                          : AppColors.primary.withOpacity(0.06),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border(
-                          left: BorderSide(
-                              color: _read[i]
-                                  ? Colors.transparent
-                                  : AppColors.primary,
-                              width: 4)),
-                      boxShadow: [
-                        BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 8)
+            child: notifications.isEmpty
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.notifications_none_rounded, size: 48, color: Colors.grey),
+                        SizedBox(height: 12),
+                        Text(
+                          'No notifications yet',
+                          style: TextStyle(color: Colors.grey, fontSize: 14),
+                        ),
                       ],
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 42,
-                          height: 42,
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    itemCount: notifications.length,
+                    itemBuilder: (_, i) {
+                      final n = notifications[i];
+                      return GestureDetector(
+                        onTap: () => onNotificationTapped(n),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                              color: AppColors.background,
-                              borderRadius: BorderRadius.circular(12)),
-                          child: Center(
-                              child: Text(n['icon']!,
-                                  style: const TextStyle(fontSize: 20))),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
+                            color: n.isRead
+                                ? AppColors.surface
+                                : AppColors.primary.withOpacity(0.06),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border(
+                                left: BorderSide(
+                                    color: n.isRead
+                                        ? Colors.transparent
+                                        : AppColors.primary,
+                                    width: 4)),
+                            boxShadow: [
+                              BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 8)
+                            ],
+                          ),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(n['title']!,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: _read[i]
-                                        ? FontWeight.w600
-                                        : FontWeight.w800,
-                                    color: AppColors.textPrimary,
-                                  )),
-                              const SizedBox(height: 3),
-                              Text(n['body']!,
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                      height: 1.4)),
-                              const SizedBox(height: 6),
-                              Text(n['time']!,
-                                  style: const TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.textLight)),
+                              Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                    color: AppColors.background,
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: Center(
+                                    child: Text(
+                                        n.type == 'teacher_verification'
+                                            ? '📡'
+                                            : '✅',
+                                        style: const TextStyle(fontSize: 20))),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                        n.type == 'teacher_verification'
+                                            ? 'Teacher Verification Request'
+                                            : 'Notification',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: n.isRead
+                                              ? FontWeight.w600
+                                              : FontWeight.w800,
+                                          color: AppColors.textPrimary,
+                                        )),
+                                    const SizedBox(height: 3),
+                                    Text(n.message,
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.textSecondary,
+                                            height: 1.3)),
+                                    const SizedBox(height: 6),
+                                    Text(n.createdAt,
+                                        style: const TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        if (!_read[i])
-                          Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.only(top: 4),
-                            decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle),
-                          ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
         ],
       ),

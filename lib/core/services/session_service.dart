@@ -148,9 +148,21 @@ static Future<Map<String, dynamic>> getStudents(int sessionId) async {
       if (response.statusCode == 201 && data['success'] == true) {
         return {'success': true, 'message': data['message']};
       } else {
+        String errorMsg = data['message'] ?? 'Failed to save students';
+        if (data['errors'] != null && data['errors'] is Map) {
+          final errs = data['errors'] as Map;
+          if (errs.isNotEmpty) {
+            final firstError = errs.values.first;
+            if (firstError is List && firstError.isNotEmpty) {
+              errorMsg = firstError.first.toString();
+            } else {
+              errorMsg = firstError.toString();
+            }
+          }
+        }
         return {
           'success': false,
-          'message': data['message'] ?? 'Failed to save students',
+          'message': errorMsg,
         };
       }
     } catch (e) {

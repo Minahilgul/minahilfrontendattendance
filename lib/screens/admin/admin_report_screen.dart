@@ -140,23 +140,26 @@ class StatCard extends StatelessWidget {
 
 class StudentListItem extends StatelessWidget {
   final StudentRecord record;
-  const StudentListItem({super.key, required this.record});
+  final VoidCallback? onTap;
+  const StudentListItem({super.key, required this.record, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final color = _statusColor(record.status);
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.4), width: 1.2),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: color.withOpacity(0.4), width: 1.2),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
           // Avatar with initials
           Container(
             width: 40,
@@ -268,7 +271,7 @@ class StudentListItem extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -354,6 +357,15 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   int    _selectedDays = 7;
   String _selectedDaysLabel = 'Last 7 Days';
 
+  // Advanced filters state
+  bool _showAdvancedFilters = false;
+  String? _filterStudentName;
+  String? _filterStatus;
+  String? _filterDate;
+  String? _filterStartDate;
+  String? _filterEndDate;
+  int? _filterSessionId;
+
   // Data
   List<Map<String, dynamic>> _classes  = [];
   List<Map<String, dynamic>> _teachers = [];
@@ -395,21 +407,48 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   Future<void> _loadStats() async {
     setState(() => _loadingStats = true);
     final s = await AdminReportService.getStats(
-        classId: _selectedClassId, teacherId: _selectedTeacherId, days: _selectedDays);
+      classId: _selectedClassId,
+      teacherId: _selectedTeacherId,
+      days: _selectedDays,
+      date: _filterDate,
+      startDate: _filterStartDate,
+      endDate: _filterEndDate,
+      status: _filterStatus,
+      sessionId: _filterSessionId,
+      studentName: _filterStudentName,
+    );
     if (mounted) setState(() { _stats = s; _loadingStats = false; });
   }
 
   Future<void> _loadChart() async {
     setState(() => _loadingChart = true);
     final d = await AdminReportService.getChartData(
-        classId: _selectedClassId, teacherId: _selectedTeacherId, days: _selectedDays);
+      classId: _selectedClassId,
+      teacherId: _selectedTeacherId,
+      days: _selectedDays,
+      date: _filterDate,
+      startDate: _filterStartDate,
+      endDate: _filterEndDate,
+      status: _filterStatus,
+      sessionId: _filterSessionId,
+      studentName: _filterStudentName,
+    );
     if (mounted) setState(() { _chartData = d; _loadingChart = false; });
   }
 
   Future<void> _loadStudents() async {
     setState(() => _loadingStudents = true);
     final list = await AdminReportService.getStudentsList(
-        classId: _selectedClassId, teacherId: _selectedTeacherId, days: _selectedDays);
+      classId: _selectedClassId,
+      teacherId: _selectedTeacherId,
+      days: _selectedDays,
+      date: _filterDate,
+      startDate: _filterStartDate,
+      endDate: _filterEndDate,
+      status: _filterStatus,
+      sessionId: _filterSessionId,
+      studentName: _filterStudentName,
+    );
     if (mounted) setState(() {
       _students = list.map((m) => StudentRecord.fromMap(m)).toList();
       _loadingStudents = false;
@@ -469,9 +508,16 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                       _filterChip(_selectedClassName, _showClassPicker),
                       _filterChip(_selectedTeacherName, _showTeacherPicker),
                       _filterChip(_selectedDaysLabel, _showDaysPicker),
+                      _filterChipAdvanced('Advanced Filters', _showAdvancedFilters, () {
+                        setState(() {
+                          _showAdvancedFilters = !_showAdvancedFilters;
+                        });
+                      }),
                     ],
                   ),
                 ),
+
+                if (_showAdvancedFilters) _buildAdvancedFiltersCard(),
 
                 const SizedBox(height: 16),
 
@@ -571,7 +617,9 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Text(
-                      _selectedClassName == 'All Classes' ? 'All Students' : '$_selectedClassName Students',
+                      _selectedTeacherName != 'All Faculty'
+                          ? '$_selectedTeacherName Students'
+                          : (_selectedClassName == 'All Classes' ? 'All Students' : '$_selectedClassName Students'),
                       style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                     ),
                     TextButton(
@@ -615,6 +663,237 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
     ),
   );
 
+  Widget _filterChipAdvanced(String label, bool isSelected, VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: isSelected ? AppColors.primary : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primary, width: 1),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(
+          isSelected ? Icons.filter_alt_off : Icons.filter_alt,
+          color: isSelected ? Colors.white : AppColors.primary,
+          size: 16,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.white : AppColors.primary,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ]),
+    ),
+  );
+
+  Widget _buildAdvancedFiltersCard() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Advanced Filters',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    decoration: InputDecoration(
+                      labelText: 'Student Name',
+                      hintText: 'Search student...',
+                      prefixIcon: const Icon(Icons.search, size: 18),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        _filterStudentName = val.isEmpty ? null : val;
+                      });
+                      _onFilterChanged();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    keyboardType: TextInputType.number,
+                    decoration: InputDecoration(
+                      labelText: 'Session ID',
+                      hintText: 'Enter session ID',
+                      prefixIcon: const Icon(Icons.pin, size: 18),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        _filterSessionId = int.tryParse(val);
+                      });
+                      _onFilterChanged();
+                    },
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: DropdownButtonFormField<String>(
+                    value: _filterStatus,
+                    decoration: InputDecoration(
+                      labelText: 'Status',
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: null, child: Text('All Statuses')),
+                      DropdownMenuItem(value: 'present', child: Text('Present')),
+                      DropdownMenuItem(value: 'absent', child: Text('Absent')),
+                      DropdownMenuItem(value: 'late', child: Text('Late')),
+                    ],
+                    onChanged: (val) {
+                      setState(() {
+                        _filterStatus = val;
+                      });
+                      _onFilterChanged();
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _selectFilterDate,
+                    icon: Icon(Icons.calendar_today, size: 16, color: AppColors.primary),
+                    label: Text(
+                      _filterDate ?? 'Select Date',
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _selectFilterDateRange,
+                    icon: Icon(Icons.date_range, size: 16, color: AppColors.primary),
+                    label: Text(
+                      _filterStartDate != null && _filterEndDate != null
+                          ? '${_filterStartDate!.substring(5)} to ${_filterEndDate!.substring(5)}'
+                          : 'Select Date Range',
+                      style: TextStyle(color: AppColors.textPrimary, fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: _resetFilters,
+                  icon: const Icon(Icons.clear_all, size: 16, color: Colors.white),
+                  label: const Text('Reset', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.danger,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectFilterDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2025),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) {
+      setState(() {
+        _filterDate = picked.toString().split(' ')[0];
+        _filterStartDate = null;
+        _filterEndDate = null;
+      });
+      _onFilterChanged();
+    }
+  }
+
+  Future<void> _selectFilterDateRange() async {
+    final DateTimeRange? picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2025),
+      lastDate: DateTime(2030),
+      initialDateRange: _filterStartDate != null && _filterEndDate != null
+          ? DateTimeRange(
+              start: DateTime.parse(_filterStartDate!),
+              end: DateTime.parse(_filterEndDate!),
+            )
+          : null,
+    );
+    if (picked != null) {
+      setState(() {
+        _filterStartDate = picked.start.toString().split(' ')[0];
+        _filterEndDate = picked.end.toString().split(' ')[0];
+        _filterDate = null;
+      });
+      _onFilterChanged();
+    }
+  }
+
+  void _resetFilters() {
+    setState(() {
+      _filterStudentName = null;
+      _filterStatus = null;
+      _filterDate = null;
+      _filterStartDate = null;
+      _filterEndDate = null;
+      _filterSessionId = null;
+      _selectedClassId = null;
+      _selectedClassName = 'All Classes';
+      _selectedTeacherId = null;
+      _selectedTeacherName = 'All Faculty';
+    });
+    _onFilterChanged();
+  }
+
   Widget _shimmerCard() => Expanded(
     child: Container(
       height: 90,
@@ -625,7 +904,10 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
 
   // Summary: existing StudentListItem cards (with present/absent pills)
   Widget _buildSummaryCards() => Column(
-    children: _students.map((s) => StudentListItem(record: s)).toList(),
+    children: _students.map((s) => StudentListItem(
+      record: s,
+      onTap: () => _openStudentReport(context, s),
+    )).toList(),
   );
 
   // Detail: simple rows — name + Present/Absent badge at end
@@ -643,80 +925,84 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
         final isPresent = s.total == 0 ? null : s.present >= s.absent;
         return Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  // Number
-                  Container(
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      color: AppColors.background,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Center(
-                      child: Text('${i + 1}',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Name + class
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(s.studentName,
-                            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
-                            overflow: TextOverflow.ellipsis),
-                        const SizedBox(height: 2),
-                        Text('${s.className}  •  Roll# ${s.rollNo}',
-                            style: TextStyle(fontSize: 11, color: AppColors.textLight)),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  // Present / Absent badge
-                  if (isPresent == null)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => _openStudentReport(context, s),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    // Number
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      width: 26,
+                      height: 26,
                       decoration: BoxDecoration(
-                        color: AppColors.textLight.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(20),
+                        color: AppColors.background,
+                        borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.remove_circle_outline, size: 14, color: AppColors.textLight),
-                        const SizedBox(width: 4),
-                        Text('No Data', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textLight)),
-                      ]),
-                    )
-                  else if (isPresent)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppColors.success.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
+                      child: Center(
+                        child: Text('${i + 1}',
+                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary)),
                       ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.check_circle, size: 14, color: AppColors.success),
-                        const SizedBox(width: 4),
-                        Text('Present', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.success)),
-                      ]),
-                    )
-                  else
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppColors.danger.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.cancel, size: 14, color: AppColors.danger),
-                        const SizedBox(width: 4),
-                        Text('Absent', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
-                      ]),
                     ),
-                ],
+                    const SizedBox(width: 12),
+                    // Name + class
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(s.studentName,
+                              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                              overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 2),
+                          Text('${s.className}  •  Roll# ${s.rollNo}',
+                              style: TextStyle(fontSize: 11, color: AppColors.textLight)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Present / Absent badge
+                    if (isPresent == null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.textLight.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.remove_circle_outline, size: 14, color: AppColors.textLight),
+                          const SizedBox(width: 4),
+                          Text('No Data', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textLight)),
+                        ]),
+                      )
+                    else if (isPresent)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.check_circle, size: 14, color: AppColors.success),
+                          const SizedBox(width: 4),
+                          Text('Present', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.success)),
+                        ]),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: AppColors.danger.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.cancel, size: 14, color: AppColors.danger),
+                          const SizedBox(width: 4),
+                          Text('Absent', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                        ]),
+                      ),
+                  ],
+                ),
               ),
             ),
             if (i < _students.length - 1)
@@ -733,7 +1019,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
     child: Column(children: [
       Icon(Icons.people_outline, size: 40, color: AppColors.textLight),
       const SizedBox(height: 12),
-      Text('No students found', style: TextStyle(color: AppColors.textLight, fontSize: 14)),
+      Text('No records found', style: TextStyle(color: AppColors.textLight, fontSize: 14)),
     ]),
   );
 
@@ -775,17 +1061,60 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
         ListTile(
           title: const Text('All Faculty'),
           trailing: _selectedTeacherId == null ? Icon(Icons.check, color: AppColors.primary) : null,
-          onTap: () { setState(() { _selectedTeacherId = null; _selectedTeacherName = 'All Faculty'; }); Navigator.pop(context); _onFilterChanged(); },
+          onTap: () {
+            setState(() {
+              _selectedTeacherId = null;
+              _selectedTeacherName = 'All Faculty';
+            });
+            Navigator.pop(context);
+            _onFilterChanged();
+          },
         ),
-        ..._teachers.map((t) => ListTile(
-          title: Text(t['name'] ?? ''),
-          trailing: _selectedTeacherId == t['id'] ? Icon(Icons.check, color: AppColors.primary) : null,
-          onTap: () { setState(() { _selectedTeacherId = t['id']; _selectedTeacherName = t['name'] ?? ''; }); Navigator.pop(context); _onFilterChanged(); },
-        )),
+        Expanded(
+          child: ListView(
+            shrinkWrap: true,
+            children: _teachers.map((t) {
+              final id = t['id'];
+              final name = t['name'] ?? t['username'] ?? '';
+              final isSelected = _selectedTeacherId == id;
+              return ListTile(
+                title: Text(name),
+                trailing: isSelected ? Icon(Icons.check, color: AppColors.primary) : null,
+                onTap: () {
+                  setState(() {
+                    _selectedTeacherId = id;
+                    _selectedTeacherName = name;
+                  });
+                  Navigator.pop(context);
+                  _onFilterChanged();
+                },
+              );
+            }).toList(),
+          ),
+        ),
         const SizedBox(height: 16),
       ],
     ),
   );
+
+  void _openStudentReport(BuildContext context, StudentRecord s) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (context, anim1, anim2) => StudentReportModal(student: s, onUpdateNeeded: _onFilterChanged),
+      transitionBuilder: (context, anim1, anim2, child) {
+        return ScaleTransition(
+          scale: CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
+          child: FadeTransition(
+            opacity: anim1,
+            child: child,
+          ),
+        );
+      },
+    );
+  }
 
   void _showDaysPicker() => showModalBottomSheet(
     context: context,
@@ -805,4 +1134,664 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
       ],
     ),
   );
+}
+
+// ── TEACHER LIST COMPONENT ──
+class TeacherList extends StatelessWidget {
+  final List<Map<String, dynamic>> teachers;
+  final int? selectedTeacherId;
+  final Function(int? id, String name) onTeacherSelected;
+
+  const TeacherList({
+    super.key,
+    required this.teachers,
+    required this.selectedTeacherId,
+    required this.onTeacherSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(
+            'Faculty Members',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          height: 82,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: teachers.length + 1,
+            itemBuilder: (context, index) {
+              final isAllFaculty = index == 0;
+              final teacher = isAllFaculty ? null : teachers[index - 1];
+              final id = isAllFaculty ? null : (teacher!['id'] as int?);
+              final name = isAllFaculty ? 'All Faculty' : (teacher!['name'] as String? ?? 'Unknown');
+              
+              final isSelected = selectedTeacherId == id;
+              final cardColor = isSelected ? AppColors.primary : Colors.white;
+              final textColor = isSelected ? Colors.white : AppColors.textPrimary;
+              final avatarBg = isSelected ? Colors.white.withOpacity(0.2) : AppColors.primary.withOpacity(0.12);
+
+              return GestureDetector(
+                onTap: () => onTeacherSelected(id, name),
+                child: Container(
+                  width: 104,
+                  margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      )
+                    ],
+                    border: Border.all(
+                      color: isSelected ? AppColors.primary : AppColors.border,
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: BoxDecoration(
+                          color: avatarBg,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            isAllFaculty ? 'ALL' : (name.isNotEmpty ? name[0].toUpperCase() : '?'),
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : AppColors.primary,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        name,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── STUDENT REPORT MODAL ──
+class StudentReportModal extends StatefulWidget {
+  final StudentRecord student;
+  final VoidCallback? onUpdateNeeded;
+
+  const StudentReportModal({super.key, required this.student, this.onUpdateNeeded});
+
+  @override
+  State<StudentReportModal> createState() => _StudentReportModalState();
+}
+
+class _StudentReportModalState extends State<StudentReportModal> with SingleTickerProviderStateMixin {
+  bool _loading = true;
+  bool _hasError = false;
+  Map<String, dynamic>? _reportData;
+  late AnimationController _animController;
+  late Animation<double> _scaleAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _scaleAnim = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutBack,
+    );
+    _animController.forward();
+    _loadReport();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadReport() async {
+    setState(() {
+      _loading = true;
+      _hasError = false;
+    });
+    try {
+      final data = await AdminReportService.getStudentReport(widget.student.studentId);
+      if (data.isNotEmpty && data.containsKey('student_details')) {
+        setState(() {
+          _reportData = data;
+          _loading = false;
+        });
+      } else {
+        setState(() {
+          _hasError = true;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _hasError = true;
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScaleTransition(
+      scale: _scaleAnim,
+      child: Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: Container(
+          width: double.infinity,
+          constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.82),
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Student Attendance Report',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 1),
+              const SizedBox(height: 12),
+
+              // Content
+              Expanded(
+                child: _buildBody(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_loading) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2.5),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Loading attendance records...',
+              style: TextStyle(color: AppColors.textSecondary, fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline_rounded, size: 44, color: AppColors.danger),
+            const SizedBox(height: 12),
+            Text(
+              'Failed to load report',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Could not retrieve details from the server.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: AppColors.textLight, fontSize: 11),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 36,
+              child: ElevatedButton(
+                onPressed: _loadReport,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: const Text('Try Again', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final details = _reportData?['student_details'] as Map<String, dynamic>? ?? {};
+    final summary = _reportData?['summary'] as Map<String, dynamic>? ?? {};
+    final records = _reportData?['records'] as List<dynamic>? ?? [];
+
+    final fullName = details['full_name'] ?? widget.student.studentName;
+    final rollNo = details['roll_number'] ?? widget.student.rollNo;
+    final className = details['class'] ?? widget.student.className;
+    final teacherName = details['teacher_name'] ?? widget.student.teacherName;
+
+    final totalClasses = summary['total_classes'] ?? 0;
+    final presentCount = summary['present_count'] ?? 0;
+    final absentCount = summary['absent_count'] ?? 0;
+    final lateCount = summary['late_count'] ?? 0;
+    final pct = (summary['attendance_percentage'] as num?)?.toDouble() ?? 0.0;
+
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Student details card
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              children: [
+                _detailRow('Full Name', fullName, Icons.person_outline),
+                const SizedBox(height: 6),
+                _detailRow('Roll Number', rollNo, Icons.tag),
+                const SizedBox(height: 6),
+                _detailRow('Class', className, Icons.class_outlined),
+                const SizedBox(height: 6),
+                _detailRow('Teacher Name', teacherName, Icons.assignment_ind_outlined),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Attendance Summary
+          Text(
+            'Attendance Summary',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          
+          // Stats Row
+          Row(
+            children: [
+              _summaryBox('Total Classes', '$totalClasses', AppColors.primary),
+              const SizedBox(width: 6),
+              _summaryBox('Present', '$presentCount', AppColors.success),
+              const SizedBox(width: 6),
+              _summaryBox('Absent', '$absentCount', AppColors.danger),
+              const SizedBox(width: 6),
+              _summaryBox('Late', '$lateCount', AppColors.warning),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Overall Attendance Rate',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                Text(
+                  '${pct.toStringAsFixed(1)}%',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                    color: pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          // Full History Table
+          Text(
+            'Attendance History Logs',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          if (records.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(24),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Column(
+                children: [
+                  Icon(Icons.calendar_today_outlined, size: 28, color: AppColors.textLight),
+                  const SizedBox(height: 8),
+                  Text(
+                    'No attendance record available',
+                    style: TextStyle(color: AppColors.textLight, fontSize: 12),
+                  ),
+                ],
+              ),
+            )
+          else
+            _buildRecordsTable(records),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value, IconData icon) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: AppColors.textSecondary),
+        const SizedBox(width: 6),
+        Text(
+          '$label: ',
+          style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.end,
+            style: TextStyle(fontSize: 11, color: AppColors.textPrimary, fontWeight: FontWeight.w700),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _summaryBox(String label, String value, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: color.withOpacity(0.18)),
+        ),
+        child: Column(
+          children: [
+            Text(
+              value,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: color),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 8, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecordsTable(List<dynamic> records) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(10),
+        child: Table(
+          columnWidths: const {
+            0: FlexColumnWidth(2.2),
+            1: FlexColumnWidth(2.0),
+            2: FlexColumnWidth(2.0),
+            3: FlexColumnWidth(2.3),
+            4: FlexColumnWidth(1.2),
+          },
+          border: TableBorder.symmetric(
+            inside: BorderSide(color: AppColors.border, width: 0.8),
+          ),
+          children: [
+            // Table Header
+            TableRow(
+              decoration: BoxDecoration(color: AppColors.background),
+              children: [
+                _tableHeaderCell('Date'),
+                _tableHeaderCell('Status'),
+                _tableHeaderCell('Subject'),
+                _tableHeaderCell('Remarks'),
+                _tableHeaderCell('Edit'),
+              ],
+            ),
+            // Table Rows
+            ...records.map((r) {
+              final date = r['date'] ?? '-';
+              final status = r['status'] ?? '-';
+              final subject = r['subject'] ?? '-';
+              final remarks = r['remarks'] ?? '-';
+              final int? attendanceId = r['id'] as int?;
+
+              Color statusColor;
+              if (status.toString().toLowerCase() == 'present') {
+                statusColor = AppColors.success;
+              } else if (status.toString().toLowerCase() == 'late') {
+                statusColor = AppColors.warning;
+              } else {
+                statusColor = AppColors.danger;
+              }
+
+              return TableRow(
+                children: [
+                  _tableCell(date, alignment: Alignment.centerLeft),
+                  _tableStatusCell(status, statusColor),
+                  _tableCell(subject),
+                  _tableCell(remarks),
+                  Container(
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: IconButton(
+                      icon: Icon(Icons.edit, size: 14, color: AppColors.primary),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: attendanceId == null ? null : () => _editAttendanceRecord(attendanceId, status),
+                    ),
+                  ),
+                ],
+              );
+            }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _tableHeaderCell(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+      ),
+    );
+  }
+
+  Widget _tableCell(String text, {Alignment alignment = Alignment.centerLeft}) {
+    return Container(
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Text(
+        text,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 10, color: AppColors.textSecondary, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
+  Widget _tableStatusCell(String status, Color color) {
+    return Container(
+      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Text(
+          status,
+          style: TextStyle(fontSize: 9, color: color, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _editAttendanceRecord(int attendanceId, String currentStatus) async {
+    String? newStatus = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return SimpleDialog(
+          title: Text(
+            'Edit Attendance Status',
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+          ),
+          children: <Widget>[
+            SimpleDialogOption(
+              onPressed: () { Navigator.pop(context, 'Present'); },
+              child: const Row(
+                children: [
+                  Icon(Icons.check_circle_rounded, color: AppColors.success, size: 18),
+                  SizedBox(width: 8),
+                  Text('Present'),
+                ],
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () { Navigator.pop(context, 'Late'); },
+              child: const Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 18),
+                  SizedBox(width: 8),
+                  Text('Late'),
+                ],
+              ),
+            ),
+            SimpleDialogOption(
+              onPressed: () { Navigator.pop(context, 'Absent'); },
+              child: const Row(
+                children: [
+                  Icon(Icons.cancel_rounded, color: AppColors.danger, size: 18),
+                  SizedBox(width: 8),
+                  Text('Absent'),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (newStatus != null && newStatus.toLowerCase() != currentStatus.toLowerCase()) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final result = await AdminReportService.updateAttendance(attendanceId, newStatus);
+
+      Navigator.pop(context); // Close loading spinner
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Attendance updated successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        _loadReport();
+        widget.onUpdateNeeded?.call();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Failed to update attendance'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+    }
+  }
 }
