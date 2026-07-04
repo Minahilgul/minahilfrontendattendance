@@ -183,4 +183,32 @@ class AdminReportService {
       return {'success': false, 'message': 'Connection error: $e'};
     }
   }
+
+  // ── NEW: Sessions list (for Total Sessions card tap) ──
+  static Future<List<Map<String, dynamic>>> getSessions() async {
+    try {
+      final res = await http.get(Uri.parse('$_baseUrl/sessions'), headers: _headers());
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return List<Map<String, dynamic>>.from(data['data'] ?? []);
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // ── NEW: Toggle a session's active/inactive status ──
+  static Future<Map<String, dynamic>> toggleSessionStatus(int sessionId) async {
+    try {
+      final res = await http.post(
+        Uri.parse('$_baseUrl/sessions/$sessionId/toggle-status'),
+        headers: _headers(),
+      );
+      if (res.statusCode == 200) return jsonDecode(res.body);
+      return {'success': false, 'message': 'HTTP Status ${res.statusCode}'};
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
+    }
+  }
 }

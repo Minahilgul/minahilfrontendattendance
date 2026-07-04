@@ -98,6 +98,7 @@ class StatCard extends StatelessWidget {
   final String value;
   final String sub;
   final bool trendPositive;
+  final VoidCallback? onTap;
 
   const StatCard({
     super.key,
@@ -105,33 +106,37 @@ class StatCard extends StatelessWidget {
     required this.value,
     required this.sub,
     required this.trendPositive,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textLight, letterSpacing: 0.6)),
-            const SizedBox(height: 8),
-            Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-            const SizedBox(height: 4),
-            Row(children: [
-              Icon(trendPositive ? Icons.arrow_upward : Icons.arrow_downward, size: 12,
-                  color: trendPositive ? AppColors.success : AppColors.danger),
-              const SizedBox(width: 3),
-              Flexible(child: Text(sub, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
-                  color: trendPositive ? AppColors.success : AppColors.danger), overflow: TextOverflow.ellipsis)),
-            ]),
-          ],
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label.toUpperCase(), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.textLight, letterSpacing: 0.6)),
+              const SizedBox(height: 8),
+              Text(value, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+              const SizedBox(height: 4),
+              Row(children: [
+                Icon(trendPositive ? Icons.arrow_upward : Icons.arrow_downward, size: 12,
+                    color: trendPositive ? AppColors.success : AppColors.danger),
+                const SizedBox(width: 3),
+                Flexible(child: Text(sub, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600,
+                    color: trendPositive ? AppColors.success : AppColors.danger), overflow: TextOverflow.ellipsis)),
+              ]),
+            ],
+          ),
         ),
       ),
     );
@@ -472,6 +477,16 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   }
   bool get _trendPositive => ((_stats['trend'] as num?)?.toDouble() ?? 0.0) >= 0;
 
+  // ── NEW: open the sessions list bottom sheet ──
+  void _showSessionsList() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => const SessionsListSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
@@ -579,7 +594,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
                       ? Row(children: [_shimmerCard(), const SizedBox(width: 12), _shimmerCard()])
                       : Row(children: [
                           StatCard(label: 'Total Sessions', value: '${_stats['total_sessions'] ?? 0}',
-                              sub: _selectedDaysLabel, trendPositive: true),
+                              sub: _selectedDaysLabel, trendPositive: true, onTap: _showSessionsList),
                           const SizedBox(width: 12),
                           StatCard(label: 'Total Students', value: '${_stats['total_students'] ?? 0}',
                               sub: _selectedClassName, trendPositive: true),
@@ -1793,5 +1808,149 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
         );
       }
     }
+  }
+}
+
+// ── SESSIONS LIST BOTTOM SHEET (NEW) ──
+// Shows all sessions with their timing and active/inactive status.
+// A switch lets the admin toggle a session's status on the fly.
+class SessionsListSheet extends StatefulWidget {
+  const SessionsListSheet({super.key});
+
+  @override
+  State<SessionsListSheet> createState() => _SessionsListSheetState();
+}
+
+class _SessionsListSheetState extends State<SessionsListSheet> {
+  bool _loading = true;
+  List<Map<String, dynamic>> _sessions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessions();
+  }
+
+  Future<void> _loadSessions() async {
+    setState(() => _loading = true);
+    final list = await AdminReportService.getSessions();
+    if (mounted) setState(() { _sessions = list; _loading = false; });
+  }
+
+  Future<void> _toggleStatus(int index) async {
+    final id = _sessions[index]['id'] as int;
+    final result = await AdminReportService.toggleSessionStatus(id);
+    if (result['success'] == true) {
+      setState(() {
+        _sessions[index] = {..._sessions[index], 'status': result['status']};
+      });
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Failed to update session status'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Text('All Sessions',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _loading
+                  ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : _sessions.isEmpty
+                      ? Center(child: Text('No sessions found', style: TextStyle(color: AppColors.textLight)))
+                      : ListView.separated(
+                          controller: scrollController,
+                          itemCount: _sessions.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final s = _sessions[index];
+                            final isActive = s['status'] == 'active';
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: (isActive ? AppColors.success : AppColors.textLight).withOpacity(0.4),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s['teacher_name'] ?? 'Unknown',
+                                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(children: [
+                                          Icon(Icons.access_time, size: 12, color: AppColors.textLight),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${s['start_time'] ?? '-'} - ${s['end_time'] ?? 'Ongoing'}',
+                                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                          ),
+                                        ]),
+                                        const SizedBox(height: 2),
+                                        Text(s['date'] ?? '', style: TextStyle(fontSize: 10, color: AppColors.textLight)),
+                                      ],
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      Text(
+                                        isActive ? 'Active' : 'Inactive',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: isActive ? AppColors.success : AppColors.textLight,
+                                        ),
+                                      ),
+                                      Switch(
+                                        value: isActive,
+                                        activeColor: AppColors.success,
+                                        onChanged: (_) => _toggleStatus(index),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
