@@ -354,7 +354,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             title: 'End Session',
             iconData: Icons.stop_circle,
             type: DashboardCardType.danger,
-            onTap: endSession,
+            onTap: _showEndSessionSheet,
           ),
           DashboardCard(
             title: 'My Profile',
@@ -470,6 +470,24 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     } else {
       _showSnack(result['message'] ?? 'Error ending session');
     }
+  }
+
+  // ── NEW: opens the bottom sheet listing all sessions this teacher has created ──
+  void _showEndSessionSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => TeacherSessionsSheet(
+        teacherId: teacherId,
+        onSessionEnded: (sessionId) {
+          // Keep the header's "Active Session" indicator in sync
+          if (activeSessionId == sessionId) {
+            setState(() => activeSessionId = null);
+          }
+        },
+      ),
+    );
   }
 
   Future<void> _requestConfirmation() async {
@@ -656,4 +674,216 @@ class _NavItem {
   final IconData icon;
   final String label;
   const _NavItem({required this.icon, required this.label});
+}
+
+// ── TEACHER SESSIONS BOTTOM SHEET (NEW) ──
+// Lists every session this teacher has created. If a session is active,
+// an "End" button lets the teacher end it. Ended sessions show an "Ended" badge.
+// Because this writes to the same attendance_sessions row/status that the
+// admin's Reports & Audit screen reads, the admin's sessions list reflects
+// this the next time it loads/refreshes.
+class TeacherSessionsSheet extends StatefulWidget {
+  final int teacherId;
+  final void Function(int sessionId)? onSessionEnded;
+
+  const TeacherSessionsSheet({
+    super.key,
+    required this.teacherId,
+    this.onSessionEnded,
+  });
+
+  @override
+  State<TeacherSessionsSheet> createState() => _TeacherSessionsSheetState();
+}
+
+class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
+  bool _loading = true;
+  List<Map<String, dynamic>> _sessions = [];
+  final Set<int> _endingIds = {}; // tracks which rows are mid-request
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSessions();
+  }
+
+  Future<void> _loadSessions() async {
+    setState(() => _loading = true);
+    final result = await SessionService.getTeacherSessions(widget.teacherId);
+    final list = List<Map<String, dynamic>>.from(result['data'] ?? []);
+    if (mounted) setState(() { _sessions = list; _loading = false; });
+  }
+
+  Future<void> _endSession(int index) async {
+    final session = _sessions[index];
+    final int sessionId = session['id'] is int
+        ? session['id']
+        : int.tryParse(session['id'].toString()) ?? 0;
+
+    setState(() => _endingIds.add(sessionId));
+
+    final result = await SessionService.endSession(sessionId);
+
+    if (!mounted) return;
+    setState(() => _endingIds.remove(sessionId));
+
+    if (result['success'] == true) {
+      setState(() {
+        _sessions[index] = {..._sessions[index], 'status': 'inactive'};
+      });
+      widget.onSessionEnded?.call(sessionId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Session ended'), backgroundColor: AppColors.success),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result['message'] ?? 'Failed to end session'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
+  String _formatTime(dynamic raw) {
+    if (raw == null) return '-';
+    try {
+      final dt = DateTime.parse(raw.toString()).toLocal();
+      final hour = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
+      final minute = dt.minute.toString().padLeft(2, '0');
+      final period = dt.hour >= 12 ? 'PM' : 'AM';
+      return '$hour:$minute $period';
+    } catch (e) {
+      return '-';
+    }
+  }
+
+  String _formatDate(dynamic raw) {
+    if (raw == null) return '';
+    try {
+      final dt = DateTime.parse(raw.toString()).toLocal();
+      return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      minChildSize: 0.4,
+      maxChildSize: 0.9,
+      expand: false,
+      builder: (context, scrollController) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Text('My Sessions',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+            const SizedBox(height: 12),
+            Expanded(
+              child: _loading
+                  ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  : _sessions.isEmpty
+                      ? Center(child: Text('No sessions found', style: TextStyle(color: AppColors.textLight)))
+                      : ListView.separated(
+                          controller: scrollController,
+                          itemCount: _sessions.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          itemBuilder: (context, index) {
+                            final s = _sessions[index];
+                            final isActive = s['status'] == 'active';
+                            final int sessionId = s['id'] is int
+                                ? s['id']
+                                : int.tryParse(s['id'].toString()) ?? 0;
+                            final isEnding = _endingIds.contains(sessionId);
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: (isActive ? AppColors.success : AppColors.textLight).withOpacity(0.4),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          s['class_name'] ?? 'Class ${s['class_id'] ?? '-'}',
+                                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(children: [
+                                          Icon(Icons.access_time, size: 12, color: AppColors.textLight),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${_formatTime(s['start_time'])} - ${s['end_time'] != null ? _formatTime(s['end_time']) : 'Ongoing'}',
+                                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                          ),
+                                        ]),
+                                        const SizedBox(height: 2),
+                                        Text(_formatDate(s['start_time']), style: TextStyle(fontSize: 10, color: AppColors.textLight)),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  isActive
+                                      ? SizedBox(
+                                          height: 32,
+                                          child: ElevatedButton(
+                                            onPressed: isEnding ? null : () => _endSession(index),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: AppColors.danger,
+                                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                            ),
+                                            child: isEnding
+                                                ? const SizedBox(
+                                                    width: 14,
+                                                    height: 14,
+                                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                                  )
+                                                : const Text('End', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                                          ),
+                                        )
+                                      : Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.textLight.withOpacity(0.12),
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Text(
+                                            'Ended',
+                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textLight),
+                                          ),
+                                        ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

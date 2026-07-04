@@ -1842,7 +1842,11 @@ class _SessionsListSheetState extends State<SessionsListSheet> {
     final result = await AdminReportService.toggleSessionStatus(id);
     if (result['success'] == true) {
       setState(() {
-        _sessions[index] = {..._sessions[index], 'status': result['status']};
+        _sessions[index] = {
+          ..._sessions[index],
+          'status': result['status'],
+          'end_time': result['end_time'], // NEW: keep displayed time in sync with the toggle
+        };
       });
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -1911,6 +1915,15 @@ class _SessionsListSheetState extends State<SessionsListSheet> {
                                           s['teacher_name'] ?? 'Unknown',
                                           style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
                                         ),
+                                        const SizedBox(height: 2),
+                                        Row(children: [
+                                          Icon(Icons.class_outlined, size: 12, color: AppColors.textLight),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            s['class_name'] ?? 'Unknown',
+                                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                                          ),
+                                        ]),
                                         const SizedBox(height: 4),
                                         Row(children: [
                                           Icon(Icons.access_time, size: 12, color: AppColors.textLight),

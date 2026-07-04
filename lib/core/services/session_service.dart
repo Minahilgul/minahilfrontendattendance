@@ -205,4 +205,36 @@ static Future<Map<String, dynamic>> getStudents(int sessionId) async {
       };
     }
   }
+
+  // ── NEW: GET ALL SESSIONS CREATED BY THIS TEACHER ──
+  static Future<Map<String, dynamic>> getTeacherSessions(int teacherId) async {
+    try {
+      final token = await AuthService.getToken();
+
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/teacher-sessions/$teacherId'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print("TEACHER SESSIONS STATUS: ${response.statusCode}");
+      print("TEACHER SESSIONS RESPONSE: ${response.body}");
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        return {
+          'success': true,
+          'data': List<Map<String, dynamic>>.from(data['data'] ?? []),
+        };
+      } else {
+        return {'success': false, 'data': <Map<String, dynamic>>[]};
+      }
+    } catch (e) {
+      print("TEACHER SESSIONS ERROR: $e");
+      return {'success': false, 'data': <Map<String, dynamic>>[]};
+    }
+  }
 }
