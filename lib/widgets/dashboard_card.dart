@@ -23,65 +23,72 @@ class DashboardCard extends StatelessWidget {
     this.onTap,
   });
 
-  Color _iconColor() {
+  List<Color> _gradientColors() {
     switch (type) {
       case DashboardCardType.primary:
-        return AppColors.primary;
-
+        return [const Color(0xFF1565C0), const Color(0xFF42A5F5)];
       case DashboardCardType.success:
-        return AppColors.success;
-
+        return [const Color(0xFF2E7D32), const Color(0xFF66BB6A)];
       case DashboardCardType.warning:
-        return AppColors.warning;
-
+        return [const Color(0xFFE65100), const Color(0xFFFFA726)];
       case DashboardCardType.danger:
-        return AppColors.danger;
-
+        return [const Color(0xFFC62828), const Color(0xFFEF5350)];
       case DashboardCardType.purple:
-        return AppColors.purple;
-          
+        return [const Color(0xFF6A1B9A), const Color(0xFFAB47BC)];
     }
   }
 
+  Color _glowColor() => _gradientColors()[0].withOpacity(0.30);
+
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.card,
-      borderRadius: BorderRadius.circular(20),
-      elevation: 2,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(20),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: _iconColor(),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  iconData,
-                  color: Colors.white,
-                  size: 30,
-                ),
+    final gradColors = _gradientColors();
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // ── Big circle — exactly like reference ──────────────────────────
+          Container(
+            width: 110,
+            height: 110,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: gradColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+              boxShadow: [
+                BoxShadow(
+                  color: _glowColor(),
+                  blurRadius: 18,
+                  spreadRadius: 2,
+                  offset: const Offset(0, 8),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Icon(iconData, color: Colors.white, size: 42),
           ),
-        ),
+
+          const SizedBox(height: 12),
+
+          // ── Title ────────────────────────────────────────────────────────
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: gradColors[0],
+              height: 1.3,
+            ),
+          ),
+        ],
       ),
     );
   }

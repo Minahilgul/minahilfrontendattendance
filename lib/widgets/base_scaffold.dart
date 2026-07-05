@@ -10,9 +10,7 @@ class BaseScaffold extends StatelessWidget {
   final Widget? bottomNav;
   final Widget? floatingActionButton;
   final String role;
-  
   final Function(int)? onDrawerNavTap;
-  
   final String? displayName;
 
   const BaseScaffold({
@@ -29,7 +27,6 @@ class BaseScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Drawer header label — use displayName if provided, else role label
     final String headerLabel = displayName?.isNotEmpty == true
         ? displayName!
         : role == 'admin'
@@ -38,7 +35,6 @@ class BaseScaffold extends StatelessWidget {
                 ? 'Teacher'
                 : 'Student';
 
-    
     String initials = '';
     if (displayName != null && displayName!.trim().isNotEmpty) {
       final parts = displayName!.trim().split(' ');
@@ -48,7 +44,7 @@ class BaseScaffold extends StatelessWidget {
     }
 
     return Scaffold(
-       backgroundColor: AppColors.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(title,
             style: const TextStyle(
@@ -66,10 +62,8 @@ class BaseScaffold extends StatelessWidget {
             DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                    colors: [ AppColors.primary,
-  AppColors.primaryDark,
-                    ],
-              ),
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,13 +82,11 @@ class BaseScaffold extends StatelessWidget {
                             color: Colors.white),
                   ),
                   const SizedBox(height: 12),
-                  //  Shows actual name if displayName is passed, else role label
                   Text(headerLabel,
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
-                  // Sub-label: role badge below name
                   if (displayName?.isNotEmpty == true)
                     Text(
                       role == 'admin'
@@ -109,7 +101,7 @@ class BaseScaffold extends StatelessWidget {
               ),
             ),
 
-            //  Admin items 
+            // ── Admin items ──────────────────────────────────────────────────
             if (role == 'admin') ...[
               ListTile(
                   leading: const Icon(Icons.home),
@@ -155,7 +147,8 @@ class BaseScaffold extends StatelessWidget {
                   }),
             ],
 
-            // Teacher items 
+            // ── Teacher items ────────────────────────────────────────────────
+            // ✅ CHANGE 4: 'My Classes' ListTile removed
             if (role == 'teacher') ...[
               ListTile(
                   leading: const Icon(Icons.home),
@@ -163,13 +156,6 @@ class BaseScaffold extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context);
                     Get.toNamed('/teacher-dashboard');
-                  }),
-              ListTile(
-                  leading: const Icon(Icons.class_),
-                  title: const Text('My Classes'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Get.toNamed('/classes');
                   }),
               ListTile(
                   leading: const Icon(Icons.checklist),
@@ -187,9 +173,18 @@ class BaseScaffold extends StatelessWidget {
                   Get.toNamed('/student-directory');
                 },
               ),
+              ListTile(
+                leading: const Icon(Icons.how_to_reg_rounded,
+                    color: AppColors.primary),
+                title: const Text('View Responses'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Get.toNamed('/teacher-dashboard');
+                },
+              ),
             ],
 
-            //  Student items
+            // ── Student items ────────────────────────────────────────────────
             if (role == 'student') ...[
               ListTile(
                 leading: const Icon(Icons.home_rounded),
@@ -227,7 +222,7 @@ class BaseScaffold extends StatelessWidget {
 
             const Divider(),
 
-            // Profile / Reports / Alerts — admin & teacher only
+            // Profile / Reports — admin & teacher only
             if (role != 'student') ...[
               ListTile(
                   leading: const Icon(Icons.person),

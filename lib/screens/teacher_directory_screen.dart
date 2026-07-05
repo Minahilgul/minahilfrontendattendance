@@ -629,7 +629,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
   List<TeacherModel> _allTeachers = [];
   bool _isLoading = true;
 
-  final List<String> _tabs = ['All Faculty', 'Registered', 'Security Alerts'];
+  final List<String> _tabs = ['All Faculty', 'Registered'];
 
   @override
   void initState() {
@@ -659,16 +659,12 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
   // anything out either.
   List<TeacherModel> get _filteredTeachers {
     List<TeacherModel> list;
-    if (_selectedTab == 0) {
-      // All Faculty: only approved/active teachers
-      list = _allTeachers.where((t) => t.status == TeacherStatus.verified).toList();
-    } else if (_selectedTab == 1) {
+    if (_selectedTab == 1) {
       // Registered: teachers awaiting approval (self-registered, status = 0)
       list = _allTeachers.where((t) => t.status == TeacherStatus.inactive).toList();
-    } else if (_selectedTab == 2) {
-      list = _allTeachers.where((t) => t.status == TeacherStatus.securityAlert).toList();
     } else {
-      list = _allTeachers;
+      // All Faculty: only approved/active teachers
+      list = _allTeachers.where((t) => t.status == TeacherStatus.verified).toList();
     }
     if (_searchQuery.isNotEmpty) {
       list = list.where((t) => t.name.toLowerCase().contains(_searchQuery.toLowerCase()) || t.department.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
@@ -830,21 +826,6 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                               onDelete: () => _showDeleteDialog(t),
                               onApprove: () => _showApproveDialog(t),
                             )),
-                        Container(
-                          margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(color: AppColors.primaryDark, borderRadius: BorderRadius.circular(12)),
-                          child: Row(children: [
-                            const Icon(Icons.sync, color: Colors.white, size: 18),
-                            const SizedBox(width: 10),
-                            const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                              Text('Security Sync', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
-                              Text('Last synced 5 mins ago', style: TextStyle(color: Colors.white70, fontSize: 11)),
-                            ]),
-                            const Spacer(),
-                            const Text('Details', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
-                          ]),
-                        ),
                       ],
                     ),
             ),

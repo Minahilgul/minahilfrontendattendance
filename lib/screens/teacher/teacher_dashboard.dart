@@ -35,11 +35,12 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   int get teacherId => widget.userId;
 
+  // ✅ CHANGE 1: Classes & Settings removed → Profile & View Responses added
   final List<_NavItem> _navItems = const [
-    _NavItem(icon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.class_rounded, label: 'Classes'),
-    _NavItem(icon: Icons.bar_chart_rounded, label: 'Reports'),
-    _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
+    _NavItem(icon: Icons.home_rounded,        label: 'Home'),
+    _NavItem(icon: Icons.bar_chart_rounded,   label: 'Reports'),
+    _NavItem(icon: Icons.how_to_reg_rounded,  label: 'View Responses'),
+    _NavItem(icon: Icons.person_rounded,      label: 'Profile'),
   ];
 
   @override
@@ -74,7 +75,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
     final result = await ConfirmationService.getDirectory(activeSessionId!);
     if (!mounted) return;
-    Navigator.pop(context); // close loader
+    Navigator.pop(context);
 
     if (result['success'] != true) {
       _showSnack(result['message'] ?? 'Failed to load directory');
@@ -94,7 +95,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
               Container(
                 padding: const EdgeInsets.all(18),
                 decoration: const BoxDecoration(
@@ -122,7 +122,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                   ],
                 ),
               ),
-              // Analytics row
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
                 child: Row(
@@ -134,7 +133,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                   ],
                 ),
               ),
-              // Verdict
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                 child: Container(
@@ -156,7 +154,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 ),
               ),
               const Divider(height: 1),
-              // Student list
               Flexible(
                 child: students.isEmpty
                     ? const Padding(
@@ -229,7 +226,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                         },
                       ),
               ),
-              // Refresh button
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: SizedBox(
@@ -279,59 +275,9 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     return BaseScaffold(
       title: 'Teacher Dashboard',
       role: widget.role,
-      floatingActionButton: isLoading
-          ? const CircularProgressIndicator()
-          : FloatingActionButton(
-              onPressed: () {},
-              backgroundColor: AppColors.primary,
-              mini: true,
-              child: const Icon(Icons.help_outline, color: Colors.white, size: 18),
-            ),
+      // ✅ CHANGE 2: FAB (? help button) removed — no floatingActionButton
       bottomNav: _buildBottomNavBar(),
       body: _buildBody(),
-    );
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primaryDark],
-        ),
-      ),
-      child: SafeArea(
-        bottom: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Teacher Dashboard',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Role: ${widget.role} | ID:${widget.userId}',
-                style: const TextStyle(color: Colors.white70, fontSize: 15),
-              ),
-              if (activeSessionId != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Active Session: $activeSessionId',
-                  style: const TextStyle(color: Colors.yellow, fontSize: 12),
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -358,16 +304,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           ),
           DashboardCard(
             title: 'My Profile',
-            iconData: Icons.group_rounded,
+            iconData: Icons.person_rounded,
             type: DashboardCardType.primary,
             onTap: () => Get.toNamed('/teacher-profile'),
           ),
-          DashboardCard(
-            title: 'Class Roaster',
-            iconData: Icons.group_rounded,
-            type: DashboardCardType.primary,
-            onTap: () => Get.toNamed('/roster'),
-          ),
+          // ✅ CHANGE 3: Class Roaster card removed
           DashboardCard(
             title: 'Reports',
             iconData: Icons.bar_chart_rounded,
@@ -472,16 +413,15 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     }
   }
 
-  // ── NEW: opens the bottom sheet listing all sessions this teacher has created ──
   void _showEndSessionSheet() {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (_) => TeacherSessionsSheet(
         teacherId: teacherId,
         onSessionEnded: (sessionId) {
-          // Keep the header's "Active Session" indicator in sync
           if (activeSessionId == sessionId) {
             setState(() => activeSessionId = null);
           }
@@ -579,10 +519,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(color: color, fontWeight: FontWeight.w500),
-        ),
+        Text(label, style: TextStyle(color: color, fontWeight: FontWeight.w500)),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
           decoration: BoxDecoration(
@@ -630,12 +567,22 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               return GestureDetector(
                 onTap: () {
                   setState(() => _selectedIndex = index);
+                  // ✅ CHANGE 1: Updated nav actions
+                  // index 0 = Home (stay)
+                  // index 1 = Reports
+                  // index 2 = View Responses
+                  // index 3 = Profile
                   if (index == 1) {
-                    Get.toNamed('/classes');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const AttendanceReportScreen(),
+                      ),
+                    );
                   } else if (index == 2) {
-                    Get.toNamed('/teacher-report');
+                    _showResponseDirectory();
                   } else if (index == 3) {
-                    Get.toNamed('/settings');
+                    Get.toNamed('/teacher-profile');
                   }
                 },
                 child: SizedBox(
@@ -676,12 +623,7 @@ class _NavItem {
   const _NavItem({required this.icon, required this.label});
 }
 
-// ── TEACHER SESSIONS BOTTOM SHEET (NEW) ──
-// Lists every session this teacher has created. If a session is active,
-// an "End" button lets the teacher end it. Ended sessions show an "Ended" badge.
-// Because this writes to the same attendance_sessions row/status that the
-// admin's Reports & Audit screen reads, the admin's sessions list reflects
-// this the next time it loads/refreshes.
+// ── TEACHER SESSIONS BOTTOM SHEET ──
 class TeacherSessionsSheet extends StatefulWidget {
   final int teacherId;
   final void Function(int sessionId)? onSessionEnded;
@@ -699,7 +641,7 @@ class TeacherSessionsSheet extends StatefulWidget {
 class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
   bool _loading = true;
   List<Map<String, dynamic>> _sessions = [];
-  final Set<int> _endingIds = {}; // tracks which rows are mid-request
+  final Set<int> _endingIds = {};
 
   @override
   void initState() {
@@ -721,7 +663,6 @@ class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
         : int.tryParse(session['id'].toString()) ?? 0;
 
     setState(() => _endingIds.add(sessionId));
-
     final result = await SessionService.endSession(sessionId);
 
     if (!mounted) return;
@@ -733,7 +674,9 @@ class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
       });
       widget.onSessionEnded?.call(sessionId);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Session ended'), backgroundColor: AppColors.success),
+        const SnackBar(
+            content: Text('Session ended'),
+            backgroundColor: AppColors.success),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -792,17 +735,24 @@ class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
               ),
             ),
             Text('My Sessions',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary)),
             const SizedBox(height: 12),
             Expanded(
               child: _loading
-                  ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+                  ? Center(
+                      child: CircularProgressIndicator(color: AppColors.primary))
                   : _sessions.isEmpty
-                      ? Center(child: Text('No sessions found', style: TextStyle(color: AppColors.textLight)))
+                      ? Center(
+                          child: Text('No sessions found',
+                              style: TextStyle(color: AppColors.textLight)))
                       : ListView.separated(
                           controller: scrollController,
                           itemCount: _sessions.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final s = _sessions[index];
                             final isActive = s['status'] == 'active';
@@ -812,35 +762,52 @@ class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
                             final isEnding = _endingIds.contains(sessionId);
 
                             return Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: (isActive ? AppColors.success : AppColors.textLight).withOpacity(0.4),
+                                  color: (isActive
+                                          ? AppColors.success
+                                          : AppColors.textLight)
+                                      .withOpacity(0.4),
                                 ),
                               ),
                               child: Row(
                                 children: [
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          s['class_name'] ?? 'Class ${s['class_id'] ?? '-'}',
-                                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                                          s['class_name'] ??
+                                              'Class ${s['class_id'] ?? '-'}',
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w700,
+                                              color: AppColors.textPrimary),
                                         ),
                                         const SizedBox(height: 4),
                                         Row(children: [
-                                          Icon(Icons.access_time, size: 12, color: AppColors.textLight),
+                                          Icon(Icons.access_time,
+                                              size: 12,
+                                              color: AppColors.textLight),
                                           const SizedBox(width: 4),
                                           Text(
                                             '${_formatTime(s['start_time'])} - ${s['end_time'] != null ? _formatTime(s['end_time']) : 'Ongoing'}',
-                                            style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                color:
+                                                    AppColors.textSecondary),
                                           ),
                                         ]),
                                         const SizedBox(height: 2),
-                                        Text(_formatDate(s['start_time']), style: TextStyle(fontSize: 10, color: AppColors.textLight)),
+                                        Text(_formatDate(s['start_time']),
+                                            style: TextStyle(
+                                                fontSize: 10,
+                                                color: AppColors.textLight)),
                                       ],
                                     ),
                                   ),
@@ -849,30 +816,51 @@ class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
                                       ? SizedBox(
                                           height: 32,
                                           child: ElevatedButton(
-                                            onPressed: isEnding ? null : () => _endSession(index),
+                                            onPressed: isEnding
+                                                ? null
+                                                : () => _endSession(index),
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: AppColors.danger,
-                                              padding: const EdgeInsets.symmetric(horizontal: 12),
-                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 12),
+                                              shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8)),
                                             ),
                                             child: isEnding
                                                 ? const SizedBox(
                                                     width: 14,
                                                     height: 14,
-                                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                            strokeWidth: 2,
+                                                            color:
+                                                                Colors.white),
                                                   )
-                                                : const Text('End', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                                                : const Text('End',
+                                                    style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w700)),
                                           ),
                                         )
                                       : Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10, vertical: 6),
                                           decoration: BoxDecoration(
-                                            color: AppColors.textLight.withOpacity(0.12),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: AppColors.textLight
+                                                .withOpacity(0.12),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             'Ended',
-                                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textLight),
+                                            style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w700,
+                                                color: AppColors.textLight),
                                           ),
                                         ),
                                 ],
