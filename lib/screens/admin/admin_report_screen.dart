@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../widgets/base_scaffold.dart';
 import '../../core/services/admin_report_service.dart';
+import '../../core/services/admin_report_export_service.dart';  
+import '../../core/services/admin_report_service.dart';
 import '../../core/theme/app_colors.dart';
 
 
@@ -377,6 +379,8 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   bool _loadingChart    = true;
   bool _loadingStudents = true;
   bool _showAllStudents = false;
+  bool _isExportingPdf = false;      
+  bool _isExportingExcel = false;    
 
   final Map<String, int> _daysOptions = {
     'Last 7 Days':   7,
@@ -478,7 +482,7 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
       title: 'Reports & Audit',
       role: 'admin',
       actions: [
-        IconButton(icon: const Icon(Icons.share_outlined, color: Colors.white, size: 20), onPressed: () {}),
+        IconButton(icon: const Icon(Icons.share_outlined, color: Colors.white, size: 20), onPressed: _showExportSheet),
       ],
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
@@ -1134,6 +1138,99 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
       ],
     ),
   );
+  //  Export Helpers 
+
+  Map<String, dynamic> _currentFilters() => {
+    'class_id': _selectedClassId,
+    'teacher_id': _selectedTeacherId,
+    'days': (_filterDate == null && _filterStartDate == null) ? _selectedDays : null,
+    'status': _filterStatus,
+    'session_id': _filterSessionId,
+    'student_name': _filterStudentName,
+    'date': _filterDate,
+    'start_date': _filterStartDate,
+    'end_date': _filterEndDate,
+  };
+
+Future<void> _handleExport(bool isPdf) async {
+    if (_isExportingPdf || _isExportingExcel) return;
+
+    if (_students.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No report data available to export for the current filters.')),
+      );
+      return;
+    }
+    setState(() => isPdf ? _isExportingPdf = true : _isExportingExcel = true);
+    try {
+       isPdf
+          ? await AdminReportExportService.downloadPdf(_currentFilters())
+          : await AdminReportExportService.downloadExcel(_currentFilters());
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${isPdf ? 'PDF' : 'Excel'} report downloaded'),
+          ),
+        );
+      }
+       } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e'), backgroundColor: AppColors.danger),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isPdf ? _isExportingPdf = false : _isExportingExcel = false);
+    }
+  }
+
+  void _showExportSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (_) => StatefulBuilder(
+        builder: (context, setSheetState) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Export Report', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _isExportingPdf
+                    ? null
+                    : () async {
+                        await _handleExport(true);
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                icon: _isExportingPdf
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.picture_as_pdf_outlined, color: Colors.white),
+                label: const Text('Download PDF'),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger, padding: const EdgeInsets.symmetric(vertical: 14)),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton.icon(
+                onPressed: _isExportingExcel
+                    ? null
+                    : () async {
+                        await _handleExport(false);
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                icon: _isExportingExcel
+                    ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : const Icon(Icons.table_chart_outlined, color: Colors.white),
+                label: const Text('Download Excel'),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.success, padding: const EdgeInsets.symmetric(vertical: 14)),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 // ── TEACHER LIST COMPONENT ──
@@ -1263,6 +1360,8 @@ class StudentReportModal extends StatefulWidget {
 class _StudentReportModalState extends State<StudentReportModal> with SingleTickerProviderStateMixin {
   bool _loading = true;
   bool _hasError = false;
+  bool _isExportingPdf = false;      // ADD
+  bool _isExportingExcel = false;    // ADD
   Map<String, dynamic>? _reportData;
   late AnimationController _animController;
   late Animation<double> _scaleAnim;
@@ -1335,13 +1434,29 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Student Attendance Report',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                  Expanded(
+                    child: Text(
+                      'Student Attendance Report',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
+                  ),
+                  IconButton(
+                    tooltip: 'Download PDF',
+                    icon: _isExportingPdf
+                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(Icons.picture_as_pdf_outlined, color: AppColors.danger, size: 20),
+                    onPressed: _isExportingPdf ? null : () => _exportStudentReport(true),
+                  ),
+                  IconButton(
+                    tooltip: 'Download Excel',
+                    icon: _isExportingExcel
+                        ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(Icons.table_chart_outlined, color: AppColors.success, size: 20),
+                    onPressed: _isExportingExcel ? null : () => _exportStudentReport(false),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
@@ -1792,6 +1907,32 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
           ),
         );
       }
+    }
+  }
+  Future<void> _exportStudentReport(bool isPdf) async {
+    if (_isExportingPdf || _isExportingExcel) return;
+
+    setState(() => isPdf ? _isExportingPdf = true : _isExportingExcel = true);
+    try {
+       isPdf
+          ? await AdminReportExportService.downloadStudentPdf(widget.student.studentId)
+          : await AdminReportExportService.downloadStudentExcel(widget.student.studentId);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${isPdf ? 'PDF' : 'Excel'} downloaded'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Export failed: $e'), backgroundColor: AppColors.danger),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => isPdf ? _isExportingPdf = false : _isExportingExcel = false);
     }
   }
 }
