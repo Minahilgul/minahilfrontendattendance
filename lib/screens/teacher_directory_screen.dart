@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:attendence_verification/core/services/auth_service.dart';
 import '../core/services/teacher_service.dart';
 import '../widgets/base_scaffold.dart';
-import '../core/theme/app_colors.dart';
 
 
 
 // DATA MODELS
 
 
-enum TeacherStatus { verified, inactive, securityAlert }
+enum TeacherStatus { verified, inactive }
 
 class TeacherModel {
   final int id;
@@ -54,7 +53,7 @@ class TeacherModel {
     return TeacherModel(
       id: json['id']?? 0,
       initials: initials,
-      avatarColor: AppColors.primaryDark,
+      avatarColor: const Color(0xFF1565C0),
       name: name,
       department: json['department']?? 'N/A',
       role: json['role']?? 'Teacher',
@@ -133,11 +132,9 @@ class StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     switch (status) {
       case TeacherStatus.verified:
-        return _badge('VERIFIED', AppColors.success, AppColors.success.withOpacity(0.12));
+        return _badge('VERIFIED', const Color(0xFF2E7D32), const Color(0xFFE8F5E9));
       case TeacherStatus.inactive:
-        return _badge('INACTIVE', AppColors.textSecondary, AppColors.background);
-      case TeacherStatus.securityAlert:
-        return _badge('⚠ SECURITY ALERT', AppColors.danger, AppColors.danger.withOpacity(0.1));
+        return _badge('INACTIVE', const Color(0xFF757575), const Color(0xFFF5F5F5));
     }
   }
 
@@ -197,9 +194,9 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     setState(() => _isLoading = false);
     if (success) {
       Navigator.of(context).pop(true);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Teacher added successfully!'), backgroundColor: AppColors.success));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Teacher added successfully!'), backgroundColor: Color(0xFF2E7D32)));
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Failed to add teacher. Please try again.'), backgroundColor: AppColors.danger));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to add teacher. Please try again.'), backgroundColor: Color(0xFFC62828)));
     }
   }
 
@@ -218,7 +215,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
               children: [
                 const Text('Add New Teacher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text('Fill in the details to add a new faculty member', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+                Text('Fill in the details to add a new faculty member', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
                 const SizedBox(height: 20),
                 _buildField('Username', _usernameCtrl, Icons.person_outline, validator: (v) => v!.isEmpty? 'Username required' : null),
                 const SizedBox(height: 14),
@@ -251,13 +248,13 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: _isActive ? AppColors.success : AppColors.textSecondary,
+                        color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600],
                       ),
                     ),
                     const SizedBox(width: 8),
                     Switch(
                       value: _isActive,
-                      activeColor: AppColors.primaryDark,
+                      activeColor: const Color(0xFF1565C0),
                       onChanged: (val) => setState(() => _isActive = val),
                     ),
                   ],
@@ -269,15 +266,15 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _isLoading? null : () => Navigator.of(context).pop(),
-                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: AppColors.border), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                        child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary)),
+                        style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: Colors.grey[400]!), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: _isLoading? null : _onSave,
-                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryDark, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Save'),
                       ),
                     ),
@@ -377,11 +374,11 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
     if (success) {
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${widget.teacher.name} updated successfully!'), backgroundColor: AppColors.success)
+        SnackBar(content: Text('${widget.teacher.name} updated successfully!'), backgroundColor: const Color(0xFF2E7D32))
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Failed to update teacher'), backgroundColor: AppColors.danger)
+        const SnackBar(content: Text('Failed to update teacher'), backgroundColor: Color(0xFFC62828))
       );
     }
   }
@@ -401,7 +398,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
           children: [
             const Text('Edit Teacher', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 4),
-            Text('Update faculty details', style: TextStyle(fontSize: 13, color: AppColors.textSecondary)),
+            Text('Update faculty details', style: TextStyle(fontSize: 13, color: Colors.grey[600])),
             const SizedBox(height: 20),
             _buildField('Username', _usernameCtrl, Icons.person_outline, validator: (v) => v!.isEmpty? 'Username required' : null),
             const SizedBox(height: 14),
@@ -431,13 +428,13 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: _isActive ? AppColors.success : AppColors.textSecondary,
+                    color: _isActive ? const Color(0xFF2E7D32) : Colors.grey[600],
                   ),
                 ),
                 const SizedBox(width: 8),
                 Switch(
                   value: _isActive,
-                  activeColor: AppColors.primaryDark,
+                  activeColor: const Color(0xFF1565C0),
                   onChanged: (val) => setState(() => _isActive = val),
                 ),
               ],
@@ -449,15 +446,15 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
                 Expanded(
                   child: OutlinedButton(
                     onPressed: _isLoading? null : () => Navigator.of(context).pop(),
-                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: AppColors.border), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-                    child: Text('Cancel', style: TextStyle(color: AppColors.textPrimary)),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12), side: BorderSide(color: Colors.grey[400]!), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    child: const Text('Cancel', style: TextStyle(color: Colors.black87)),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _isLoading? null : _onUpdate,
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryDark, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                     child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Update'),
                   ),
                 ),
@@ -495,13 +492,12 @@ class TeacherCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isAlert = teacher.status == TeacherStatus.securityAlert;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: isAlert? Border.all(color: AppColors.danger.withOpacity(0.5), width: 1.5) : Border.all(color: AppColors.border, width: 0.5),
+        border: Border.all(color: const Color(0xFFE0E0E0), width: 0.5),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
@@ -519,22 +515,22 @@ class TeacherCard extends StatelessWidget {
                     children: [
                       StatusBadge(status: teacher.status),
                       const SizedBox(height: 4),
-                      Text(teacher.name, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                      Text('${teacher.department} • ${teacher.role}', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                      Text(teacher.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF1A1A2E))),
+                      Text('${teacher.department} • ${teacher.role}', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                       const SizedBox(height: 8),
                       Row(children: [
-                        Icon(Icons.class_outlined, size: 14, color: AppColors.textSecondary),
+                        Icon(Icons.class_outlined, size: 14, color: Colors.grey[500]),
                         const SizedBox(width: 4),
-                        Text('${teacher.activeClasses} Active Classes', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                        if (teacher.deviceInfo!= null)...[const SizedBox(width: 12), Icon(Icons.smartphone, size: 14, color: AppColors.textSecondary), const SizedBox(width: 4), Text(teacher.deviceInfo!, style: TextStyle(fontSize: 12, color: AppColors.textSecondary))],
-                        if (teacher.registeredInfo!= null)...[const SizedBox(width: 12), Icon(Icons.check_circle_outline, size: 14, color: AppColors.textSecondary), const SizedBox(width: 4), Text(teacher.registeredInfo!, style: TextStyle(fontSize: 12, color: AppColors.textSecondary))],
+                        Text('${teacher.activeClasses} Active Classes', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                        if (teacher.deviceInfo!= null)...[const SizedBox(width: 12), Icon(Icons.smartphone, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.deviceInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
+                        if (teacher.registeredInfo!= null)...[const SizedBox(width: 12), Icon(Icons.check_circle_outline, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.registeredInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
                       ]),
-                      if (teacher.lastSeen!= null)...[const SizedBox(height: 4), Text('LAST SEEN ${teacher.lastSeen}', style: TextStyle(fontSize: 10, color: AppColors.textLight, letterSpacing: 0.3))],
+                      if (teacher.lastSeen!= null)...[const SizedBox(height: 4), Text('LAST SEEN ${teacher.lastSeen}', style: TextStyle(fontSize: 10, color: Colors.grey[400], letterSpacing: 0.3))],
                     ],
                   ),
                 ),
                 PopupMenuButton<String>(
-                  icon: Icon(Icons.more_vert, color: AppColors.textLight, size: 20),
+                  icon: Icon(Icons.more_vert, color: Colors.grey[400], size: 20),
                   padding: EdgeInsets.zero,
                   onSelected: (value) {
                     if (value == 'edit') onEdit?.call();
@@ -542,44 +538,13 @@ class TeacherCard extends StatelessWidget {
                   },
                   itemBuilder: (context) => [
                     const PopupMenuItem(value: 'edit', child: Row(children: [Icon(Icons.edit_outlined, size: 18), SizedBox(width: 8), Text('Edit')])),
-                    PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: AppColors.danger), const SizedBox(width: 8), Text('Delete', style: TextStyle(color: AppColors.danger))])),
+                    const PopupMenuItem(value: 'delete', child: Row(children: [Icon(Icons.delete_outline, size: 18, color: Colors.red), SizedBox(width: 8), Text('Delete', style: TextStyle(color: Colors.red))])),
                   ],
                 ),
               ],
             ),
           ),
-          if (isAlert)...[
-            Container(
-              margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.03), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.danger.withOpacity(0.3))),
-              child: Row(children: [
-                Icon(Icons.warning_amber_rounded, color: AppColors.danger, size: 16),
-                const SizedBox(width: 8),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('NEW LOGIN DETECTED', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger, letterSpacing: 0.3)),
-                  Text('Unknown Windows PC • Austin, TX', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                ])),
-              ]),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-              child: Row(children: [
-                Expanded(child: OutlinedButton(onPressed: () {}, style: OutlinedButton.styleFrom(side: BorderSide(color: AppColors.danger), foregroundColor: AppColors.danger, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('LOCK ACCOUNT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)))),
-                const SizedBox(width: 10),
-                Expanded(child: ElevatedButton(onPressed: () {}, style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryDark, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 10), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))), child: const Text('VERIFY ID', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)))),
-              ]),
-            ),
-          ],
-          if (teacher.status == TeacherStatus.verified)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(onPressed: () {}, style: TextButton.styleFrom(foregroundColor: AppColors.primaryDark, padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap), child: const Row(mainAxisSize: MainAxisSize.min, children: [Text('VIEW LOGS', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)), SizedBox(width: 4), Icon(Icons.arrow_forward, size: 14)])),
-              ),
-            ),
+
           if (teacher.status == TeacherStatus.inactive)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -590,7 +555,7 @@ class TeacherCard extends StatelessWidget {
                   icon: const Icon(Icons.check, size: 14, color: Colors.white),
                   label: const Text('APPROVE TEACHER', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.success,
+                    backgroundColor: Colors.green[700],
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -605,7 +570,7 @@ class TeacherCard extends StatelessWidget {
 }
 
 
-// MAIN SCREEN
+// MAIN SCREEN - SIRF CONSTRUCTOR UPDATE KIYA
 
 
 class TeacherDirectoryScreen extends StatefulWidget {
@@ -651,20 +616,10 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     }
   }
 
-  // ── FIXED: All Faculty now shows only approved teachers; Registered now
-  // shows only pending (self-registered, awaiting approval) teachers.
-  // Previously "All Faculty" had no filter at all (showed everyone including
-  // pending), and "Registered" used `registeredInfo != null` which is true
-  // for every teacher (since created_at always exists), so it never filtered
-  // anything out either.
   List<TeacherModel> get _filteredTeachers {
-    List<TeacherModel> list;
+    List<TeacherModel> list = _allTeachers;
     if (_selectedTab == 1) {
-      // Registered: teachers awaiting approval (self-registered, status = 0)
-      list = _allTeachers.where((t) => t.status == TeacherStatus.inactive).toList();
-    } else {
-      // All Faculty: only approved/active teachers
-      list = _allTeachers.where((t) => t.status == TeacherStatus.verified).toList();
+      list = list.where((t) => t.status == TeacherStatus.verified || t.registeredInfo!= null).toList();
     }
     if (_searchQuery.isNotEmpty) {
       list = list.where((t) => t.name.toLowerCase().contains(_searchQuery.toLowerCase()) || t.department.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
@@ -688,7 +643,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE53935)),
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -701,9 +656,9 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
         setState(() {
           _allTeachers.removeWhere((t) => t.id == teacher.id);
         });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${teacher.name} deleted'), backgroundColor: AppColors.danger));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${teacher.name} deleted'), backgroundColor: const Color(0xFFC62828)));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Failed to delete'), backgroundColor: AppColors.danger));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete'), backgroundColor: Color(0xFFC62828)));
       }
     }
   }
@@ -719,7 +674,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
             child: const Text('Approve', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -730,9 +685,9 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
       final success = await TeacherService.approveTeacher(teacher.id);
       if (success) {
         _fetchTeachers();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${teacher.name} approved successfully'), backgroundColor: AppColors.success));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${teacher.name} approved successfully'), backgroundColor: const Color(0xFF2E7D32)));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: const Text('Failed to approve teacher'), backgroundColor: AppColors.danger));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to approve teacher'), backgroundColor: Color(0xFFC62828)));
       }
     }
   }
@@ -748,42 +703,33 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     return BaseScaffold(
       title: 'Teacher Directory',
       role: 'admin',
-      actions: [
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(color: AppColors.primaryDark, borderRadius: BorderRadius.circular(10)),
-          child: IconButton(icon: const Icon(Icons.add, color: Colors.white, size: 20), onPressed: _openAddTeacherDialog, padding: EdgeInsets.zero),
-        ),
-      ],
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTeacherDialog,
-        backgroundColor: AppColors.primaryDark,
+        backgroundColor: const Color(0xFF1565C0),
         foregroundColor: Colors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add),
       ),
       body: Container(
-        color: AppColors.background,
+        color: const Color(0xFFF5F7FA),
         child: Column(
           children: [
             Container(
-              color: AppColors.surface,
+              color: Colors.white,
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Manage faculty and security', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text('Manage faculty and security', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                   const SizedBox(height: 12),
                   Container(
                     height: 44,
-                    decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(color: const Color(0xFFF0F2F5), borderRadius: BorderRadius.circular(10)),
                     child: TextField(
                       controller: _searchCtrl,
                       onChanged: (v) => setState(() => _searchQuery = v),
-                      decoration: InputDecoration(hintText: 'Search by name or department', hintStyle: TextStyle(color: AppColors.textLight, fontSize: 13), prefixIcon: Icon(Icons.search, color: AppColors.textLight, size: 20), suffixIcon: Icon(Icons.tune, color: AppColors.textLight, size: 18), border: InputBorder.none, contentPadding: const EdgeInsets.symmetric(vertical: 12)),
+                      decoration: InputDecoration(hintText: 'Search by name or department', hintStyle: TextStyle(color: Colors.grey[400], fontSize: 13), prefixIcon: Icon(Icons.search, color: Colors.grey[400], size: 20), suffixIcon: Icon(Icons.tune, color: Colors.grey[400], size: 18), border: InputBorder.none, contentPadding: const EdgeInsets.symmetric(vertical: 12)),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -794,8 +740,8 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                       child: Container(
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(color: selected? AppColors.primaryDark : Colors.transparent, borderRadius: BorderRadius.circular(20)),
-                        child: Text(_tabs[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected? Colors.white : AppColors.textSecondary)),
+                        decoration: BoxDecoration(color: selected? const Color(0xFF1565C0) : Colors.transparent, borderRadius: BorderRadius.circular(20)),
+                        child: Text(_tabs[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected? Colors.white : Colors.grey[600])),
                       ),
                     );
                   })),
@@ -812,8 +758,8 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            Text('ACTIVE STAFF (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.textSecondary, letterSpacing: 0.5)),
-                            Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: AppColors.primaryDark)),
+                            Text('ACTIVE STAFF (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)),
+                            Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: const Color(0xFF1565C0))),
                           ]),
                         ),
                         const SizedBox(height: 4),

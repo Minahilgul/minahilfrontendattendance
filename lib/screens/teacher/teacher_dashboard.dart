@@ -312,7 +312,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             onTap: _openAttendance,
           ),
           DashboardCard(
-            title: 'Add Student',
+            title: 'Student Directory',
             iconData: Icons.person_add_alt_1_rounded,
             type: DashboardCardType.success,
             onTap: () => Get.toNamed('/student-directory'),

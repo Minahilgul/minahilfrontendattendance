@@ -97,20 +97,24 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       Get.toNamed('/teacher-directory');
                     },
                   ),
+                  // ── UPDATED: "Pending Approvals" replaced with "Student Directory" ──
                   DashboardCard(
-                    title: 'Pending Approvals',
-                    iconData: Icons.group_outlined,
-                     type: DashboardCardType.warning,
+                    title: 'Student Directory',
+                    iconData: Icons.people_alt_outlined,
+                    type: DashboardCardType.warning,
                     onTap: () {
-                      Get.toNamed('/approvals');
+                      Get.toNamed('/student-directory');
                     },
                   ),
+                  // ── UPDATED: "Reports & Audit" replaced with "Pending Approvals" ──
+                  // Reports & Audit is still reachable via the bottom navigation bar
+                  // ("View Reports"), so it doesn't need its own dashboard card too.
                   DashboardCard(
-                    title: 'Reports & Audit',
-                    iconData: Icons.description_outlined,
+                    title: 'Pending Approvals',
+                    iconData: Icons.pending_actions_outlined,
                     type: DashboardCardType.purple,
                     onTap: () {
-                      Get.toNamed('/reports');
+                      Get.toNamed('/approvals');
                     },
                   ),
                 ],

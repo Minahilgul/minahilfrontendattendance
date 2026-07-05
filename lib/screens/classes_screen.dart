@@ -220,7 +220,7 @@ class _ClassesScreenState extends State<ClassesScreen> with SingleTickerProvider
         onPressed: _showAddClassDialog,
         backgroundColor: AppColors.primary,
         elevation: 4,
-        shape: const CircleBorder(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       body: Container(

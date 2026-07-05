@@ -5,6 +5,7 @@ import '../core/theme/app_colors.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/session_service.dart';
 import '../core/services/confirmation_service.dart';
+import '../screens/teacher/mark_attendance.dart';
 
 class BaseScaffold extends StatelessWidget {
   final String title;
@@ -271,6 +272,33 @@ class BaseScaffold extends StatelessWidget {
     );
   }
 
+  // Finds the teacher's currently active session, then opens Mark
+  // Attendance for it — same logic TeacherDashboardScreen uses for its
+  // "Attendance" card, so drawer and dashboard behave identically.
+  Future<void> _openAttendance(BuildContext context) async {
+    Navigator.pop(context); // close drawer first
+
+    final sessionId = await _findActiveSessionId();
+    if (sessionId == null) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No active session. Start a session first.'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MarkAttendanceScreen(sessionId: sessionId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     // Drawer header label — use displayName if provided, else role label
@@ -398,34 +426,34 @@ class BaseScaffold extends StatelessWidget {
                     Get.toNamed('/settings');
                   }),
             ],
-
-            // Teacher items 
-            if (role == 'teacher') ...[
-              ListTile(
-                  leading: const Icon(Icons.home),
-                  title: const Text('Dashboard'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Get.toNamed('/teacher-dashboard');
-                  }),
-              ListTile(
-                  leading: const Icon(Icons.bar_chart_rounded),
-                  title: const Text('Reports'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Get.toNamed('/teacher-report');
-                  }),
-              ListTile(
-                leading: const Icon(Icons.how_to_reg_rounded,
-                    color: AppColors.success),
-                title: const Text('View Responses'),
-                // Same active-session lookup as Attendance: finds the
-                // teacher's active session first, then shows the
-                // confirmation directory for it.
-                onTap: () => _showResponseDirectory(context),
-              ),
-            ],
-
+// Teacher items 
+if (role == 'teacher') ...[
+  ListTile(
+      leading: const Icon(Icons.home),
+      title: const Text('Dashboard'),
+      onTap: () {
+        Navigator.pop(context);
+        Get.toNamed('/teacher-dashboard');
+      }),
+  ListTile(
+      leading: const Icon(Icons.checklist_rounded),
+      title: const Text('Attendance'),
+      onTap: () => _openAttendance(context)),
+  ListTile(
+      leading: const Icon(Icons.person_outline),
+      title: const Text('Student Directory'),
+      onTap: () {
+        Navigator.pop(context);
+        Get.toNamed('/student-directory');
+      }),
+  ListTile(
+    leading: const Icon(Icons.how_to_reg_rounded,
+        color: AppColors.success),
+    title: const Text('View Responses'),
+    onTap: () => _showResponseDirectory(context),
+  ),
+],
+            
             //  Student items
             if (role == 'student') ...[
               ListTile(
@@ -464,27 +492,24 @@ class BaseScaffold extends StatelessWidget {
 
             const Divider(),
 
-            // Profile / Reports / Alerts — admin & teacher only
+            // Profile / Reports — admin & teacher only.
+            // Each appears exactly once here (route picked by role), so
+            // both work correctly no matter which role opened the drawer.
             if (role != 'student') ...[
               ListTile(
                   leading: const Icon(Icons.person),
                   title: const Text('Profile'),
                   onTap: () {
                     Navigator.pop(context);
-                    Get.toNamed('/admin-profile');
+                    Get.toNamed(role == 'admin' ? '/admin-profile' : '/teacher-profile');
                   }),
-              // Admin's own Reports & Audit Logs screen. Teacher already
-              // has a dedicated "Reports" item above pointing at
-              // '/teacher-report', so this one is admin-only to avoid
-              // a duplicate/broken entry for teachers.
-              if (role == 'admin')
-                ListTile(
-                    leading: const Icon(Icons.bar_chart),
-                    title: const Text('Reports'),
-                    onTap: () {
-                      Navigator.pop(context);
-                      Get.toNamed('/reports');
-                    }),
+              ListTile(
+                  leading: const Icon(Icons.bar_chart),
+                  title: const Text('Reports'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Get.toNamed(role == 'admin' ? '/reports' : '/teacher-report');
+                  }),
             ],
 
             // Logout — always shown

@@ -305,4 +305,30 @@ class StudentService {
       return false;
     }
   }
+
+  // GET /api/admin/late-students
+  // Returns students whose attendance status = 'late' from attendances table
+  static Future<List<Map<String, dynamic>>> fetchLateStudents() async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/admin/late-students'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print('FETCH LATE STUDENTS STATUS: ${response.statusCode}');
+      print('FETCH LATE STUDENTS BODY: ${response.body}');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final List list = data['data'] ?? data ?? [];
+        return List<Map<String, dynamic>>.from(list);
+      }
+      return [];
+    } catch (e) {
+      print('FETCH LATE STUDENTS ERROR: $e');
+      return [];
+    }
+  }
 }
