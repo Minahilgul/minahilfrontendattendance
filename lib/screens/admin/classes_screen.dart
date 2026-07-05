@@ -50,6 +50,18 @@ class ClassItem {
   }
 }
 
+// Helper: convert the ClassStatus enum back to the raw string the API expects.
+String classStatusToString(ClassStatus status) {
+  switch (status) {
+    case ClassStatus.active:
+      return 'active';
+    case ClassStatus.inactive:
+      return 'inactive';
+    case ClassStatus.scheduled:
+      return 'scheduled';
+  }
+}
+
 
 // API SERVICE
 
@@ -63,22 +75,24 @@ Future<void> fetchClasses() async {
 
 
 // ManageClass.teacher_id directly instead of guessing it later.
-Future<bool> createClass(String name, int? teacherId, String className, String students) async {
+Future<bool> createClass(String name, int? teacherId, String className, String students, {String status = 'active'}) async {
   return await ClassService.createClass(
     name: name,
     teacherId: teacherId,
     className: className,
     students: students,
+    status: status, // NEW
   );
 }
 
-Future<bool> updateClass(int id, String name, int? teacherId, String className, String students) async {
+Future<bool> updateClass(int id, String name, int? teacherId, String className, String students, {String status = 'active'}) async {
   return await ClassService.updateClass(
     id: id,
     name: name,
     teacherId: teacherId,
     className: className,
     students: students,
+    status: status, // NEW
   );
 }
 
@@ -426,6 +440,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _classController = TextEditingController();
   String? _selectedTeacherId;
+  String _selectedStatus = 'active'; // NEW
   bool _isLoading = false;
 
   @override
@@ -452,7 +467,13 @@ class _AddClassDialogState extends State<AddClassDialog> {
 
     
     // display name.
-    final success = await createClass(teacherName, teacherIdInt, _classController.text.trim(), "0");
+    final success = await createClass(
+      teacherName,
+      teacherIdInt,
+      _classController.text.trim(),
+      "0",
+      status: _selectedStatus, // NEW
+    );
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
@@ -507,6 +528,27 @@ class _AddClassDialogState extends State<AddClassDialog> {
                 hint: 'Enter class name',
                 validator: (v) => (v == null || v.isEmpty)? 'Class Name is required' : null,
               ),
+              const SizedBox(height: 14),
+
+              // ── NEW: Status dropdown ──
+              DropdownButtonFormField<String>(
+                value: _selectedStatus,
+                decoration: InputDecoration(
+                  labelText: 'Status',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'active', child: Text('Active')),
+                  DropdownMenuItem(value: 'inactive', child: Text('Inactive')),
+                  DropdownMenuItem(value: 'scheduled', child: Text('Scheduled')),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() => _selectedStatus = value);
+                },
+              ),
               const SizedBox(height: 24),
 
               Row(
@@ -538,6 +580,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _classController;
   String? _selectedTeacherId;
+  late String _selectedStatus; // NEW
   bool _isLoading = false;
 
   @override
@@ -546,6 +589,7 @@ class _EditClassDialogState extends State<EditClassDialog> {
     _classController = TextEditingController(text: widget.item.name);
     
     _selectedTeacherId = widget.item.teacherId?.toString();
+    _selectedStatus = classStatusToString(widget.item.status); // NEW: preload current status
   }
 
   @override
@@ -570,7 +614,14 @@ class _EditClassDialogState extends State<EditClassDialog> {
     final teacherName = teacher['username']?.toString() ?? 'Unknown';
     final teacherIdInt = int.tryParse(_selectedTeacherId!);
 
-    final success = await updateClass(widget.item.id, teacherName, teacherIdInt, _classController.text.trim(), "0");
+    final success = await updateClass(
+      widget.item.id,
+      teacherName,
+      teacherIdInt,
+      _classController.text.trim(),
+      "0",
+      status: _selectedStatus, // NEW
+    );
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
@@ -624,6 +675,27 @@ class _EditClassDialogState extends State<EditClassDialog> {
                 label: 'Class Name',
                 hint: 'Enter class name',
                 validator: (v) => (v == null || v.isEmpty)? 'Class Name is required' : null,
+              ),
+              const SizedBox(height: 14),
+
+              // ── NEW: Status dropdown ──
+              DropdownButtonFormField<String>(
+                value: _selectedStatus,
+                decoration: InputDecoration(
+                  labelText: 'Status',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.border)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'active', child: Text('Active')),
+                  DropdownMenuItem(value: 'inactive', child: Text('Inactive')),
+                  DropdownMenuItem(value: 'scheduled', child: Text('Scheduled')),
+                ],
+                onChanged: (value) {
+                  if (value != null) setState(() => _selectedStatus = value);
+                },
               ),
               const SizedBox(height: 24),
 

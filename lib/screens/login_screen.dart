@@ -17,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   bool _isLoading = false;
+  bool _isObscure = true;
   final storage = GetStorage();
 
   Future<void> _login() async {
@@ -124,7 +125,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                       ],
                     ),
-                    Icon(Icons.info_outline, color: AppColors.textSecondary),
                   ],
                 ),
                 const SizedBox(height: 25),
@@ -173,10 +173,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: passwordController,
-                  obscureText: true,
+                  obscureText: _isObscure,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: const Icon(Icons.visibility_outlined),
+                    suffixIcon: IconButton(
+                      icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                      onPressed: () {
+                        setState(() {
+                          _isObscure = !_isObscure;
+                        });
+                      },
+                    ),
                     filled: true,
                     fillColor: AppColors.background,
                     border: OutlineInputBorder(
