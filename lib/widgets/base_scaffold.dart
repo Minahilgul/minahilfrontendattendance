@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import '../core/theme/app_colors.dart';
 import '../core/services/auth_service.dart';
 import '../core/services/session_service.dart';
+import '../core/services/confirmation_service.dart';
 
 class BaseScaffold extends StatelessWidget {
   final String title;
@@ -29,42 +30,245 @@ class BaseScaffold extends StatelessWidget {
     this.displayName,
   });
 
-  // Finds the teacher's currently active session (if any) and opens
-  // Mark Attendance for it. This lets a teacher leave the attendance
-  // screen (e.g. to do something else) and come back later via the
-  // drawer — for example to mark a student who arrived late — without
-  // losing track of which session they were on.
-  Future<void> _openAttendance(BuildContext context) async {
-    Navigator.pop(context); // close drawer first
-
+  Future<int?> _findActiveSessionId() async {
     final int? teacherId = AuthService.currentUser?['id'] is int
         ? AuthService.currentUser!['id'] as int
         : int.tryParse(AuthService.currentUser?['id']?.toString() ?? '');
 
-    if (teacherId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not identify teacher account')),
-      );
-      return;
-    }
+    if (teacherId == null) return null;
 
     final result = await SessionService.getActiveSession(teacherId);
-
     if (result['success'] == true &&
         result['active'] == true &&
         result['data'] != null) {
-      final int sessionId = result['data']['id'] is int
+      return result['data']['id'] is int
           ? result['data']['id']
-          : int.tryParse(result['data']['id'].toString()) ?? 0;
-      Get.toNamed('/mark-attendance', arguments: {'sessionId': sessionId});
-    } else {
+          : int.tryParse(result['data']['id'].toString());
+    }
+    return null;
+  }
+
+  // Finds the teacher's currently active session, then shows the
+  // confirmation directory (who said yes/no/pending) for it. Works from
+  // any screen — the teacher doesn't need to be on the dashboard.
+  Future<void> _showResponseDirectory(BuildContext context) async {
+    Navigator.pop(context); // close drawer first
+
+    final sessionId = await _findActiveSessionId();
+    if (sessionId == null) {
+      if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('No active session. Start a session first.'),
           backgroundColor: AppColors.danger,
         ),
       );
+      return;
     }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await ConfirmationService.getDirectory(sessionId);
+    if (!context.mounted) return;
+    Navigator.pop(context); // close loading spinner
+
+    if (result['success'] != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Failed to load directory')),
+      );
+      return;
+    }
+
+    final List<dynamic> students = result['data'] ?? [];
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.how_to_reg_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Confirmation Directory',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _directoryChip('✅ YES', result['yes_count'] ?? 0, AppColors.success),
+                    _directoryChip('❌ NO', result['no_count'] ?? 0, AppColors.danger),
+                    _directoryChip('⏳ Pending', result['pending_count'] ?? 0, AppColors.warning),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      result['verdict'] ?? 'Awaiting responses',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: students.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          'No students found',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: students.length,
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1, indent: 16),
+                        itemBuilder: (_, i) {
+                          final s = students[i];
+                          final resp = s['response'] as String;
+                          final respColor = resp == 'yes'
+                              ? AppColors.success
+                              : resp == 'no'
+                                  ? AppColors.danger
+                                  : AppColors.warning;
+                          final respIcon = resp == 'yes'
+                              ? Icons.check_circle_rounded
+                              : resp == 'no'
+                                  ? Icons.cancel_rounded
+                                  : Icons.hourglass_empty_rounded;
+
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: respColor.withOpacity(0.12),
+                              child: Text(
+                                (s['student_name'] as String)
+                                    .substring(0, 1)
+                                    .toUpperCase(),
+                                style: TextStyle(
+                                  color: respColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              s['student_name'] ?? '-',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Roll: ${s['roll_no'] ?? '-'}  •  ${s['responded_at']}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(respIcon, color: respColor, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  resp.toUpperCase(),
+                                  style: TextStyle(
+                                    color: respColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showResponseDirectory(context);
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 16),
+                    label: const Text('Refresh'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _directoryChip(String label, int count, Color color) {
+    return Column(
+      children: [
+        Text(
+          '$count',
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        Text(label, style: TextStyle(color: color, fontSize: 11)),
+      ],
+    );
   }
 
   @override
@@ -205,26 +409,20 @@ class BaseScaffold extends StatelessWidget {
                     Get.toNamed('/teacher-dashboard');
                   }),
               ListTile(
-                  leading: const Icon(Icons.class_),
-                  title: const Text('My Classes'),
+                  leading: const Icon(Icons.bar_chart_rounded),
+                  title: const Text('Reports'),
                   onTap: () {
                     Navigator.pop(context);
-                    Get.toNamed('/classes');
+                    Get.toNamed('/teacher-report');
                   }),
               ListTile(
-                  leading: const Icon(Icons.checklist),
-                  title: const Text('Attendance'),
-                  
-                  // (e.g. to mark a student who showed up late).
-                  onTap: () => _openAttendance(context)),
-              ListTile(
-                leading: const Icon(Icons.person_outline,
+                leading: const Icon(Icons.how_to_reg_rounded,
                     color: AppColors.success),
-                title: const Text('Student Directory'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Get.toNamed('/student-directory');
-                },
+                title: const Text('View Responses'),
+                // Same active-session lookup as Attendance: finds the
+                // teacher's active session first, then shows the
+                // confirmation directory for it.
+                onTap: () => _showResponseDirectory(context),
               ),
             ],
 
@@ -275,13 +473,18 @@ class BaseScaffold extends StatelessWidget {
                     Navigator.pop(context);
                     Get.toNamed('/admin-profile');
                   }),
-              ListTile(
-                  leading: const Icon(Icons.bar_chart),
-                  title: const Text('Reports'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Get.toNamed('/reports');
-                  }),
+              // Admin's own Reports & Audit Logs screen. Teacher already
+              // has a dedicated "Reports" item above pointing at
+              // '/teacher-report', so this one is admin-only to avoid
+              // a duplicate/broken entry for teachers.
+              if (role == 'admin')
+                ListTile(
+                    leading: const Icon(Icons.bar_chart),
+                    title: const Text('Reports'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      Get.toNamed('/reports');
+                    }),
             ],
 
             // Logout — always shown

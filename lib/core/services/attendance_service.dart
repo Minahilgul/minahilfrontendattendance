@@ -9,21 +9,27 @@ class AttendanceService {
     required double latitude,
     required double longitude,
     required String status,
+    String? reason, // optional: only relevant when status == 'absent'
   }) async {
     try {
+      final body = {
+        'session_id': sessionId,
+        'student_id': studentId,
+        'latitude': latitude,
+        'longitude': longitude,
+        'status': status,
+      };
+      if (reason != null && reason.isNotEmpty) {
+        body['reason'] = reason;
+      }
+
       final response = await http.post(
         Uri.parse('${AuthService.baseUrl}/mark-attendance'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: jsonEncode({
-          'session_id': sessionId,
-          'student_id': studentId,
-          'latitude': latitude,
-          'longitude': longitude,
-          'status': status,
-        }),
+        body: jsonEncode(body),
       );
 
       print("MARK ATTENDANCE STATUS: ${response.statusCode}");

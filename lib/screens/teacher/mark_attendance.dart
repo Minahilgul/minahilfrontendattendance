@@ -6,6 +6,8 @@ import '../../core/theme/app_colors.dart';
 
 enum AttendanceStatus { none, present, late, absent }
 
+const List<String> kAbsentReasons = ['Leave', 'Sick', 'Other'];
+
 class StudentModel {
   final String name;
   final String rollNo;
@@ -13,6 +15,7 @@ class StudentModel {
   final Color avatarColor;
   final int studentId;
   AttendanceStatus status;
+  String? absentReason; // only relevant when status == absent
 
   StudentModel({
     required this.name,
@@ -21,6 +24,7 @@ class StudentModel {
     required this.avatarColor,
     required this.studentId,
     this.status = AttendanceStatus.none,
+    this.absentReason,
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) {
@@ -98,6 +102,17 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
   void _setStatus(int index, AttendanceStatus status) {
     setState(() {
       _students[index].status = status;
+      // Reset the reason whenever status changes away from (or into) absent,
+      // so a stale reason from a previous "Absent" tap never lingers.
+      if (status != AttendanceStatus.absent) {
+        _students[index].absentReason = null;
+      }
+    });
+  }
+
+  void _setAbsentReason(int index, String reason) {
+    setState(() {
+      _students[index].absentReason = reason;
     });
   }
 
@@ -130,6 +145,9 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
           latitude: pos.latitude,
           longitude: pos.longitude,
           status: student.status.name, // present/late/absent
+          reason: student.status == AttendanceStatus.absent
+              ? student.absentReason
+              : null,
         );
 
         if (result['success'] == true) successCount++;
@@ -261,6 +279,8 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
                                   student: _students[index],
                                   onStatusChanged: (status) =>
                                       _setStatus(index, status),
+                                  onReasonChanged: (reason) =>
+                                      _setAbsentReason(index, reason),
                                 );
                               },
                             ),
@@ -304,11 +324,18 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
 class _StudentCard extends StatelessWidget {
   final StudentModel student;
   final ValueChanged<AttendanceStatus> onStatusChanged;
+  final ValueChanged<String> onReasonChanged;
 
-  const _StudentCard({required this.student, required this.onStatusChanged});
+  const _StudentCard({
+    required this.student,
+    required this.onStatusChanged,
+    required this.onReasonChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bool isAbsent = student.status == AttendanceStatus.absent;
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.card,
@@ -375,11 +402,44 @@ class _StudentCard extends StatelessWidget {
               Expanded(
                   child: _AttendanceButton(
                       label: 'Absent',
-                      isSelected: student.status == AttendanceStatus.absent,
+                      isSelected: isAbsent,
                       selectedColor: AppColors.danger,
                       onTap: () => onStatusChanged(AttendanceStatus.absent))),
             ],
           ),
+          if (isAbsent) ...[
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.danger.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.danger.withOpacity(0.3)),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: student.absentReason,
+                  isExpanded: true,
+                  hint: Text('Reason for absence',
+                      style: TextStyle(
+                          fontSize: 13, color: AppColors.textSecondary)),
+                  icon: Icon(Icons.arrow_drop_down, color: AppColors.danger),
+                  items: kAbsentReasons
+                      .map((r) => DropdownMenuItem<String>(
+                            value: r,
+                            child: Text(r,
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: AppColors.textPrimary)),
+                          ))
+                      .toList(),
+                  onChanged: (val) {
+                    if (val != null) onReasonChanged(val);
+                  },
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

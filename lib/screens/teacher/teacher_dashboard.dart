@@ -9,6 +9,7 @@ import '../student_selection_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'session_report_screen.dart';
+import 'mark_attendance.dart';
 import '../attendance_report_screen.dart';
 import '../../core/services/confirmation_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -300,29 +301,58 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             title: 'End Session',
             iconData: Icons.stop_circle,
             type: DashboardCardType.danger,
-            onTap: _showEndSessionSheet,
+            onTap: _openEndSessionScreen,
           ),
           // ✅ CHANGE 3: Class Roaster card removed
+          // ✅ CHANGE 4: Reports card replaced with Attendance card (Reports moved to drawer)
           DashboardCard(
-            title: 'Reports',
-            iconData: Icons.bar_chart_rounded,
-            type: DashboardCardType.purple,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AttendanceReportScreen(),
-                ),
-              );
-            },
+            title: 'Attendance',
+            iconData: Icons.checklist_rounded,
+            type: DashboardCardType.primary,
+            onTap: _openAttendance,
           ),
           DashboardCard(
-            title: 'View Responses',
-            iconData: Icons.how_to_reg_rounded,
+            title: 'Add Student',
+            iconData: Icons.person_add_alt_1_rounded,
             type: DashboardCardType.success,
-            onTap: _showResponseDirectory,
+            onTap: () => Get.toNamed('/student-directory'),
           ),
         ],
+      ),
+    );
+  }
+
+  // Opens Mark Attendance for whichever session is currently active.
+  // Reuses the already-tracked activeSessionId if we have it, otherwise
+  // asks the backend fresh — so this keeps working even if the teacher
+  // navigated away mid-session (e.g. to mark a student who arrived late).
+  Future<void> _openAttendance() async {
+    int? sessionId = activeSessionId;
+
+    if (sessionId == null) {
+      final result = await SessionService.getActiveSession(teacherId);
+      if (result['success'] == true &&
+          result['active'] == true &&
+          result['data'] != null) {
+        sessionId = result['data']['id'] is int
+            ? result['data']['id']
+            : int.tryParse(result['data']['id'].toString());
+        if (sessionId != null) {
+          setState(() => activeSessionId = sessionId);
+        }
+      }
+    }
+
+    if (sessionId == null) {
+      _showSnack('No active session. Start a session first.');
+      return;
+    }
+
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MarkAttendanceScreen(sessionId: sessionId!),
       ),
     );
   }
@@ -407,19 +437,19 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     }
   }
 
-  void _showEndSessionSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (_) => TeacherSessionsSheet(
-        teacherId: teacherId,
-        onSessionEnded: (sessionId) {
-          if (activeSessionId == sessionId) {
-            setState(() => activeSessionId = null);
-          }
-        },
+  // ── UPDATED: "End Session" now opens a full page instead of a bottom sheet ──
+  void _openEndSessionScreen() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TeacherSessionsScreen(
+          teacherId: teacherId,
+          onSessionEnded: (sessionId) {
+            if (activeSessionId == sessionId) {
+              setState(() => activeSessionId = null);
+            }
+          },
+        ),
       ),
     );
   }
@@ -617,22 +647,27 @@ class _NavItem {
   const _NavItem({required this.icon, required this.label});
 }
 
-// ── TEACHER SESSIONS BOTTOM SHEET ──
-class TeacherSessionsSheet extends StatefulWidget {
+// ── TEACHER SESSIONS SCREEN (was a bottom sheet, now a full page) ──
+// Lists every session this teacher has created. If a session is active,
+// an "End" button lets the teacher end it. Ended sessions show an "Ended" badge.
+// Because this writes to the same attendance_sessions row/status that the
+// admin's Reports & Audit screen reads, the admin's sessions list reflects
+// this the next time it loads/refreshes.
+class TeacherSessionsScreen extends StatefulWidget {
   final int teacherId;
   final void Function(int sessionId)? onSessionEnded;
 
-  const TeacherSessionsSheet({
+  const TeacherSessionsScreen({
     super.key,
     required this.teacherId,
     this.onSessionEnded,
   });
 
   @override
-  State<TeacherSessionsSheet> createState() => _TeacherSessionsSheetState();
+  State<TeacherSessionsScreen> createState() => _TeacherSessionsScreenState();
 }
 
-class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
+class _TeacherSessionsScreenState extends State<TeacherSessionsScreen> {
   bool _loading = true;
   List<Map<String, dynamic>> _sessions = [];
   final Set<int> _endingIds = {};
@@ -707,165 +742,141 @@ class _TeacherSessionsSheetState extends State<TeacherSessionsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.7,
-      minChildSize: 0.4,
-      maxChildSize: 0.9,
-      expand: false,
-      builder: (context, scrollController) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            Text('My Sessions',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary)),
-            const SizedBox(height: 12),
-            Expanded(
-              child: _loading
-                  ? Center(
-                      child: CircularProgressIndicator(color: AppColors.primary))
-                  : _sessions.isEmpty
-                      ? Center(
-                          child: Text('No sessions found',
-                              style: TextStyle(color: AppColors.textLight)))
-                      : ListView.separated(
-                          controller: scrollController,
-                          itemCount: _sessions.length,
-                          separatorBuilder: (_, __) =>
-                              const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final s = _sessions[index];
-                            final isActive = s['status'] == 'active';
-                            final int sessionId = s['id'] is int
-                                ? s['id']
-                                : int.tryParse(s['id'].toString()) ?? 0;
-                            final isEnding = _endingIds.contains(sessionId);
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        title: const Text('My Sessions', style: TextStyle(fontWeight: FontWeight.bold)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadSessions,
+          ),
+        ],
+      ),
+      body: _loading
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
+          : _sessions.isEmpty
+              ? Center(
+                  child: Text('No sessions found',
+                      style: TextStyle(color: AppColors.textLight)))
+              : RefreshIndicator(
+                  onRefresh: _loadSessions,
+                  color: AppColors.primary,
+                  child: ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _sessions.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (context, index) {
+                      final s = _sessions[index];
+                      final isActive = s['status'] == 'active';
+                      final int sessionId = s['id'] is int
+                          ? s['id']
+                          : int.tryParse(s['id'].toString()) ?? 0;
+                      final isEnding = _endingIds.contains(sessionId);
 
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: (isActive
-                                          ? AppColors.success
-                                          : AppColors.textLight)
-                                      .withOpacity(0.4),
-                                ),
-                              ),
-                              child: Row(
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: (isActive
+                                    ? AppColors.success
+                                    : AppColors.textLight)
+                                .withOpacity(0.4),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          s['class_name'] ??
-                                              'Class ${s['class_id'] ?? '-'}',
-                                          style: TextStyle(
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w700,
-                                              color: AppColors.textPrimary),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Row(children: [
-                                          Icon(Icons.access_time,
-                                              size: 12,
-                                              color: AppColors.textLight),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '${_formatTime(s['start_time'])} - ${s['end_time'] != null ? _formatTime(s['end_time']) : 'Ongoing'}',
-                                            style: TextStyle(
-                                                fontSize: 11,
-                                                color:
-                                                    AppColors.textSecondary),
-                                          ),
-                                        ]),
-                                        const SizedBox(height: 2),
-                                        Text(_formatDate(s['start_time']),
-                                            style: TextStyle(
-                                                fontSize: 10,
-                                                color: AppColors.textLight)),
-                                      ],
-                                    ),
+                                  Text(
+                                    s['class_name'] ??
+                                        'Class ${s['class_id'] ?? '-'}',
+                                    style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.textPrimary),
                                   ),
-                                  const SizedBox(width: 8),
-                                  isActive
-                                      ? SizedBox(
-                                          height: 32,
-                                          child: ElevatedButton(
-                                            onPressed: isEnding
-                                                ? null
-                                                : () => _endSession(index),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: AppColors.danger,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 12),
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8)),
-                                            ),
-                                            child: isEnding
-                                                ? const SizedBox(
-                                                    width: 14,
-                                                    height: 14,
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                            strokeWidth: 2,
-                                                            color:
-                                                                Colors.white),
-                                                  )
-                                                : const Text('End',
-                                                    style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w700)),
-                                          ),
-                                        )
-                                      : Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 10, vertical: 6),
-                                          decoration: BoxDecoration(
-                                            color: AppColors.textLight
-                                                .withOpacity(0.12),
-                                            borderRadius:
-                                                BorderRadius.circular(8),
-                                          ),
-                                          child: Text(
-                                            'Ended',
-                                            style: TextStyle(
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w700,
-                                                color: AppColors.textLight),
-                                          ),
-                                        ),
+                                  const SizedBox(height: 4),
+                                  Row(children: [
+                                    Icon(Icons.access_time,
+                                        size: 12, color: AppColors.textLight),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${_formatTime(s['start_time'])} - ${s['end_time'] != null ? _formatTime(s['end_time']) : 'Ongoing'}',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          color: AppColors.textSecondary),
+                                    ),
+                                  ]),
+                                  const SizedBox(height: 2),
+                                  Text(_formatDate(s['start_time']),
+                                      style: TextStyle(
+                                          fontSize: 10,
+                                          color: AppColors.textLight)),
                                 ],
                               ),
-                            );
-                          },
+                            ),
+                            const SizedBox(width: 8),
+                            isActive
+                                ? SizedBox(
+                                    height: 32,
+                                    child: ElevatedButton(
+                                      onPressed: isEnding
+                                          ? null
+                                          : () => _endSession(index),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: AppColors.danger,
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12),
+                                        shape: RoundedRectangleBorder(
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                      ),
+                                      child: isEnding
+                                          ? const SizedBox(
+                                              width: 14,
+                                              height: 14,
+                                              child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  color: Colors.white),
+                                            )
+                                          : const Text('End',
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 12,
+                                                  fontWeight:
+                                                      FontWeight.w700)),
+                                    ),
+                                  )
+                                : Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.textLight
+                                          .withOpacity(0.12),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'Ended',
+                                      style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textLight),
+                                    ),
+                                  ),
+                          ],
                         ),
-            ),
-          ],
-        ),
-      ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 }
