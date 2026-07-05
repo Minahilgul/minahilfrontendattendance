@@ -605,7 +605,7 @@ class TeacherCard extends StatelessWidget {
 }
 
 
-// MAIN SCREEN - SIRF CONSTRUCTOR UPDATE KIYA
+// MAIN SCREEN
 
 
 class TeacherDirectoryScreen extends StatefulWidget {
@@ -651,12 +651,24 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     }
   }
 
+  // ── FIXED: All Faculty now shows only approved teachers; Registered now
+  // shows only pending (self-registered, awaiting approval) teachers.
+  // Previously "All Faculty" had no filter at all (showed everyone including
+  // pending), and "Registered" used `registeredInfo != null` which is true
+  // for every teacher (since created_at always exists), so it never filtered
+  // anything out either.
   List<TeacherModel> get _filteredTeachers {
-    List<TeacherModel> list = _allTeachers;
-    if (_selectedTab == 1) {
-      list = list.where((t) => t.status == TeacherStatus.verified || t.registeredInfo!= null).toList();
+    List<TeacherModel> list;
+    if (_selectedTab == 0) {
+      // All Faculty: only approved/active teachers
+      list = _allTeachers.where((t) => t.status == TeacherStatus.verified).toList();
+    } else if (_selectedTab == 1) {
+      // Registered: teachers awaiting approval (self-registered, status = 0)
+      list = _allTeachers.where((t) => t.status == TeacherStatus.inactive).toList();
     } else if (_selectedTab == 2) {
-      list = list.where((t) => t.status == TeacherStatus.securityAlert).toList();
+      list = _allTeachers.where((t) => t.status == TeacherStatus.securityAlert).toList();
+    } else {
+      list = _allTeachers;
     }
     if (_searchQuery.isNotEmpty) {
       list = list.where((t) => t.name.toLowerCase().contains(_searchQuery.toLowerCase()) || t.department.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
