@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../core/theme/app_colors.dart';
+import '../core/services/auth_service.dart';
+import '../core/services/session_service.dart';
 
 class BaseScaffold extends StatelessWidget {
   final String title;
@@ -10,7 +12,9 @@ class BaseScaffold extends StatelessWidget {
   final Widget? bottomNav;
   final Widget? floatingActionButton;
   final String role;
+  
   final Function(int)? onDrawerNavTap;
+  
   final String? displayName;
 
   const BaseScaffold({
@@ -25,8 +29,47 @@ class BaseScaffold extends StatelessWidget {
     this.displayName,
   });
 
+  // Finds the teacher's currently active session (if any) and opens
+  // Mark Attendance for it. This lets a teacher leave the attendance
+  // screen (e.g. to do something else) and come back later via the
+  // drawer — for example to mark a student who arrived late — without
+  // losing track of which session they were on.
+  Future<void> _openAttendance(BuildContext context) async {
+    Navigator.pop(context); // close drawer first
+
+    final int? teacherId = AuthService.currentUser?['id'] is int
+        ? AuthService.currentUser!['id'] as int
+        : int.tryParse(AuthService.currentUser?['id']?.toString() ?? '');
+
+    if (teacherId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not identify teacher account')),
+      );
+      return;
+    }
+
+    final result = await SessionService.getActiveSession(teacherId);
+
+    if (result['success'] == true &&
+        result['active'] == true &&
+        result['data'] != null) {
+      final int sessionId = result['data']['id'] is int
+          ? result['data']['id']
+          : int.tryParse(result['data']['id'].toString()) ?? 0;
+      Get.toNamed('/mark-attendance', arguments: {'sessionId': sessionId});
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No active session. Start a session first.'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Drawer header label — use displayName if provided, else role label
     final String headerLabel = displayName?.isNotEmpty == true
         ? displayName!
         : role == 'admin'
@@ -35,6 +78,7 @@ class BaseScaffold extends StatelessWidget {
                 ? 'Teacher'
                 : 'Student';
 
+    
     String initials = '';
     if (displayName != null && displayName!.trim().isNotEmpty) {
       final parts = displayName!.trim().split(' ');
@@ -44,7 +88,7 @@ class BaseScaffold extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: Text(title,
             style: const TextStyle(
@@ -62,8 +106,10 @@ class BaseScaffold extends StatelessWidget {
             DrawerHeader(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryDark],
-                ),
+                    colors: [ AppColors.primary,
+  AppColors.primaryDark,
+                    ],
+              ),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,11 +128,13 @@ class BaseScaffold extends StatelessWidget {
                             color: Colors.white),
                   ),
                   const SizedBox(height: 12),
+                  //  Shows actual name if displayName is passed, else role label
                   Text(headerLabel,
                       style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold)),
+                  // Sub-label: role badge below name
                   if (displayName?.isNotEmpty == true)
                     Text(
                       role == 'admin'
@@ -101,7 +149,7 @@ class BaseScaffold extends StatelessWidget {
               ),
             ),
 
-            // ── Admin items ──────────────────────────────────────────────────
+            //  Admin items 
             if (role == 'admin') ...[
               ListTile(
                   leading: const Icon(Icons.home),
@@ -147,8 +195,7 @@ class BaseScaffold extends StatelessWidget {
                   }),
             ],
 
-            // ── Teacher items ────────────────────────────────────────────────
-            // ✅ CHANGE 4: 'My Classes' ListTile removed
+            // Teacher items 
             if (role == 'teacher') ...[
               ListTile(
                   leading: const Icon(Icons.home),
@@ -158,12 +205,18 @@ class BaseScaffold extends StatelessWidget {
                     Get.toNamed('/teacher-dashboard');
                   }),
               ListTile(
-                  leading: const Icon(Icons.checklist),
-                  title: const Text('Attendance'),
+                  leading: const Icon(Icons.class_),
+                  title: const Text('My Classes'),
                   onTap: () {
                     Navigator.pop(context);
-                    Get.toNamed('/mark-attendance');
+                    Get.toNamed('/classes');
                   }),
+              ListTile(
+                  leading: const Icon(Icons.checklist),
+                  title: const Text('Attendance'),
+                  
+                  // (e.g. to mark a student who showed up late).
+                  onTap: () => _openAttendance(context)),
               ListTile(
                 leading: const Icon(Icons.person_outline,
                     color: AppColors.success),
@@ -173,18 +226,9 @@ class BaseScaffold extends StatelessWidget {
                   Get.toNamed('/student-directory');
                 },
               ),
-              ListTile(
-                leading: const Icon(Icons.how_to_reg_rounded,
-                    color: AppColors.primary),
-                title: const Text('View Responses'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Get.toNamed('/teacher-dashboard');
-                },
-              ),
             ],
 
-            // ── Student items ────────────────────────────────────────────────
+            //  Student items
             if (role == 'student') ...[
               ListTile(
                 leading: const Icon(Icons.home_rounded),
@@ -222,7 +266,7 @@ class BaseScaffold extends StatelessWidget {
 
             const Divider(),
 
-            // Profile / Reports — admin & teacher only
+            // Profile / Reports / Alerts — admin & teacher only
             if (role != 'student') ...[
               ListTile(
                   leading: const Icon(Icons.person),

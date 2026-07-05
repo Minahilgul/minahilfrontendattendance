@@ -1,4 +1,3 @@
-
 import 'package:get/get.dart';
 import '../core/services/auth_service.dart';
 
@@ -128,7 +127,11 @@ class AppRoutes {
     ),
     GetPage(
       name: '/mark-attendance',
-      page: () => const MarkAttendanceScreen(),
+      page: () {
+        final args = Get.arguments as Map<String, dynamic>? ?? {};
+        final int sessionId = args['sessionId'] ?? 0;
+        return MarkAttendanceScreen(sessionId: sessionId);
+      },
       middlewares: [AuthMiddleware(allowedRoles: ['teacher', 'admin'])],
     ),
     GetPage(

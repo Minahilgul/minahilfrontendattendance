@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/services/session_service.dart';
 import '../core/theme/app_colors.dart';
+import 'teacher/mark_attendance.dart';
 
 class StudentSelectionScreen extends StatefulWidget {
   final int sessionId;
@@ -80,7 +81,14 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
           backgroundColor: AppColors.success,
         ),
       );
-      Navigator.pop(context);
+      // Roster saved — go straight into Mark Attendance for this session
+      // so the teacher can mark Present/Late/Absent right away.
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MarkAttendanceScreen(sessionId: widget.sessionId),
+        ),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

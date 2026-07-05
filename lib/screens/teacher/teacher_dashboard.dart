@@ -302,12 +302,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             type: DashboardCardType.danger,
             onTap: _showEndSessionSheet,
           ),
-          DashboardCard(
-            title: 'My Profile',
-            iconData: Icons.person_rounded,
-            type: DashboardCardType.primary,
-            onTap: () => Get.toNamed('/teacher-profile'),
-          ),
           // ✅ CHANGE 3: Class Roaster card removed
           DashboardCard(
             title: 'Reports',
