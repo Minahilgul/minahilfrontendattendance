@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../widgets/base_scaffold.dart';
 import '../../core/services/admin_report_service.dart';
+import '../../core/services/admin_report_export_service.dart';  
 import '../../core/theme/app_colors.dart';
 
 
@@ -389,6 +390,84 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
     'Last 3 Months': 90,
   };
 
+  Map<String, dynamic> _exportFilters() {
+  return {
+    if (_selectedClassId != null) 'class_id': _selectedClassId,
+    if (_selectedTeacherId != null) 'teacher_id': _selectedTeacherId,
+    'days': _selectedDays,
+    if (_filterDate != null) 'date': _filterDate,
+    if (_filterStartDate != null) 'start_date': _filterStartDate,
+    if (_filterEndDate != null) 'end_date': _filterEndDate,
+    if (_filterStatus != null) 'status': _filterStatus,
+    if (_filterSessionId != null) 'session_id': _filterSessionId,
+    if (_filterStudentName != null) 'student_name': _filterStudentName,
+  };
+}
+void _showDownloadOptions() {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) {
+      return SafeArea(
+        child: Wrap(
+          children: [
+
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+              title: const Text("Download PDF"),
+              onTap: () async {
+                Navigator.pop(context);
+
+                try {
+                  await AdminReportExportService.downloadPdf(
+                    _exportFilters(),
+                  );
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("PDF downloaded")),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
+                }
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.table_chart, color: Colors.green),
+              title: const Text("Download Excel"),
+              onTap: () async {
+                Navigator.pop(context);
+
+                try {
+                  await AdminReportExportService.downloadExcel(
+                    _exportFilters(),
+                  );
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Excel downloaded")),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
+                }
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
   @override
   void initState() { super.initState(); _loadAll(); }
 
@@ -493,16 +572,9 @@ class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
       title: 'Reports & Audit',
       role: 'admin',
       actions: [
-        IconButton(icon: const Icon(Icons.share_outlined, color: Colors.white, size: 20), onPressed: () {}),
+        IconButton(icon: const Icon(Icons.download_outlined, color: Colors.white, size: 20), onPressed: _showDownloadOptions),
       ],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.download_outlined),
-      ),
+     
       body: Container(
         color: AppColors.background,
         child: RefreshIndicator(

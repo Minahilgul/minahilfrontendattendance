@@ -1,9 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../core/services/auth_service.dart';
+import '../core/services/session_service.dart';
+import '../core/services/confirmation_service.dart';
 import '../core/theme/app_colors.dart';
+import '../widgets/base_scaffold.dart';
 
 class AttendanceReportScreen extends StatefulWidget {
   final int? teacherId;
@@ -24,7 +28,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   String _statusFilter = 'All';
   String _timeFilter = 'Last 7 Days';
   Timer? _debounce;
-  Timer? _refreshTimer;                          // ✅ FIX 3: declare kiya
+  Timer? _refreshTimer;
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   final TextEditingController _searchController = TextEditingController();
@@ -38,6 +42,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   static const Color _red     = AppColors.danger;
   static const Color _orange  = AppColors.warning;
 
+  int? get _resolvedTeacherId {
+    if (widget.teacherId != null) return widget.teacherId;
+    final raw = AuthService.currentUser?['id'];
+    return raw is int ? raw : int.tryParse(raw?.toString() ?? '');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -45,9 +55,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         vsync: this, duration: const Duration(milliseconds: 500));
     _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
     _loadAll();
-    _refreshTimer = Timer.periodic(           // ✅ FIX 3: ab error nahi
+    _refreshTimer = Timer.periodic(
       const Duration(seconds: 15),
-      (_) => _loadAll(silent: true), 
+      (_) => _loadAll(silent: true),
     );
   }
 
@@ -69,7 +79,6 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         'Authorization': 'Bearer $token',
       };
 
-      //teenon requests Future.wait mein
       final results = await Future.wait([
         http.get(
           Uri.parse('${AuthService.baseUrl}/attendance/report')
@@ -80,7 +89,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
           Uri.parse('${AuthService.baseUrl}/report/dashboard'),
           headers: headers,
         ),
-        http.get(                              // ✅ teesri request add
+        http.get(
           Uri.parse('${AuthService.baseUrl}/sessions'),
           headers: headers,
         ),
@@ -105,7 +114,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         _weeklyData = List<Map<String, dynamic>>.from(body['weekly_data'] ?? []);
       }
 
-      if (results[2].statusCode == 200) {     // ✅ ab crash nahi hoga
+      if (results[2].statusCode == 200) {
         final body = jsonDecode(results[2].body);
         _allSessions = List<Map<String, dynamic>>.from(body['data'] ?? []);
       }
@@ -173,28 +182,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   // ════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: _bg,
-      appBar: AppBar(
-        backgroundColor: _card,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _textDark, size: 18),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Reports & Audit Logs',
-                style: TextStyle(color: _textDark, fontWeight: FontWeight.bold, fontSize: 16)),
-            Text('ADMIN DASHBOARD',
-                style: TextStyle(color: _primary, fontSize: 9, letterSpacing: 1.4, fontWeight: FontWeight.w600)),
-          ],
-        ),
-        actions: [
-          IconButton(icon: const Icon(Icons.share_outlined, color: _textDark), onPressed: () {}),
-        ],
-      ),
+    return BaseScaffold(
+      title: 'Reports & Audit Logs',
+      role: 'teacher',
+      bottomNav: _buildBottomNav(),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: _primary))
           : _error != null
@@ -213,7 +204,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
                         const SizedBox(height: 14),
                         _buildStatsRow(),
                         const SizedBox(height: 20),
-                        _buildSessionListSection(),   // ✅ FIX 4: yahan call kiya
+                        _buildSessionListSection(),
                         const SizedBox(height: 20),
                         _buildSearchBar(),
                         const SizedBox(height: 10),
@@ -226,6 +217,261 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
                     ),
                   ),
                 ),
+    );
+  }
+
+  // ── Bottom nav (same 4 tabs as Teacher Dashboard, "Reports" active) ──
+  Widget _buildBottomNav() {
+    final items = const [
+      _NavItem(icon: Icons.home_rounded,       label: 'Home'),
+      _NavItem(icon: Icons.bar_chart_rounded,  label: 'Reports'),
+      _NavItem(icon: Icons.how_to_reg_rounded, label: 'View Responses'),
+      _NavItem(icon: Icons.person_rounded,     label: 'Profile'),
+    ];
+    const currentIndex = 1; // hum abhi Reports screen par hain
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 64,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(items.length, (index) {
+              final item = items[index];
+              final isActive = index == currentIndex;
+              return GestureDetector(
+                onTap: () {
+                  if (index == currentIndex) return; // already yahin par hain
+                  if (index == 0) {
+                    Get.offAllNamed('/teacher-dashboard');
+                  } else if (index == 2) {
+                    _showResponseDirectory();
+                  } else if (index == 3) {
+                    Get.toNamed('/teacher-profile');
+                  }
+                },
+                child: SizedBox(
+                  width: 72,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(item.icon,
+                          color: isActive ? AppColors.primary : AppColors.textSecondary),
+                      Text(item.label,
+                          style: TextStyle(
+                              color: isActive ? AppColors.primary : AppColors.textSecondary,
+                              fontSize: 11)),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showResponseDirectory() async {
+    final teacherId = _resolvedTeacherId;
+    if (teacherId == null) return;
+
+    final activeResult = await SessionService.getActiveSession(teacherId);
+    if (!(activeResult['success'] == true &&
+        activeResult['active'] == true &&
+        activeResult['data'] != null)) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No active session. Start a session first.'),
+          backgroundColor: _red,
+        ),
+      );
+      return;
+    }
+
+    final rawId = activeResult['data']['id'];
+    final sessionId = rawId is int ? rawId : int.tryParse(rawId.toString());
+    if (sessionId == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await ConfirmationService.getDirectory(sessionId);
+    if (!mounted) return;
+    Navigator.pop(context);
+
+    if (result['success'] != true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'] ?? 'Failed to load directory')),
+      );
+      return;
+    }
+
+    final List<dynamic> students = result['data'] ?? [];
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.how_to_reg_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text('Confirmation Directory',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15)),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _directoryChip('✅ YES', result['yes_count'] ?? 0, AppColors.success),
+                    _directoryChip('❌ NO', result['no_count'] ?? 0, AppColors.danger),
+                    _directoryChip('⏳ Pending', result['pending_count'] ?? 0, AppColors.warning),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      result['verdict'] ?? 'Awaiting responses',
+                      style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.primary),
+                    ),
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: students.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text('No students found',
+                            style: TextStyle(color: AppColors.textSecondary)),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: students.length,
+                        separatorBuilder: (_, __) => const Divider(height: 1, indent: 16),
+                        itemBuilder: (_, i) {
+                          final s = students[i];
+                          final resp = s['response'] as String;
+                          final respColor = resp == 'yes'
+                              ? AppColors.success
+                              : resp == 'no'
+                                  ? AppColors.danger
+                                  : AppColors.warning;
+                          final respIcon = resp == 'yes'
+                              ? Icons.check_circle_rounded
+                              : resp == 'no'
+                                  ? Icons.cancel_rounded
+                                  : Icons.hourglass_empty_rounded;
+
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: respColor.withOpacity(0.12),
+                              child: Text(
+                                (s['student_name'] as String).substring(0, 1).toUpperCase(),
+                                style: TextStyle(color: respColor, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            title: Text(s['student_name'] ?? '-',
+                                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                            subtitle: Text('Roll: ${s['roll_no'] ?? '-'}  •  ${s['responded_at']}',
+                                style: const TextStyle(fontSize: 11)),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(respIcon, color: respColor, size: 16),
+                                const SizedBox(width: 4),
+                                Text(resp.toUpperCase(),
+                                    style: TextStyle(
+                                        color: respColor, fontWeight: FontWeight.bold, fontSize: 12)),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showResponseDirectory();
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 16),
+                    label: const Text('Refresh'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _directoryChip(String label, int count, Color color) {
+    return Column(
+      children: [
+        Text('$count', style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 22)),
+        Text(label, style: TextStyle(color: color, fontSize: 11)),
+      ],
     );
   }
 
@@ -399,7 +645,6 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     );
   }
 
-  // ✅ FIX 1: Session widgets class level pe — build() ke BAHAR
   // ── Session List ──────────────────────────────────
   Widget _buildSessionListSection() {
     return Column(
@@ -514,7 +759,6 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       ],
     );
   }
-  // ── END Session List ──────────────────────────────
 
   // ── Search ────────────────────────────────────────
   Widget _buildSearchBar() {
@@ -684,6 +928,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       ),
     );
   }
+}
+
+class _NavItem {
+  final IconData icon;
+  final String label;
+  const _NavItem({required this.icon, required this.label});
 }
 
 // ── Chart ──────────────────────────────────────────

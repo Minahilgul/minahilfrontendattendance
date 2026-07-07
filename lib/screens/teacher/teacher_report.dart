@@ -2,6 +2,10 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/services/auth_service.dart';
+import '../../core/services/session_service.dart';
+import '../../core/services/confirmation_service.dart';
+import '../../widgets/base_scaffold.dart';
 
 // Data Models 
 
@@ -35,7 +39,7 @@ class TeacherReportScreen extends StatefulWidget {
 }
 
 class _TeacherReportScreenState extends State<TeacherReportScreen> {
-  int _navIndex = 2;
+  int _navIndex = 1;
 
   String _selectedClass = 'All Classes';
   String _selectedFaculty = 'All Faculty';
@@ -84,219 +88,258 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
 
   final List<String> _chartDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
+  //  Bottom nav now matches Teacher Dashboard's nav exactly
+  // (Home / Reports / View Responses / Profile) instead of the
+  // admin-style Home/Classes/Settings labels.
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.class_rounded, label: 'Classes'),
     _NavItem(icon: Icons.bar_chart_rounded, label: 'Reports'),
-    _NavItem(icon: Icons.settings_rounded, label: 'Settings'),
+    _NavItem(icon: Icons.how_to_reg_rounded, label: 'View Responses'),
+    _NavItem(icon: Icons.person_rounded, label: 'Profile'),
   ];
+
+  // Finds the teacher's currently active session, then shows the
+  // confirmation directory (who said yes/no/pending) for it. Same
+  // logic as TeacherDashboardScreen so "View Responses" behaves
+  // identically from either screen.
+  Future<void> _showResponseDirectory() async {
+    final int? teacherId = AuthService.currentUser?['id'] is int
+        ? AuthService.currentUser!['id'] as int
+        : int.tryParse(AuthService.currentUser?['id']?.toString() ?? '');
+
+    if (teacherId == null) {
+      _showSnack('Unable to identify teacher.');
+      return;
+    }
+
+    final sessionResult = await SessionService.getActiveSession(teacherId);
+    final int? sessionId = sessionResult['success'] == true &&
+            sessionResult['active'] == true &&
+            sessionResult['data'] != null
+        ? (sessionResult['data']['id'] is int
+            ? sessionResult['data']['id']
+            : int.tryParse(sessionResult['data']['id'].toString()))
+        : null;
+
+    if (sessionId == null) {
+      _showSnack('No active session. Start a session first.');
+      return;
+    }
+
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(child: CircularProgressIndicator()),
+    );
+
+    final result = await ConfirmationService.getDirectory(sessionId);
+    if (!mounted) return;
+    Navigator.pop(context); // close loading spinner
+
+    if (result['success'] != true) {
+      _showSnack(result['message'] ?? 'Failed to load directory');
+      return;
+    }
+
+    final List<dynamic> students = result['data'] ?? [];
+
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.75,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: const BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.how_to_reg_rounded, color: Colors.white),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Confirmation Directory',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 18),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _directoryChip('✅ YES', result['yes_count'] ?? 0, AppColors.success),
+                    _directoryChip('❌ NO', result['no_count'] ?? 0, AppColors.danger),
+                    _directoryChip('⏳ Pending', result['pending_count'] ?? 0, AppColors.warning),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Center(
+                    child: Text(
+                      result['verdict'] ?? 'Awaiting responses',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: students.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Text(
+                          'No students found',
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: students.length,
+                        separatorBuilder: (_, __) =>
+                            const Divider(height: 1, indent: 16),
+                        itemBuilder: (_, i) {
+                          final s = students[i];
+                          final resp = s['response'] as String;
+                          final respColor = resp == 'yes'
+                              ? AppColors.success
+                              : resp == 'no'
+                                  ? AppColors.danger
+                                  : AppColors.warning;
+                          final respIcon = resp == 'yes'
+                              ? Icons.check_circle_rounded
+                              : resp == 'no'
+                                  ? Icons.cancel_rounded
+                                  : Icons.hourglass_empty_rounded;
+
+                          return ListTile(
+                            leading: CircleAvatar(
+                              backgroundColor: respColor.withOpacity(0.12),
+                              child: Text(
+                                (s['student_name'] as String)
+                                    .substring(0, 1)
+                                    .toUpperCase(),
+                                style: TextStyle(
+                                  color: respColor,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              s['student_name'] ?? '-',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                            subtitle: Text(
+                              'Roll: ${s['roll_no'] ?? '-'}  •  ${s['responded_at']}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(respIcon, color: respColor, size: 16),
+                                const SizedBox(width: 4),
+                                Text(
+                                  resp.toUpperCase(),
+                                  style: TextStyle(
+                                    color: respColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showResponseDirectory();
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 16),
+                    label: const Text('Refresh'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _directoryChip(String label, int count, Color color) {
+    return Column(
+      children: [
+        Text(
+          '$count',
+          style: TextStyle(
+            color: color,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        Text(label, style: TextStyle(color: color, fontSize: 11)),
+      ],
+    );
+  }
+
+  void _showSnack(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(10),
-          child: CircleAvatar(
-            backgroundColor: AppColors.primary.withOpacity(0.12),
-            child: Icon(Icons.bar_chart_rounded,
-                color: AppColors.primary, size: 18),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Reports & Audit',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            Text(
-              'TEACHER DASHBOARD',
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textLight,
-                letterSpacing: 0.6,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined, color: Colors.black54),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Filters row
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _DropdownFilter(
-                      value: _selectedClass,
-                      items: _classes,
-                      onChanged: (v) => setState(() => _selectedClass = v!),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _DropdownFilter(
-                      value: _selectedFaculty,
-                      items: _faculty,
-                      onChanged: (v) => setState(() => _selectedFaculty = v!),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _DropdownFilter(
-                      value: _selectedPeriod,
-                      items: _periods,
-                      onChanged: (v) => setState(() => _selectedPeriod = v!),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Scrollable body
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  // Attendance Trends card
-                  _WhiteCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Attendance Trends',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            Text(
-                              'Details',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'WEEKLY ATTENDANCE %',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textLight,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              '88.4%',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            const _TrendBadge(label: '+2.4%', positive: true),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 120,
-                          child: _AttendanceLineChart(
-                            spots: _chartSpots,
-                            days: _chartDays,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  // Stats row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          label: 'TOTAL SESSIONS',
-                          value: '1,240',
-                          trend: '+12% vs last week',
-                          positive: true,
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: _StatCard(
-                          label: 'FLAGGED LOGS',
-                          value: '12',
-                          trend: '-2% improvement',
-                          positive: false,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  // Audit logs header
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Recent Audit Logs',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
-                      Text(
-                        'See All',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  ..._logs.map((log) => Padding(
-                        padding: const EdgeInsets.only(bottom: 10),
-                        child: _AuditLogCard(log: log),
-                      )),
-                  const SizedBox(height: 72),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    return BaseScaffold(
+      title: 'Reports & Audit',
+      role: 'teacher',
+      bottomNav: _buildBottomNav(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         backgroundColor: AppColors.primary,
@@ -304,7 +347,215 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
         elevation: 3,
         child: const Icon(Icons.description_rounded),
       ),
-      bottomNavigationBar: _buildBottomNav(),
+      body: Container(
+        color: AppColors.background,
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Sub-header (was the custom AppBar) — kept so the
+              // "TEACHER DASHBOARD" label and share action are still
+              // visible, now that BaseScaffold owns the real AppBar.
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: AppColors.primary.withOpacity(0.12),
+                      child: Icon(Icons.bar_chart_rounded,
+                          color: AppColors.primary, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Reports & Audit',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          Text(
+                            'TEACHER DASHBOARD',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textLight,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.share_outlined, color: Colors.black54),
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ),
+              // Filters row
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _DropdownFilter(
+                        value: _selectedClass,
+                        items: _classes,
+                        onChanged: (v) => setState(() => _selectedClass = v!),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _DropdownFilter(
+                        value: _selectedFaculty,
+                        items: _faculty,
+                        onChanged: (v) => setState(() => _selectedFaculty = v!),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _DropdownFilter(
+                        value: _selectedPeriod,
+                        items: _periods,
+                        onChanged: (v) => setState(() => _selectedPeriod = v!),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Scrollable body
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    // Attendance Trends card
+                    _WhiteCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Attendance Trends',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              Text(
+                                'Details',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'WEEKLY ATTENDANCE %',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textLight,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '88.4%',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              const _TrendBadge(label: '+2.4%', positive: true),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 120,
+                            child: _AttendanceLineChart(
+                              spots: _chartSpots,
+                              days: _chartDays,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    // Stats row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _StatCard(
+                            label: 'TOTAL SESSIONS',
+                            value: '1,240',
+                            trend: '+12% vs last week',
+                            positive: true,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: _StatCard(
+                            label: 'FLAGGED LOGS',
+                            value: '12',
+                            trend: '-2% improvement',
+                            positive: false,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    // Audit logs header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Recent Audit Logs',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        Text(
+                          'See All',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    ..._logs.map((log) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: _AuditLogCard(log: log),
+                        )),
+                    const SizedBox(height: 72),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -331,12 +582,15 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
               return GestureDetector(
                 onTap: () {
                   setState(() => _navIndex = i);
+                  // index 0 = Home, 1 = Reports (current screen),
+                  // 2 = View Responses, 3 = Profile — matches Teacher
+                  // Dashboard's bottom nav exactly.
                   if (i == 0) {
                     Get.toNamed('/teacher-dashboard');
-                  } else if (i == 1) {
-                    Get.toNamed('/classes');
+                  } else if (i == 2) {
+                    _showResponseDirectory();
                   } else if (i == 3) {
-                    Get.toNamed('/settings');
+                    Get.toNamed('/teacher-profile');
                   }
                 },
                 behavior: HitTestBehavior.opaque,
