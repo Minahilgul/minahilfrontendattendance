@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class StudentService {
-  // AuthService.baseUrl = 'http://127.0.0.1:8000/api' rakho Flutter Web ke liye
+  // AuthService.baseUrl = 'http://attendance.sandbox.pk/api' rakho Flutter Web ke liye
 
   static Future<Map<String, dynamic>> fetchApprovedStudents(String teacherId) async {
     try {

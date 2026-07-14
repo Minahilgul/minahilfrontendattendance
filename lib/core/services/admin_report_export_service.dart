@@ -1,12 +1,12 @@
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
+import '../config/environment.dart';
 import 'file_saver_stub.dart'
     if (dart.library.html) 'file_saver_web.dart'
     if (dart.library.io) 'file_saver_io.dart' as file_saver;
 
 class AdminReportExportService {
-  static const String _baseUrl = 'http://localhost:8000/api';
+  static const String _baseUrl = Environment.apiBaseUrl;
 
   static String? _getToken() => GetStorage().read('token');
 

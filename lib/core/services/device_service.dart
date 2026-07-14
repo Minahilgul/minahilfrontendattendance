@@ -47,6 +47,16 @@ class DeviceService {
     final deviceInfo = DeviceInfoPlugin();
 
     try {
+      if (kIsWeb) {
+        final info = await deviceInfo.webBrowserInfo;
+        return {
+          'device_id': '${info.browserName.name}_${info.userAgent.hashCode}',
+          'device_name': info.browserName.name,
+          'device_brand': 'Browser',
+          'device_os': 'Web',
+        };
+      }
+
       if (Platform.isAndroid) {
         final info = await deviceInfo.androidInfo;
 

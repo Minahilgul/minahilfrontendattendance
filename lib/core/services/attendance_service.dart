@@ -45,4 +45,43 @@ class AttendanceService {
       return {'success': false, 'message': 'Connection error: $e'};
     }
   }
+
+  static Future<Map<String, dynamic>> submitAttendance({
+    required int sessionId,
+    required double latitude,
+    required double longitude,
+    required List<Map<String, dynamic>> attendance,
+  }) async {
+    try {
+      final token = await AuthService.getToken();
+      final body = {
+        'session_id': sessionId,
+        'latitude': latitude,
+        'longitude': longitude,
+        'attendance': attendance,
+      };
+
+      final response = await http.post(
+        Uri.parse('${AuthService.baseUrl}/submit-attendance'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode(body),
+      );
+
+      print("SUBMIT ATTENDANCE STATUS: ${response.statusCode}");
+      print("SUBMIT ATTENDANCE RESPONSE: ${response.body}");
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return {
+        'success': response.statusCode == 200 || response.statusCode == 201,
+        'message': data['message'] ?? 'Unknown response from server'
+      };
+    } catch (e) {
+      print("SUBMIT ATTENDANCE SERVICE ERROR: $e");
+      return {'success': false, 'message': 'Connection error: $e'};
+    }
+  }
 }

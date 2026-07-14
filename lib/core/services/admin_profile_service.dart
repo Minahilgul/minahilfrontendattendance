@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
+import '../config/environment.dart';
 
 class AdminProfileService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = Environment.apiBaseUrl;
   final _storage = GetStorage();
 
   Future<String?> _getToken() async {

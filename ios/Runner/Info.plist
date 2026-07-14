@@ -66,5 +66,14 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>DAVS requires access to your location to verify you are present in the classroom during attendance marking.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>DAVS requires access to your location to verify you are present in the classroom during attendance marking.</string>
 </dict>
 </plist>

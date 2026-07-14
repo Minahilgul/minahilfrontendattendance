@@ -134,36 +134,50 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
       Position pos = await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.high);
 
-      int successCount = 0;
+      final List<Map<String, dynamic>> attendanceData = _students.map((s) {
+        final statusStr = s.status == AttendanceStatus.none ? 'present' : s.status.name;
+        final Map<String, dynamic> item = {
+          'student_id': s.studentId,
+          'status': statusStr,
+        };
+        if (s.status == AttendanceStatus.absent && s.absentReason != null) {
+          item['reason'] = s.absentReason;
+        }
+        return item;
+      }).toList();
 
-      for (final student in _students) {
-        if (student.status == AttendanceStatus.none) continue;
-
-        final result = await AttendanceService.saveAttendance(
-          sessionId: widget.sessionId,
-          studentId: student.studentId,
-          latitude: pos.latitude,
-          longitude: pos.longitude,
-          status: student.status.name, // present/late/absent
-          reason: student.status == AttendanceStatus.absent
-              ? student.absentReason
-              : null,
-        );
-
-        if (result['success'] == true) successCount++;
-      }
+      final result = await AttendanceService.submitAttendance(
+        sessionId: widget.sessionId,
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        attendance: attendanceData,
+      );
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text('$successCount / ${_students.length} students ki attendance save ho gayi')),
-      );
-      if (successCount > 0) Navigator.pop(context, true);
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Attendance saved successfully'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        Navigator.pop(context, true);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Failed to save attendance'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
+        SnackBar(
+          content: Text('Error: $e'),
+          backgroundColor: AppColors.danger,
+        ),
       );
     }
     if (mounted) setState(() => _isSaving = false);

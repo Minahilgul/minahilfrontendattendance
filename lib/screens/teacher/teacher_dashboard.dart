@@ -5,7 +5,6 @@ import '../settings_screen.dart';
 import '../../widgets/base_scaffold.dart';
 import '../../core/services/session_service.dart';
 import '../../core/services/auth_service.dart';
-import '../student_selection_screen.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'session_report_screen.dart';
@@ -406,11 +405,11 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
         setState(() => activeSessionId = id);
 
         if (!mounted) return;
-        print("8. Navigating to StudentSelectionScreen...");
+        print("8. Navigating to MarkAttendanceScreen...");
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => StudentSelectionScreen(sessionId: id),
+            builder: (_) => MarkAttendanceScreen(sessionId: id),
           ),
         );
       } else {

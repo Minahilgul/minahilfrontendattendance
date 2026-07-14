@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
+import '../config/environment.dart';
 
 class AdminReportService {
-  static const String _baseUrl = 'http://localhost:8000/api';
+  static const String _baseUrl = Environment.apiBaseUrl;
 
   static String? _getToken() => GetStorage().read('token');
 

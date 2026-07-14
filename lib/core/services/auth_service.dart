@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:get_storage/get_storage.dart';
 import 'device_service.dart';
+import '../config/environment.dart';
 
 class AuthService {
   // 🔥 BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakho
-  static const String baseUrl = 'http://localhost:8000/api';
-  // static const String baseUrl = 'http://localhost:8000/api';
+  static const String baseUrl = Environment.apiBaseUrl;
 
   static Map<String, dynamic>? currentUser;
   static String? token;
