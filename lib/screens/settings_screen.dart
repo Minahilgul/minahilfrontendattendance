@@ -106,24 +106,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
-                        width: 100,
-                        child: TextField(
-                          controller: controller,
-                          textAlign: TextAlign.center,
-                          keyboardType: setting['type'] == 'number'? TextInputType.number : TextInputType.text,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                      if (setting['type'] == 'boolean')
+                        Switch(
+                          value: setting['value'].toString() == 'true',
+                          activeColor: AppColors.success,
+                          onChanged: (val) => updateSetting(setting['id'], val ? 'true' : 'false'),
+                        )
+                      else ...[
+                        SizedBox(
+                          width: 100,
+                          child: TextField(
+                            controller: controller,
+                            textAlign: TextAlign.center,
+                            keyboardType: setting['type'] == 'number'? TextInputType.number : TextInputType.text,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(width: 8),
-                      IconButton(
-                        icon: Icon(Icons.save, color: AppColors.success),
-                        onPressed: () => updateSetting(setting['id'], controller.text),
-                      ),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: Icon(Icons.save, color: AppColors.success),
+                          onPressed: () => updateSetting(setting['id'], controller.text),
+                        ),
+                      ]
                     ],
                   ),
                 ),

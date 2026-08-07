@@ -17,8 +17,15 @@ class AttendanceReportScreen extends StatefulWidget {
   State<AttendanceReportScreen> createState() => _AttendanceReportScreenState();
 }
 
+enum ReportTab { students, classes, sessions }
+
 class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     with SingleTickerProviderStateMixin {
+  ReportTab _activeTab = ReportTab.students;
+  List<Map<String, dynamic>> _classesSummary = [];
+  List<Map<String, dynamic>> _sessionsSummary = [];
+  bool _loadingSummaries = false;
+
   List<Map<String, dynamic>> _records = [];
   List<Map<String, dynamic>> _allSessions = [];
   Map<String, dynamic> _stats = {};
@@ -121,9 +128,53 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
 
       setState(() => _loading = false);
       _animController.forward(from: 0);
+      _loadSummaries();
     } catch (e) {
-          if (!silent) setState(() { _error = 'Connection error: $e'; _loading = false; });
+      if (!silent) setState(() { _error = 'Connection error: $e'; _loading = false; });
+    }
+  }
 
+  Future<void> _loadSummaries() async {
+    final teacherId = _resolvedTeacherId;
+    if (teacherId == null) return;
+    setState(() => _loadingSummaries = true);
+    try {
+      final token = await AuthService.getToken();
+      final headers = {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      };
+
+      // Load sessions summary
+      final sUri = Uri.parse('${AuthService.baseUrl}/admin/reports/sessions-summary')
+          .replace(queryParameters: {'teacher_id': teacherId.toString()});
+      final sRes = await http.get(sUri, headers: headers);
+      List<Map<String, dynamic>> sessionsList = [];
+      if (sRes.statusCode == 200) {
+        final body = jsonDecode(sRes.body);
+        sessionsList = List<Map<String, dynamic>>.from(body['sessions'] ?? []);
+      }
+
+      // Load classes summary
+      final cUri = Uri.parse('${AuthService.baseUrl}/admin/reports/classes-summary')
+          .replace(queryParameters: {'teacher_id': teacherId.toString()});
+      final cRes = await http.get(cUri, headers: headers);
+      List<Map<String, dynamic>> classesList = [];
+      if (cRes.statusCode == 200) {
+        final body = jsonDecode(cRes.body);
+        classesList = List<Map<String, dynamic>>.from(body['classes'] ?? []);
+      }
+
+      if (mounted) {
+        setState(() {
+          _sessionsSummary = sessionsList;
+          _classesSummary = classesList;
+        });
+      }
+    } catch (e) {
+      print("Error loading teacher summaries: $e");
+    } finally {
+      if (mounted) setState(() => _loadingSummaries = false);
     }
   }
 
@@ -199,20 +250,37 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 28),
                       children: [
                         _buildFilterChips(),
-                        const SizedBox(height: 18),
-                        _buildTrendCard(),
                         const SizedBox(height: 14),
-                        _buildStatsRow(),
-                        const SizedBox(height: 20),
-                        _buildSessionListSection(),
-                        const SizedBox(height: 20),
-                        _buildSearchBar(),
-                        const SizedBox(height: 10),
-                        if (_records.isNotEmpty) _buildSummaryChips(),
-                        if (_records.isNotEmpty) const SizedBox(height: 16),
-                        _buildLogsHeader(),
-                        const SizedBox(height: 12),
-                        ..._buildLogCards(),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _tabChip('By Student', ReportTab.students),
+                              const SizedBox(width: 8),
+                              _tabChip('By Session', ReportTab.sessions),
+                              const SizedBox(width: 8),
+                              _tabChip('By Class', ReportTab.classes),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        if (_activeTab == ReportTab.students) ...[
+                          _buildTrendCard(),
+                          const SizedBox(height: 14),
+                          _buildStatsRow(),
+                          const SizedBox(height: 20),
+                          _buildSessionListSection(),
+                          const SizedBox(height: 20),
+                          _buildSearchBar(),
+                          const SizedBox(height: 10),
+                          if (_records.isNotEmpty) _buildSummaryChips(),
+                          if (_records.isNotEmpty) const SizedBox(height: 16),
+                          _buildLogsHeader(),
+                          const SizedBox(height: 12),
+                          ..._buildLogCards(),
+                        ] else ...[
+                          _buildSummaryTabContent(),
+                        ],
                       ],
                     ),
                   ),
@@ -475,15 +543,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     );
   }
 
-  // ── Filter chips ──────────────────────────────────
   Widget _buildFilterChips() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
           _chip(_statusFilter == 'All' ? 'All Status' : _statusFilter, onTap: _showStatusSheet),
-          const SizedBox(width: 8),
-          _chip('All Faculty', onTap: () {}),
           const SizedBox(width: 8),
           _chip(_timeFilter, onTap: () {
             final opts = ['Today', 'Last 7 Days', 'This Month'];
@@ -926,6 +991,250 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _tabChip(String label, ReportTab tab) {
+    final active = _activeTab == tab;
+    return ChoiceChip(
+      label: Text(label, style: TextStyle(
+        color: active ? Colors.white : _textDark,
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      )),
+      selected: active,
+      selectedColor: _primary,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: active ? _primary : Colors.grey.shade300),
+      ),
+      onSelected: (val) {
+        if (val) {
+          setState(() {
+            _activeTab = tab;
+          });
+        }
+      },
+    );
+  }
+
+  Widget _buildSummaryTabContent() {
+    if (_loadingSummaries) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(color: _primary),
+        ),
+      );
+    }
+
+    switch (_activeTab) {
+      case ReportTab.sessions:
+        return _buildSessionsListContent();
+      case ReportTab.classes:
+        return _buildClassesListContent();
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _buildSessionsListContent() {
+    if (_sessionsSummary.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text('No sessions records found', style: TextStyle(color: _textMid)),
+        ),
+      );
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _sessionsSummary.length,
+      itemBuilder: (context, index) {
+        final s = _sessionsSummary[index];
+        final double pct = (s['attendance_pct'] as num?)?.toDouble() ?? 0.0;
+        final verdict = s['verdict'] ?? 'No verification';
+        
+        Color verdictColor = Colors.grey;
+        if (verdict == 'Teacher Present') verdictColor = _green;
+        if (verdict == 'Teacher NOT Present') verdictColor = _red;
+        if (verdict == 'Awaiting responses') verdictColor = _orange;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Session #${s['session_id']}',
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _textDark),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: verdictColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      verdict.toUpperCase(),
+                      style: TextStyle(fontSize: 10, color: verdictColor, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.class_outlined, size: 14, color: _textMid),
+                  const SizedBox(width: 4),
+                  Text(
+                    s['class_name'],
+                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: _textMid),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.access_time, size: 14, color: _textMid),
+                  const SizedBox(width: 4),
+                  Text(
+                    s['date_time'],
+                    style: const TextStyle(fontSize: 11, color: _textMid),
+                  ),
+                ],
+              ),
+              const Divider(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Present: ${s['present_count']} | Late: ${s['late_count']} | Absent: ${s['absent_count']}',
+                    style: const TextStyle(fontSize: 11, color: _textMid, fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    '$pct%',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: pct >= 75 ? _green : _red),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: pct / 100,
+                  backgroundColor: Colors.grey.shade100,
+                  valueColor: AlwaysStoppedAnimation<Color>(pct >= 75 ? _green : _red),
+                  minHeight: 6,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildClassesListContent() {
+    if (_classesSummary.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text('No classes records found', style: TextStyle(color: _textMid)),
+        ),
+      );
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _classesSummary.length,
+      itemBuilder: (context, index) {
+        final c = _classesSummary[index];
+        final double pct = (c['attendance_pct'] as num?)?.toDouble() ?? 0.0;
+        final isActive = c['status'] == 'active';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    c['class_name'],
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: _textDark),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (isActive ? _green : _textMid).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      c['status']?.toString().toUpperCase() ?? '',
+                      style: TextStyle(fontSize: 8, color: isActive ? _green : _textMid, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
+              ),
+              const Divider(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Sessions: ${c['total_sessions']}',
+                        style: const TextStyle(fontSize: 11, color: _textMid, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Enrolled Students: ${c['total_students']}',
+                        style: const TextStyle(fontSize: 11, color: _textMid),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$pct%',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? _green : _red),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Avg Attendance',
+                        style: const TextStyle(fontSize: 9, color: _textMid, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -212,4 +212,58 @@ class AdminReportService {
       return {'success': false, 'message': 'Connection error: $e'};
     }
   }
+
+  // ── NEW summary endpoints ──
+  static Future<List<Map<String, dynamic>>> getTeachersSummary() async {
+    try {
+      final res = await http.get(
+        Uri.parse('$_baseUrl/admin/reports/teachers-summary'),
+        headers: _headers(),
+      );
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return List<Map<String, dynamic>>.from(data['teachers'] ?? []);
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getClassesSummary({int? teacherId}) async {
+    try {
+      final params = {
+        if (teacherId != null) 'teacher_id': teacherId.toString(),
+      };
+      final uri = Uri.parse('$_baseUrl/admin/reports/classes-summary')
+          .replace(queryParameters: params);
+      final res = await http.get(uri, headers: _headers());
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return List<Map<String, dynamic>>.from(data['classes'] ?? []);
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getSessionsSummary({int? teacherId, int? classId}) async {
+    try {
+      final params = {
+        if (teacherId != null) 'teacher_id': teacherId.toString(),
+        if (classId != null) 'class_id': classId.toString(),
+      };
+      final uri = Uri.parse('$_baseUrl/admin/reports/sessions-summary')
+          .replace(queryParameters: params);
+      final res = await http.get(uri, headers: _headers());
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+        return List<Map<String, dynamic>>.from(data['sessions'] ?? []);
+      }
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
 }

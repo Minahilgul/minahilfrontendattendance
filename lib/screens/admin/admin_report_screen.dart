@@ -354,7 +354,17 @@ class ReportsAuditScreen extends StatefulWidget {
   State<ReportsAuditScreen> createState() => _ReportsAuditScreenState();
 }
 
+enum ReportTab { students, classes, teachers, sessions }
+
 class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
+  ReportTab _activeTab = ReportTab.students;
+
+  // Summaries
+  List<Map<String, dynamic>> _teachersSummary = [];
+  List<Map<String, dynamic>> _classesSummary = [];
+  List<Map<String, dynamic>> _sessionsSummary = [];
+  bool _loadingSummaries = false;
+
   // Filters
   int?   _selectedClassId;
   String _selectedClassName = 'All Classes';
@@ -476,6 +486,31 @@ void _showDownloadOptions() {
     _loadStats();
     _loadChart();
     _loadStudents();
+    _loadSummaries();
+  }
+
+  Future<void> _loadSummaries() async {
+    if (!mounted) return;
+    setState(() => _loadingSummaries = true);
+    try {
+      final t = await AdminReportService.getTeachersSummary();
+      final c = await AdminReportService.getClassesSummary(teacherId: _selectedTeacherId);
+      final s = await AdminReportService.getSessionsSummary(
+        teacherId: _selectedTeacherId,
+        classId: _selectedClassId,
+      );
+      if (mounted) {
+        setState(() {
+          _teachersSummary = t;
+          _classesSummary = c;
+          _sessionsSummary = s;
+        });
+      }
+    } catch (e) {
+      print("Error loading summaries: $e");
+    } finally {
+      if (mounted) setState(() => _loadingSummaries = false);
+    }
   }
 
   Future<void> _loadClasses() async {
@@ -544,6 +579,7 @@ void _showDownloadOptions() {
     _loadStats();
     _loadChart();
     _loadStudents();
+    _loadSummaries();
   }
 
   String get _attendancePct {
@@ -608,125 +644,153 @@ void _showDownloadOptions() {
 
                 const SizedBox(height: 16),
 
-                // ── CHART ──
+                // ── REPORT TABS ──
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
                       children: [
-                        Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                          Text('Attendance Trends', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
-                          TextButton(
-                            onPressed: () {},
-                            style: TextButton.styleFrom(foregroundColor: AppColors.primary, padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                            child: const Text('Details', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                          ),
-                        ]),
-                        const SizedBox(height: 4),
-                        Text('ATTENDANCE %', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textLight, letterSpacing: 0.5)),
-                        const SizedBox(height: 4),
-                        _loadingStats
-                            ? SizedBox(height: 40, child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))))
-                            : Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                                Text(_attendancePct, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
-                                const SizedBox(width: 8),
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 6),
-                                  child: Row(children: [
-                                    Icon(_trendPositive ? Icons.arrow_upward : Icons.arrow_downward, size: 13,
-                                        color: _trendPositive ? AppColors.success : AppColors.danger),
-                                    const SizedBox(width: 2),
-                                    Text(_trendLabel, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
-                                        color: _trendPositive ? AppColors.success : AppColors.danger)),
-                                  ]),
-                                ),
-                              ]),
-                        const SizedBox(height: 12),
-                        SizedBox(height: 140, child: _loadingChart
-                            ? Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2))
-                            : AttendanceLineChart(chartData: _chartData)),
+                        _tabChip('By Student', ReportTab.students),
+                        const SizedBox(width: 8),
+                        _tabChip('By Session', ReportTab.sessions),
+                        const SizedBox(width: 8),
+                        _tabChip('By Teacher', ReportTab.teachers),
+                        const SizedBox(width: 8),
+                        _tabChip('By Class', ReportTab.classes),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 14),
-
-                // ── STAT CARDS ROW 1: Sessions + Students ──
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _loadingStats
-                      ? Row(children: [_shimmerCard(), const SizedBox(width: 12), _shimmerCard()])
-                      : Row(children: [
-                          StatCard(label: 'Total Sessions', value: '${_stats['total_sessions'] ?? 0}',
-                              sub: _selectedDaysLabel, trendPositive: true, onTap: _showSessionsList),
-                          const SizedBox(width: 12),
-                          StatCard(label: 'Total Students', value: '${_stats['total_students'] ?? 0}',
-                              sub: _selectedClassName, trendPositive: true),
-                        ]),
-                ),
-
-                const SizedBox(height: 10),
-
-                // ── STAT CARDS ROW 2: Present + Absent ──
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _loadingStudents
-                      ? Row(children: [_shimmerCard(), const SizedBox(width: 12), _shimmerCard()])
-                      : Row(children: [
-                          StatCard(
-                            label: 'Present Students',
-                            value: '${_students.fold(0, (sum, s) => sum + s.present)}',
-                            sub: 'Total present students',
-                            trendPositive: true,
-                          ),
-                          const SizedBox(width: 12),
-                          StatCard(
-                            label: 'Absent Students',
-                            value: '${_students.fold(0, (sum, s) => sum + s.absent)}',
-                            sub: 'Total absent students',
-                            trendPositive: false,
-                          ),
-                        ]),
-                ),
-
                 const SizedBox(height: 16),
 
-                //  STUDENTS LIST 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    Text(
-                      _selectedTeacherName != 'All Faculty'
-                          ? '$_selectedTeacherName Students'
-                          : (_selectedClassName == 'All Classes' ? 'All Students' : '$_selectedClassName Students'),
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                if (_activeTab == ReportTab.students) ...[
+                  // ── CHART ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            Text('Attendance Trends', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary)),
+                            TextButton(
+                              onPressed: () {},
+                              style: TextButton.styleFrom(foregroundColor: AppColors.primary, padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                              child: const Text('Details', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                            ),
+                          ]),
+                          const SizedBox(height: 4),
+                          Text('ATTENDANCE %', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: AppColors.textLight, letterSpacing: 0.5)),
+                          const SizedBox(height: 4),
+                          _loadingStats
+                              ? SizedBox(height: 40, child: Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))))
+                              : Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                                  Text(_attendancePct, style: TextStyle(fontSize: 32, fontWeight: FontWeight.w800, color: AppColors.textPrimary)),
+                                  const SizedBox(width: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 6),
+                                    child: Row(children: [
+                                      Icon(_trendPositive ? Icons.arrow_upward : Icons.arrow_downward, size: 13,
+                                          color: _trendPositive ? AppColors.success : AppColors.danger),
+                                      const SizedBox(width: 2),
+                                      Text(_trendLabel, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700,
+                                          color: _trendPositive ? AppColors.success : AppColors.danger)),
+                                    ]),
+                                  ),
+                                ]),
+                          const SizedBox(height: 12),
+                          SizedBox(height: 140, child: _loadingChart
+                              ? Center(child: CircularProgressIndicator(color: AppColors.primary, strokeWidth: 2))
+                              : AttendanceLineChart(chartData: _chartData)),
+                        ],
+                      ),
                     ),
-                    TextButton(
-                      onPressed: () => setState(() => _showAllStudents = !_showAllStudents),
-                      style: TextButton.styleFrom(foregroundColor: AppColors.primary, padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-                      child: Text(_showAllStudents ? 'Hide' : 'See All', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                    ),
-                  ]),
-                ),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _loadingStudents
-                      ? Center(child: Padding(padding: const EdgeInsets.all(32), child: CircularProgressIndicator(color: AppColors.primary)))
-                      : _students.isEmpty
-                          ? _emptyState()
-                          : _showAllStudents
-                              ? _buildDetailList()
-                              : _buildSummaryCards(),
-                ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // ── STAT CARDS ROW 1: Sessions + Students ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _loadingStats
+                        ? Row(children: [_shimmerCard(), const SizedBox(width: 12), _shimmerCard()])
+                        : Row(children: [
+                            StatCard(label: 'Total Sessions', value: '${_stats['total_sessions'] ?? 0}',
+                                sub: _selectedDaysLabel, trendPositive: true, onTap: _showSessionsList),
+                            const SizedBox(width: 12),
+                            StatCard(label: 'Total Students', value: '${_stats['total_students'] ?? 0}',
+                                sub: _selectedClassName, trendPositive: true),
+                          ]),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // ── STAT CARDS ROW 2: Present + Absent ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _loadingStudents
+                        ? Row(children: [_shimmerCard(), const SizedBox(width: 12), _shimmerCard()])
+                        : Row(children: [
+                            StatCard(
+                              label: 'Present Students',
+                              value: '${_students.fold(0, (sum, s) => sum + s.present)}',
+                              sub: 'Total present students',
+                              trendPositive: true,
+                            ),
+                            const SizedBox(width: 12),
+                            StatCard(
+                              label: 'Absent Students',
+                              value: '${_students.fold(0, (sum, s) => sum + s.absent)}',
+                              sub: 'Total absent students',
+                              trendPositive: false,
+                            ),
+                          ]),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  //  STUDENTS LIST 
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text(
+                        _selectedTeacherName != 'All Faculty'
+                            ? '$_selectedTeacherName Students'
+                            : (_selectedClassName == 'All Classes' ? 'All Students' : '$_selectedClassName Students'),
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
+                      ),
+                      TextButton(
+                        onPressed: () => setState(() => _showAllStudents = !_showAllStudents),
+                        style: TextButton.styleFrom(foregroundColor: AppColors.primary, padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
+                        child: Text(_showAllStudents ? 'Hide' : 'See All', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                      ),
+                    ]),
+                  ),
+                  const SizedBox(height: 10),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _loadingStudents
+                        ? Center(child: Padding(padding: const EdgeInsets.all(32), child: CircularProgressIndicator(color: AppColors.primary)))
+                        : _students.isEmpty
+                            ? _emptyState()
+                            : _showAllStudents
+                                ? _buildDetailList()
+                                : _buildSummaryCards(),
+                  ),
+                ] else ...[
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _buildSummaryTabContent(),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1221,6 +1285,349 @@ void _showDownloadOptions() {
       ],
     ),
   );
+
+  Widget _tabChip(String label, ReportTab tab) {
+    final active = _activeTab == tab;
+    return ChoiceChip(
+      label: Text(label, style: TextStyle(
+        color: active ? Colors.white : AppColors.textPrimary,
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+      )),
+      selected: active,
+      selectedColor: AppColors.primary,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: active ? AppColors.primary : Colors.grey.shade300),
+      ),
+      onSelected: (val) {
+        if (val) {
+          setState(() {
+            _activeTab = tab;
+          });
+        }
+      },
+    );
+  }
+
+  Widget _buildSummaryTabContent() {
+    if (_loadingSummaries) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(40),
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
+      );
+    }
+
+    switch (_activeTab) {
+      case ReportTab.sessions:
+        return _buildSessionsListContent();
+      case ReportTab.teachers:
+        return _buildTeachersListContent();
+      case ReportTab.classes:
+        return _buildClassesListContent();
+      default:
+        return const SizedBox();
+    }
+  }
+
+  Widget _buildSessionsListContent() {
+    if (_sessionsSummary.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text('No sessions records found', style: TextStyle(color: AppColors.textLight)),
+        ),
+      );
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _sessionsSummary.length,
+      itemBuilder: (context, index) {
+        final s = _sessionsSummary[index];
+        final double pct = (s['attendance_pct'] as num?)?.toDouble() ?? 0.0;
+        final verdict = s['verdict'] ?? 'No verification';
+        
+        Color verdictColor = Colors.grey;
+        if (verdict == 'Teacher Present') verdictColor = AppColors.success;
+        if (verdict == 'Teacher NOT Present') verdictColor = AppColors.danger;
+        if (verdict == 'Awaiting responses') verdictColor = AppColors.warning;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Session #${s['session_id']}',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: verdictColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      verdict.toUpperCase(),
+                      style: TextStyle(fontSize: 10, color: verdictColor, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.class_outlined, size: 14, color: AppColors.textLight),
+                  const SizedBox(width: 4),
+                  Text(
+                    s['class_name'],
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(Icons.person_outline, size: 14, color: AppColors.textLight),
+                  const SizedBox(width: 4),
+                  Text(
+                    s['teacher_name'],
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.access_time, size: 14, color: AppColors.textLight),
+                  const SizedBox(width: 4),
+                  Text(
+                    s['date_time'],
+                    style: TextStyle(fontSize: 11, color: AppColors.textLight),
+                  ),
+                ],
+              ),
+              const Divider(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Present: ${s['present_count']} | Late: ${s['late_count']} | Absent: ${s['absent_count']}',
+                    style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                  ),
+                  Text(
+                    '$pct%',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: pct / 100,
+                  backgroundColor: Colors.grey.shade100,
+                  valueColor: AlwaysStoppedAnimation<Color>(pct >= 75 ? AppColors.success : AppColors.danger),
+                  minHeight: 6,
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTeachersListContent() {
+    if (_teachersSummary.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text('No teachers records found', style: TextStyle(color: AppColors.textLight)),
+        ),
+      );
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _teachersSummary.length,
+      itemBuilder: (context, index) {
+        final t = _teachersSummary[index];
+        final double pct = (t['attendance_pct'] as num?)?.toDouble() ?? 0.0;
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                t['teacher_name'],
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                t['email'] ?? '',
+                style: TextStyle(fontSize: 11, color: AppColors.textLight),
+              ),
+              const Divider(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Sessions: ${t['total_sessions']}',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Students Assigned: ${t['total_students']}',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$pct%',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Avg Attendance',
+                        style: TextStyle(fontSize: 9, color: AppColors.textLight, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildClassesListContent() {
+    if (_classesSummary.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Text('No classes records found', style: TextStyle(color: AppColors.textLight)),
+        ),
+      );
+    }
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: _classesSummary.length,
+      itemBuilder: (context, index) {
+        final c = _classesSummary[index];
+        final double pct = (c['attendance_pct'] as num?)?.toDouble() ?? 0.0;
+        final isActive = c['status'] == 'active';
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    c['class_name'],
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (isActive ? AppColors.success : AppColors.textLight).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      c['status']?.toString().toUpperCase() ?? '',
+                      style: TextStyle(fontSize: 8, color: isActive ? AppColors.success : AppColors.textLight, fontWeight: FontWeight.w800),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  Icon(Icons.person_outline, size: 14, color: AppColors.textLight),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Instructor: ${c['teacher_name']}',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                ],
+              ),
+              const Divider(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Sessions: ${c['total_sessions']}',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Enrolled Students: ${c['total_students']}',
+                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '$pct%',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Avg Attendance',
+                        style: TextStyle(fontSize: 9, color: AppColors.textLight, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 }
 
 // ── TEACHER LIST COMPONENT ──
