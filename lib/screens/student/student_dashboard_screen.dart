@@ -9,6 +9,7 @@ import '../../core/services/student_profile_service.dart';
 import '../../core/services/confirmation_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/config/environment.dart';
+import 'student_report_screen.dart'; // adjust relative path as needed
 
 // Constants
 const String _baseUrl = Environment.apiBaseUrl;
@@ -30,6 +31,38 @@ class AttendanceRecord {
         date: j['attendance_date'] ?? '',
         status: j['status'] ?? 'absent',
       );
+}
+//today status
+class DashboardStatus {
+  final String todayStatus;
+  final double overallPercentage;
+  final int present;
+  final int late;
+  final int absent;
+
+  const DashboardStatus({
+    required this.todayStatus,
+    required this.overallPercentage,
+    required this.present,
+    required this.late,
+    required this.absent,
+  });
+
+  factory DashboardStatus.fromJson(Map<String, dynamic> j) => DashboardStatus(
+        todayStatus: j['today_status'] ?? 'not_marked',
+        overallPercentage: (j['overall_percentage'] ?? 0).toDouble(),
+        present: j['this_month']?['present'] ?? 0,
+        late: j['this_month']?['late'] ?? 0,
+        absent: j['this_month']?['absent'] ?? 0,
+      );
+
+  static const empty = DashboardStatus(
+    todayStatus: 'not_marked',
+    overallPercentage: 0,
+    present: 0,
+    late: 0,
+    absent: 0,
+  );
 }
 
 class StudentNotification {
@@ -109,8 +142,9 @@ class StudentDashboardScreen extends StatefulWidget {
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   int _selectedIndex = 0;
 
-  Map<String, dynamic>? _studentInfo;
+Map<String, dynamic>? _studentInfo;
   List<AttendanceRecord> _allRecords = [];
+  DashboardStatus _dashboardStatus = DashboardStatus.empty;
   bool _loading = true;
   String? _error;
 
@@ -170,6 +204,34 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       }
     } catch (e) {
       print("Error loading notifications: $e");
+    }
+  }
+  
+  //marked fetch method
+  Future<void> _loadDashboardStatus() async {
+    try {
+      final token = await _getToken();
+      final headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
+      final response = await http.get(
+        Uri.parse('$_baseUrl/student/${widget.userId}/dashboard-status'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        if (body['success'] == true && mounted) {
+          setState(() {
+            _dashboardStatus = DashboardStatus.fromJson(body);
+          });
+        }
+      }
+    } catch (e) {
+      print("Error loading dashboard status: $e");
     }
   }
 
@@ -332,6 +394,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     });
     try {
       await _loadNotifications();
+      await _loadDashboardStatus();
       final token = await _getToken();
       final headers = {
         'Content-Type': 'application/json',
@@ -397,7 +460,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             children: List.generate(items.length, (i) {
               final active = _selectedIndex == i;
               return GestureDetector(
-                onTap: () => setState(() => _selectedIndex = i),
+                onTap: () {
+                  if (i == 1) {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const StudentReportScreen()),
+                    );
+                    return;
+                  }
+                  setState(() => _selectedIndex = i);
+                },
                 child: SizedBox(
                   width: 72,
                   child: Column(
@@ -504,9 +575,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             name: widget.name,
             userId: widget.userId,
             role: widget.role,
-            records: _allRecords);
+            records: _allRecords,
+            dashboardStatus: _dashboardStatus);
       case 1:
-        return _ReportsPage(records: _allRecords, onRefresh: _loadData);
+        return const StudentReportScreen();
       case 2:
         return _NotificationsPage(
           notifications: _notifications,
@@ -545,34 +617,28 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 // ════════════════════════════════════════════
 // PAGE 1 — HOME
 // ════════════════════════════════════════════
-
-class _HomePage extends StatelessWidget {
+  class _HomePage extends StatelessWidget {
   final String name;
   final int userId;
   final String role;
   final List<AttendanceRecord> records;
+  final DashboardStatus dashboardStatus;
 
   const _HomePage({
     required this.name,
     required this.userId,
     required this.role,
     required this.records,
+    required this.dashboardStatus,
   });
 
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now();
-    final todayStr =
-        '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-    final todayRecord = records.where((r) => r.date == todayStr).toList();
-    final todayStatus =
-        todayRecord.isNotEmpty ? todayRecord.first.status : 'not_marked';
-
-    final present = records.where((r) => r.status == 'present').length;
-    final absent = records.where((r) => r.status == 'absent').length;
-    final late = records.where((r) => r.status == 'late').length;
-    final total = records.length;
-    final pct = total > 0 ? ((present / total) * 100).round() : 0;
+    final todayStatus = dashboardStatus.todayStatus;
+    final present = dashboardStatus.present;
+    final absent = dashboardStatus.absent;
+    final late = dashboardStatus.late;
+    final pct = dashboardStatus.overallPercentage.round();
 
     return Container(
       color: AppColors.background,

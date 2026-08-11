@@ -6,8 +6,11 @@ import 'package:http/http.dart' as http;
 import '../core/services/auth_service.dart';
 import '../core/services/session_service.dart';
 import '../core/services/confirmation_service.dart';
+import '../core/services/teacher_report_service.dart';
+import '../core/services/teacher_report_export_service.dart';
 import '../core/theme/app_colors.dart';
 import '../widgets/base_scaffold.dart';
+
 
 class AttendanceReportScreen extends StatefulWidget {
   final int? teacherId;
@@ -25,6 +28,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   List<Map<String, dynamic>> _classesSummary = [];
   List<Map<String, dynamic>> _sessionsSummary = [];
   bool _loadingSummaries = false;
+
+  // ── NEW: teacher's own student list + multi-select + download ──
+  List<Map<String, dynamic>> _teacherStudents = [];
+  bool _loadingTeacherStudents = false;
+  bool _multiSelectMode = false;
+  final Set<int> _selectedStudentIds = {};
 
   List<Map<String, dynamic>> _records = [];
   List<Map<String, dynamic>> _allSessions = [];
@@ -129,6 +138,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       setState(() => _loading = false);
       _animController.forward(from: 0);
       _loadSummaries();
+      _loadTeacherStudents(silent: silent);
     } catch (e) {
       if (!silent) setState(() { _error = 'Connection error: $e'; _loading = false; });
     }
@@ -176,6 +186,93 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     } finally {
       if (mounted) setState(() => _loadingSummaries = false);
     }
+  }
+
+  //  load the teacher's own student list (scoped server-side)
+  Future<void> _loadTeacherStudents({bool silent = false}) async {
+    if (!silent) setState(() => _loadingTeacherStudents = true);
+    try {
+      final list = await TeacherReportService.getMyStudents(days: 30);
+      if (mounted) setState(() => _teacherStudents = list);
+    } catch (e) {
+      if (!silent && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (!silent && mounted) setState(() => _loadingTeacherStudents = false);
+    }
+  }
+
+  // ── NEW: download bottom sheet — selected students OR full class ──
+  void _showDownloadOptions() {
+    final hasSelection = _selectedStudentIds.isNotEmpty;
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Wrap(
+          children: [
+            if (hasSelection) ...[
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+                title: Text("Download PDF (${_selectedStudentIds.length} selected)"),
+                onTap: () => _runDownload(() => TeacherReportExportService.downloadClassPdf(
+                    studentIds: _selectedStudentIds.toList())),
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart, color: Colors.green),
+                title: Text("Download Excel (${_selectedStudentIds.length} selected)"),
+                onTap: () => _runDownload(() => TeacherReportExportService.downloadClassExcel(
+                    studentIds: _selectedStudentIds.toList())),
+              ),
+              const Divider(),
+            ],
+            ListTile(
+              leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+              title: const Text("Download Full Class PDF"),
+              onTap: () => _runDownload(() => TeacherReportExportService.downloadClassPdf()),
+            ),
+            ListTile(
+              leading: const Icon(Icons.table_chart, color: Colors.green),
+              title: const Text("Download Full Class Excel"),
+              onTap: () => _runDownload(() => TeacherReportExportService.downloadClassExcel()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _runDownload(Future<void> Function() action) async {
+    Navigator.pop(context);
+    try {
+      await action();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Downloaded successfully")),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+  }
+
+  void _openStudentReportModal(int studentId, String studentName) {
+    showDialog(
+      context: context,
+      builder: (_) => _TeacherStudentReportModal(
+        studentId: studentId,
+        studentName: studentName,
+      ),
+    );
   }
 
   Map<String, String> _buildParams() {
@@ -236,6 +333,12 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     return BaseScaffold(
       title: 'Reports & Audit Logs',
       role: 'teacher',
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.download_outlined, color: Colors.white, size: 20),
+          onPressed: _showDownloadOptions,
+        ),
+      ],
       bottomNav: _buildBottomNav(),
       body: _loading
           ? const Center(child: CircularProgressIndicator(color: _primary))
@@ -271,6 +374,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
                           const SizedBox(height: 20),
                           _buildSessionListSection(),
                           const SizedBox(height: 20),
+                          _buildMyStudentsSection(),
+                          const SizedBox(height: 20),
                           _buildSearchBar(),
                           const SizedBox(height: 10),
                           if (_records.isNotEmpty) _buildSummaryChips(),
@@ -285,6 +390,83 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
                     ),
                   ),
                 ),
+    );
+  }
+
+  // ── NEW: "My Students" section — list with multi-select + tap-to-view ──
+  Widget _buildMyStudentsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text('My Students',
+                style: TextStyle(color: _textDark, fontWeight: FontWeight.bold, fontSize: 15)),
+            TextButton(
+              onPressed: () => setState(() {
+                _multiSelectMode = !_multiSelectMode;
+                if (!_multiSelectMode) _selectedStudentIds.clear();
+              }),
+              child: Text(_multiSelectMode ? 'Cancel' : 'Select',
+                  style: const TextStyle(color: _primary, fontSize: 13, fontWeight: FontWeight.w600)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (_loadingTeacherStudents)
+          const Center(child: Padding(padding: EdgeInsets.all(24), child: CircularProgressIndicator(color: _primary)))
+        else if (_teacherStudents.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: _card, borderRadius: BorderRadius.circular(16)),
+            child: const Center(child: Text('No students found.', style: TextStyle(color: _textMid))),
+          )
+        else
+          Column(
+            children: _teacherStudents.map((s) {
+              final studentId = s['student_id'] as int;
+              final isSelected = _selectedStudentIds.contains(studentId);
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  color: _card,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: isSelected ? _primary : Colors.transparent,
+                    width: 1.4,
+                  ),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))],
+                ),
+                child: ListTile(
+                  leading: _multiSelectMode
+                      ? Checkbox(
+                          value: isSelected,
+                          activeColor: _primary,
+                          onChanged: (_) => setState(() {
+                            isSelected ? _selectedStudentIds.remove(studentId) : _selectedStudentIds.add(studentId);
+                          }),
+                        )
+                      : CircleAvatar(
+                          backgroundColor: _primary.withOpacity(0.12),
+                          child: Text((s['student_name'] ?? '?').toString().substring(0, 1).toUpperCase(),
+                              style: const TextStyle(color: _primary, fontWeight: FontWeight.bold)),
+                        ),
+                  title: Text(s['student_name'] ?? 'Unknown',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: _textDark)),
+                  subtitle: Text('Roll #${s['roll_no'] ?? '-'}  •  ${s['pct'] ?? 0}% attendance',
+                      style: const TextStyle(fontSize: 11, color: _textMid)),
+                  onTap: _multiSelectMode
+                      ? () => setState(() {
+                            isSelected ? _selectedStudentIds.remove(studentId) : _selectedStudentIds.add(studentId);
+                          })
+                      : () => _openStudentReportModal(studentId, s['student_name'] ?? 'Unknown'),
+                ),
+              );
+            }).toList(),
+          ),
+      ],
     );
   }
 
@@ -1321,4 +1503,118 @@ class _ChartPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_ChartPainter o) => o.data != data;
+}
+
+// ── NEW: Single-student report modal (view summary + download) ──
+class _TeacherStudentReportModal extends StatefulWidget {
+  final int studentId;
+  final String studentName;
+  const _TeacherStudentReportModal({required this.studentId, required this.studentName});
+
+  @override
+  State<_TeacherStudentReportModal> createState() => _TeacherStudentReportModalState();
+}
+
+class _TeacherStudentReportModalState extends State<_TeacherStudentReportModal> {
+  bool _loading = true;
+  Map<String, dynamic>? _data;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final result = await TeacherReportService.getStudentReport(widget.studentId);
+    if (mounted) setState(() { _data = result; _loading = false; });
+  }
+
+  Future<void> _download(bool isPdf) async {
+    try {
+      if (isPdf) {
+        await TeacherReportExportService.downloadStudentPdf(widget.studentId);
+      } else {
+        await TeacherReportExportService.downloadStudentExcel(widget.studentId);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Downloaded successfully')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final summary = _data?['summary'] as Map<String, dynamic>? ?? {};
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
+        child: _loading
+            ? const Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator()))
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(widget.studentName,
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+                        ),
+                        IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+                      ],
+                    ),
+                    const Divider(),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _statChip('Present', '${summary['present_count'] ?? 0}', Colors.green),
+                        _statChip('Absent', '${summary['absent_count'] ?? 0}', Colors.red),
+                        _statChip('Late', '${summary['late_count'] ?? 0}', Colors.orange),
+                        _statChip('%', '${summary['attendance_percentage'] ?? 0}', Colors.blue),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _download(true),
+                            icon: const Icon(Icons.picture_as_pdf, size: 16, color: Colors.red),
+                            label: const Text('PDF'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: () => _download(false),
+                            icon: const Icon(Icons.table_chart, size: 16, color: Colors.green),
+                            label: const Text('Excel'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
+  }
+
+  Widget _statChip(String label, String value, Color color) {
+    return Column(
+      children: [
+        Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+      ],
+    );
+  }
 }
