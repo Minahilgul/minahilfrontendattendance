@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class StudentService {
-  // AuthService.baseUrl = 'http://attendance.sandbox.pk/api' rakho Flutter Web ke liye
+  // AuthService.baseUrl = 'localhost:8000/api' rakho Flutter Web ke liye
 
   static Future<Map<String, dynamic>> fetchApprovedStudents(String teacherId) async {
     try {
@@ -99,7 +99,7 @@ class StudentService {
         Uri.parse('${AuthService.baseUrl}/pending-students'),
         headers: {
           'Accept': 'application/json',
-          'Authorization': 'Bearer $token', // ✅ 403 fix
+          'Authorization': 'Bearer $token', // 403 fix
         },
       );
       print("FETCH PENDING STATUS: ${response.statusCode}");
@@ -122,7 +122,7 @@ class StudentService {
       final response = await http.post(
         Uri.parse('${AuthService.baseUrl}/pending-students/approve/$id'),
         headers: {
-          'Accept': 'application/json', // ✅ Accept add
+          'Accept': 'application/json', // Accept add
           'Authorization': 'Bearer $token',
         },
       );
@@ -139,7 +139,7 @@ class StudentService {
       final response = await http.post(
         Uri.parse('${AuthService.baseUrl}/pending-students/reject/$id'),
         headers: {
-          'Accept': 'application/json', // ✅ Accept add
+          'Accept': 'application/json', // Accept add
           'Authorization': 'Bearer $token',
         },
       );
@@ -158,7 +158,7 @@ class StudentService {
         body: jsonEncode({'ids': ids}),
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json', // ✅ Accept add
+          'Accept': 'application/json', //  Accept add
           'Authorization': 'Bearer $token',
         },
       );

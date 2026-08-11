@@ -1,5 +1,5 @@
-import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:get_storage/get_storage.dart';
 import '../config/environment.dart';
 import 'file_saver_stub.dart'
     if (dart.library.html) 'file_saver_web.dart'
@@ -8,13 +8,11 @@ import 'file_saver_stub.dart'
 class StudentReportExportService {
   static const String _baseUrl = Environment.apiBaseUrl;
 
-  static String? _getToken() => GetStorage().read('token');
-
   static Map<String, String> _headers() {
-    final token = _getToken();
+    final token = GetStorage().read<String>('token');
     return {
       'Accept': 'application/octet-stream',
-      if (token != null) 'Authorization': 'Bearer $token',
+      if (token != null) 'Authorization': 'Bearer \$token',
     };
   }
 
@@ -35,15 +33,16 @@ class StudentReportExportService {
     required String fileNamePrefix,
   }) async {
     final query = _buildQuery(filters);
-    final url = Uri.parse('$_baseUrl$endpoint${query.isNotEmpty ? '?$query' : ''}');
+    final url = Uri.parse('\$_baseUrl\$endpoint\${query.isNotEmpty ? '?\$query' : ''}');
 
     final response = await http.get(url, headers: _headers());
 
+    if (response.statusCode == 403) throw Exception('Unauthorized Access');
     if (response.statusCode != 200) {
-      throw Exception('Export failed (status ${response.statusCode})');
+      throw Exception('Export failed (status \${response.statusCode})');
     }
 
-    final fileName = '${fileNamePrefix}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+    final fileName = '\${fileNamePrefix}_\${DateTime.now().millisecondsSinceEpoch}.\$extension';
     await file_saver.saveAndOpenBytes(response.bodyBytes, fileName);
   }
 
