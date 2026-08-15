@@ -152,6 +152,9 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
     final email      = _teacherData?['email']      ?? '';
     final phone      = _teacherData?['phone']      ?? '';
     final lastLogin  = _teacherData?['last_login'];
+    // NEW: assigned classes list from backend
+    final assignedClasses = List<Map<String, dynamic>>.from(
+        _teacherData?['assigned_classes'] ?? []);
 
     return RefreshIndicator(
       onRefresh: _loadProfile,
@@ -217,6 +220,12 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
               child: _buildInfoCard(email, phone),
             ),
             const SizedBox(height: 16),
+            // NEW: assigned classes card
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildClassesCard(assignedClasses),
+            ),
+            const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: _buildActionsCard(name, email, phone),
@@ -252,6 +261,63 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             ],
             const SizedBox(height: 12),
             _buildInfoRow(Icons.school_outlined, 'Role', 'Teacher'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // NEW: card showing classes + subjects assigned to this teacher
+  Widget _buildClassesCard(List<Map<String, dynamic>> assignedClasses) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Assigned Classes',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
+            const Divider(height: 20),
+            if (assignedClasses.isEmpty)
+              Text('No classes assigned yet.',
+                  style: TextStyle(fontSize: 13, color: AppColors.textSecondary))
+            else
+              Column(
+                children: assignedClasses.map((c) {
+                  final className = (c['class_name'] ?? '-').toString();
+                  final subject = (c['subject'] ?? '').toString();
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.success.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.class_outlined, size: 20, color: AppColors.success),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(className,
+                                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
+                              if (subject.isNotEmpty)
+                                Text(subject,
+                                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+              ),
           ],
         ),
       ),

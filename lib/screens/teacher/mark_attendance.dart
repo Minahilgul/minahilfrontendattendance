@@ -40,12 +40,25 @@ class StudentModel {
         ? json['id'] as int
         : int.tryParse(json['id'].toString()) ?? 0;
 
+    // NEW: parse the status the teacher already marked this student with,
+    // so re-opening the attendance box shows the saved state instead of resetting.
+    AttendanceStatus parsedStatus = AttendanceStatus.none;
+    final statusStr = json['status']?.toString();
+    if (statusStr == 'present') {
+      parsedStatus = AttendanceStatus.present;
+    } else if (statusStr == 'late') {
+      parsedStatus = AttendanceStatus.late;
+    } else if (statusStr == 'absent') {
+      parsedStatus = AttendanceStatus.absent;
+    }
+
     return StudentModel(
       name: name,
       rollNo: (json['roll_no'] ?? '').toString(),
       initials: initials.isEmpty ? 'ST' : initials,
       avatarColor: Colors.primaries[id.hashCode % Colors.primaries.length],
       studentId: id,
+      status: parsedStatus, // NEW
     );
   }
 }
@@ -77,7 +90,10 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
       _error = null;
     });
 
-    final result = await SessionService.getStudents(widget.sessionId);
+    // CHANGED: was SessionService.getStudents(widget.sessionId) — that returned the
+    // whole class roster. Now uses the marked-only endpoint so this screen only shows
+    // students the teacher actually marked in StudentSelectionScreen.
+    final result = await SessionService.getMarkedStudents(widget.sessionId);
 
     if (result['success'] == true) {
       final list = List<Map<String, dynamic>>.from(result['data'] ?? []);

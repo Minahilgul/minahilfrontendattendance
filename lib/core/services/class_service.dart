@@ -63,6 +63,7 @@ class ClassService {
     required String className,
     required String students,
     String status = 'active', // NEW: caller can now pick active/inactive/scheduled
+    String subject = '', // NEW
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -77,6 +78,7 @@ class ClassService {
           'name': name,
           if (teacherId != null) 'teacher_id': teacherId,
           'class_name': className,
+          if (subject.isNotEmpty) 'subject': subject, // NEW
           'students_count': int.tryParse(students) ?? 0,
           'status': status, // NEW: was hardcoded to 'active' before
         }),
@@ -100,6 +102,7 @@ class ClassService {
     required String className,
     required String students,
     String status = 'active',
+    String subject = '', // NEW
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -114,6 +117,7 @@ class ClassService {
           'name': name,
           if (teacherId != null) 'teacher_id': teacherId,
           'class_name': className,
+          if (subject.isNotEmpty) 'subject': subject, // NEW
           'students_count': int.tryParse(students) ?? 0,
           'status': status,
         }),
