@@ -151,12 +151,19 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   );
                 }
 
-                final classes = snap.data ?? [];
-
-                if (_selectedClass.isEmpty && classes.isNotEmpty) {
-                  _selectedClass =
-                      classes[0]['name']?.toString() ?? '';
+                final rawClasses = snap.data ?? [];
+                final set = <String>{};
+                for (var c in rawClasses) {
+                  final name = (c['class_name'] ?? c['name'] ?? c['title'] ?? '').toString().trim();
+                  if (name.isNotEmpty) set.add(name);
                 }
+                if (_selectedClass.isNotEmpty && !set.contains(_selectedClass)) {
+                  set.add(_selectedClass);
+                }
+                final options = set.toList();
+                final dropdownValue = options.contains(_selectedClass)
+                    ? _selectedClass
+                    : (options.isNotEmpty ? options.first : null);
 
                 return AlertDialog(
                   title: const Text('Add Student'),
@@ -174,13 +181,11 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         const SizedBox(height: 12),
 
                         DropdownButtonFormField<String>(
-                          value: _selectedClass.isEmpty
-                              ? null
-                              : _selectedClass,
-                          items: classes.map((c) {
+                          value: dropdownValue,
+                          items: options.map((className) {
                             return DropdownMenuItem<String>(
-                              value: c['name']?.toString() ?? '',
-                              child: Text(c['name']?.toString() ?? ''),
+                              value: className,
+                              child: Text(className),
                             );
                           }).toList(),
                           onChanged: (val) {

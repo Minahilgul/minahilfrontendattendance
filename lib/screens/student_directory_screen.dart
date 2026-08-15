@@ -107,16 +107,28 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
     _loadNextRollNo();
   }
 
+  List<String> get _classOptions {
+    final set = <String>{};
+    for (var c in _classes) {
+      final name = (c['class_name'] ?? c['name'] ?? c['title'] ?? '').toString().trim();
+      if (name.isNotEmpty) {
+        set.add(name);
+      }
+    }
+    if (_selectedClass.isNotEmpty && !set.contains(_selectedClass)) {
+      set.add(_selectedClass);
+    }
+    return set.toList();
+  }
+
   Future<void> _loadClasses() async {
     final list = await StudentService.fetchClasses();
     if (mounted) {
       setState(() {
         _classes = list;
-        final matches = list.any(
-          (c) => c['class_name']?.toString() == _selectedClass,
-        );
-        if (!matches && list.isNotEmpty) {
-          _selectedClass = list[0]['class_name']?.toString() ?? '';
+        final options = _classOptions;
+        if (_selectedClass.isEmpty && options.isNotEmpty) {
+          _selectedClass = options.first;
         }
         _loadingClasses = false;
       });
@@ -237,35 +249,39 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                       return null;
                     }),
                 const SizedBox(height: 14),
-                _loadingClasses
-                    ? const Center(child: CircularProgressIndicator())
-                    : DropdownButtonFormField<String>(
-                        value:
-                            _selectedClass.isEmpty ? null : _selectedClass,
-                        items: _classes.map((c) {
-                          final className =
-                              c['class_name']?.toString() ?? '';
-                          return DropdownMenuItem<String>(
-                            value: className,
-                            child: Text(className),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedClass = val ?? '';
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Class',
-                          prefixIcon: const Icon(Icons.class_outlined,
-                              size: 20),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 14),
-                          isDense: true,
-                        ),
-                      ),
+                Builder(builder: (context) {
+                  final options = _classOptions;
+                  final dropdownValue = options.contains(_selectedClass)
+                      ? _selectedClass
+                      : (options.isNotEmpty ? options.first : null);
+
+                  return _loadingClasses
+                      ? const Center(child: CircularProgressIndicator())
+                      : DropdownButtonFormField<String>(
+                          value: dropdownValue,
+                          items: options.map((className) {
+                            return DropdownMenuItem<String>(
+                              value: className,
+                              child: Text(className),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedClass = val ?? '';
+                            });
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Class',
+                            prefixIcon: const Icon(Icons.class_outlined,
+                                size: 20),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 14),
+                            isDense: true,
+                          ),
+                        );
+                }),
                 const SizedBox(height: 14),
 
                 // Roll Number — auto-filled (max existing + 1) and readonly,
@@ -431,18 +447,28 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
     _loadClasses();
   }
 
+  List<String> get _classOptions {
+    final set = <String>{};
+    for (var c in _classes) {
+      final name = (c['class_name'] ?? c['name'] ?? c['title'] ?? '').toString().trim();
+      if (name.isNotEmpty) {
+        set.add(name);
+      }
+    }
+    if (_selectedClass.isNotEmpty && !set.contains(_selectedClass)) {
+      set.add(_selectedClass);
+    }
+    return set.toList();
+  }
+
   Future<void> _loadClasses() async {
     final list = await StudentService.fetchClasses();
     if (mounted) {
       setState(() {
         _classes = list;
-
-        //  use 'class_name' key (same as AddStudentDialog)
-        final matches = list.any(
-          (c) => c['class_name']?.toString() == _selectedClass,
-        );
-        if (!matches && _selectedClass.isEmpty && list.isNotEmpty) {
-          _selectedClass = list[0]['class_name']?.toString() ?? '';
+        final options = _classOptions;
+        if (_selectedClass.isEmpty && options.isNotEmpty) {
+          _selectedClass = options.first;
         }
         _loadingClasses = false;
       });
@@ -550,35 +576,39 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                 const SizedBox(height: 14),
 
                 //  class_name key use ho rahi hai — Add dialog se match
-                _loadingClasses
-                    ? const Center(child: CircularProgressIndicator())
-                    : DropdownButtonFormField<String>(
-                        value:
-                            _selectedClass.isEmpty ? null : _selectedClass,
-                        items: _classes.map((c) {
-                          final className =
-                              c['class_name']?.toString() ?? ''; 
-                          return DropdownMenuItem<String>(
-                            value: className,
-                            child: Text(className),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          setState(() {
-                            _selectedClass = val ?? '';
-                          });
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Class',
-                          prefixIcon: const Icon(Icons.class_outlined,
-                              size: 20),
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 14),
-                          isDense: true,
-                        ),
-                      ),
+                Builder(builder: (context) {
+                  final options = _classOptions;
+                  final dropdownValue = options.contains(_selectedClass)
+                      ? _selectedClass
+                      : (options.isNotEmpty ? options.first : null);
+
+                  return _loadingClasses
+                      ? const Center(child: CircularProgressIndicator())
+                      : DropdownButtonFormField<String>(
+                          value: dropdownValue,
+                          items: options.map((className) {
+                            return DropdownMenuItem<String>(
+                              value: className,
+                              child: Text(className),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            setState(() {
+                              _selectedClass = val ?? '';
+                            });
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Class',
+                            prefixIcon: const Icon(Icons.class_outlined,
+                                size: 20),
+                            border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 14),
+                            isDense: true,
+                          ),
+                        );
+                }),
                 const SizedBox(height: 14),
 
                 _buildField(

@@ -295,13 +295,17 @@ class AttendanceLineChart extends StatelessWidget {
         .map((e) => FlSpot(e.key.toDouble(), (e.value['pct'] as num?)?.toDouble() ?? 0.0))
         .toList();
 
-    final labels = chartData.map((d) {
-      final l = (d['label'] as String? ?? '');
-      return l.length >= 3 ? l.substring(0, 3) : l;
-    }).toList();
+    final labels = chartData.map((d) => (d['label'] as String? ?? '')).toList();
+
+    final double labelInterval = labels.length > 7
+        ? (labels.length / 6).ceilToDouble()
+        : 1.0;
 
     return LineChart(LineChartData(
-      minY: 0, maxY: 100,
+      minX: 0,
+      maxX: spots.isEmpty ? 6 : (spots.length - 1).toDouble(),
+      minY: 0,
+      maxY: 100,
       gridData: FlGridData(
         show: true, horizontalInterval: 25, drawVerticalLine: false,
         getDrawingHorizontalLine: (_) => const FlLine(color: Color(0xFFEEEEEE), strokeWidth: 1),
@@ -315,11 +319,14 @@ class AttendanceLineChart extends StatelessWidget {
           getTitlesWidget: (v, _) => Text(v.toInt().toString(), style: TextStyle(fontSize: 10, color: AppColors.textLight)),
         )),
         bottomTitles: AxisTitles(sideTitles: SideTitles(
-          showTitles: true, reservedSize: 22,
+          showTitles: true,
+          reservedSize: 22,
+          interval: labelInterval,
           getTitlesWidget: (v, _) {
+            if (v != v.roundToDouble()) return const SizedBox();
             final i = v.toInt();
             if (i < 0 || i >= labels.length) return const SizedBox();
-            return Text(labels[i], style: TextStyle(fontSize: 9, color: AppColors.textLight));
+            return Text(labels[i], style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: AppColors.textLight));
           },
         )),
       ),
