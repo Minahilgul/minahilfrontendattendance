@@ -208,6 +208,22 @@ Map<String, dynamic>? _studentInfo;
       print("Error loading notifications: $e");
     }
   }
+
+  Future<void> _checkForPendingConfirmation() async {
+    if (_isConfirmationDialogShowing || !mounted) return;
+    
+    final result = await ConfirmationService.getPending(studentId);
+    if (!mounted || _isConfirmationDialogShowing) return;
+    
+    if (result['pending'] == true) {
+      _isConfirmationDialogShowing = true;
+      await _showConfirmationDialog(
+        result['request_id'],
+        result['session_id'],
+      );
+      _isConfirmationDialogShowing = false;
+    }
+  }
   
   //marked fetch method
   Future<void> _loadDashboardStatus() async {
