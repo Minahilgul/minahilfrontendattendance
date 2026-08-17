@@ -120,6 +120,36 @@ static Future<Map<String, dynamic>> getStudents(int sessionId) async {
   }
 }
   
+  // GET MARKED STUDENTS (only students marked in this session)
+static Future<Map<String, dynamic>> getMarkedStudents(int sessionId) async {
+  try {
+    final token = await AuthService.getToken();
+
+    final response = await http.get(
+      Uri.parse('${AuthService.baseUrl}/sessions/$sessionId/marked-students'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+
+    print("MARKED STUDENTS STATUS: ${response.statusCode}");
+    print("MARKED STUDENTS RESPONSE: ${response.body}");
+
+    final data = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && data['success'] == true) {
+      return {'success': true, 'data': data['data']};
+    } else {
+      return {
+        'success': false,
+        'message': data['message'] ?? 'Failed to fetch marked students',
+      };
+    }
+  } catch (e) {
+    return {'success': false, 'message': 'Connection error: $e'};
+  }
+}
   // SAVE SELECTED STUDENTS
   
   static Future<Map<String, dynamic>> saveSessionStudents({

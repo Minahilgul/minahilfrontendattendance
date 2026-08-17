@@ -147,6 +147,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
 
       final result = await SessionService.createSession(
         teacherId: userId,
+        classId: _selectedClassId!,
         latitude: _latitude!,
         longitude: _longitude!,
       );

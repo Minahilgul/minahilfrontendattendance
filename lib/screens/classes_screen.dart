@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:attendence_verification/core/services/auth_service.dart';
 import 'package:get_storage/get_storage.dart';
-import '../core/services/class_service.dart';
-import '../widgets/base_scaffold.dart';
-import '../core/theme/app_colors.dart';
-
+import '../../core/services/class_service.dart';
+import '../../widgets/base_scaffold.dart';
+import '../../core/theme/app_colors.dart';
 
 // DATA MODEL
 

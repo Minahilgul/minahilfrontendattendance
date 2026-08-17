@@ -1,0 +1,67 @@
+import 'package:get_storage/get_storage.dart';
+import 'package:http/http.dart' as http;
+import '../config/environment.dart';
+import 'file_saver_stub.dart'
+    if (dart.library.html) 'file_saver_web.dart'
+    if (dart.library.io) 'file_saver_io.dart' as file_saver;
+
+class StudentReportExportService {
+  static const String _baseUrl = Environment.apiBaseUrl;
+
+  static String? _getToken() => GetStorage().read('token');
+
+  static Map<String, String> _headers() {
+    final token = _getToken();
+    return {
+      'Accept': 'application/octet-stream',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+  }
+
+  static String _buildQuery(Map<String, dynamic> filters) {
+    final params = <String, String>{};
+    filters.forEach((key, value) {
+      if (value != null && value.toString().isNotEmpty) {
+        params[key] = value.toString();
+      }
+    });
+    return Uri(queryParameters: params).query;
+  }
+
+  static Future<void> _downloadAndOpen({
+    required String endpoint,
+    required Map<String, dynamic> filters,
+    required String extension,
+    required String fileNamePrefix,
+  }) async {
+    final query = _buildQuery(filters);
+    final url = Uri.parse('$_baseUrl$endpoint${query.isNotEmpty ? '?$query' : ''}');
+
+    final response = await http.get(url, headers: _headers());
+
+    if (response.statusCode != 200) {
+      throw Exception('Export failed (status ${response.statusCode})');
+    }
+
+    final fileName = '${fileNamePrefix}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+    await file_saver.saveAndOpenBytes(response.bodyBytes, fileName);
+  }
+
+  static Future<void> downloadMyPdf({String? startDate, String? endDate}) {
+    return _downloadAndOpen(
+      endpoint: '/student/reports/export/pdf',
+      filters: {'start_date': startDate, 'end_date': endDate},
+      extension: 'pdf',
+      fileNamePrefix: 'my_attendance_report',
+    );
+  }
+
+  static Future<void> downloadMyExcel({String? startDate, String? endDate}) {
+    return _downloadAndOpen(
+      endpoint: '/student/reports/export/excel',
+      filters: {'start_date': startDate, 'end_date': endDate},
+      extension: 'xlsx',
+      fileNamePrefix: 'my_attendance_report',
+    );
+  }
+}
