@@ -27,6 +27,20 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       return;
     }
+
+    if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(emailController.text)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a valid email address")),
+      );
+      return;
+    }
+
+    if (passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Password must be at least 6 characters long")),
+      );
+      return;
+    }
     // DEVICE ID GET KARO
   final deviceId = await DeviceService.getDeviceId();
   print("DEVICE ID = $deviceId");

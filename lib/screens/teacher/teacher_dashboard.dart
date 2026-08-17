@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../settings_screen.dart';
 import '../../widgets/base_scaffold.dart';
 import '../../core/services/session_service.dart';
+import '../../core/services/class_service.dart';
 import '../../core/services/auth_service.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -32,6 +33,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   int _selectedIndex = 0;
   int? activeSessionId;
   bool isLoading = false;
+  int? _selectedClassId;
+  List<Map<String, dynamic>> _classes = [];
 
   int get teacherId => widget.userId;
 
@@ -47,6 +50,16 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   void initState() {
     super.initState();
     _checkActiveSession();
+    _loadClasses();
+  }
+
+  Future<void> _loadClasses() async {
+    final classes = await ClassService.fetchClasses();
+    if (mounted) {
+      setState(() {
+        _classes = classes;
+      });
+    }
   }
 
   Future<void> _checkActiveSession() async {
@@ -392,8 +405,58 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       );
       print("6. Location OK: ${pos.latitude}");
 
+      if (_classes.isEmpty) {
+        _showSnack('No classes found. Cannot start session.');
+        setState(() => isLoading = false);
+        return;
+      }
+
+      int? pickedClassId = _selectedClassId;
+      if (pickedClassId == null) {
+        pickedClassId = await showDialog<int>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Select Class'),
+              content: DropdownButtonFormField<int>(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                hint: const Text('Select a class'),
+                value: null,
+                items: _classes.map((c) {
+                  return DropdownMenuItem<int>(
+                    value: c['id'] is int ? c['id'] : int.tryParse(c['id'].toString()),
+                    child: Text(c['class_name'] ?? c['name'] ?? 'Class ${c['id']}'),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  Navigator.pop(context, val);
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+
+      if (pickedClassId == null) {
+        _showSnack('Please select a class first');
+        setState(() => isLoading = false);
+        return;
+      }
+
+      setState(() => _selectedClassId = pickedClassId);
+
       final result = await SessionService.createSession(
         teacherId: teacherId,
+        classId: pickedClassId,
         latitude: pos.latitude,
         longitude: pos.longitude,
       );

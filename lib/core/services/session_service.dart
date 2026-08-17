@@ -8,6 +8,7 @@ class SessionService {
   
   static Future<Map<String, dynamic>> createSession({
     required int teacherId,
+    required int classId,
     required double latitude,
     required double longitude,
   }) async {
@@ -23,6 +24,7 @@ class SessionService {
         },
         body: jsonEncode({
           'teacher_id': teacherId,
+          'class_id': classId,
           'latitude': latitude,
           'longitude': longitude,
         }),
@@ -111,37 +113,6 @@ static Future<Map<String, dynamic>> getStudents(int sessionId) async {
       return {
         'success': false,
         'message': data['message'] ?? 'Failed to fetch students',
-      };
-    }
-  } catch (e) {
-    return {'success': false, 'message': 'Connection error: $e'};
-  }
-}
-
-// NEW: GET ONLY MARKED STUDENTS FOR SESSION (used by MarkAttendanceScreen)
-static Future<Map<String, dynamic>> getMarkedStudents(int sessionId) async {
-  try {
-    final token = await AuthService.getToken();
-
-    final response = await http.get(
-      Uri.parse('${AuthService.baseUrl}/sessions/$sessionId/marked-students'),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-
-    print("GET MARKED STUDENTS STATUS: ${response.statusCode}");
-    print("GET MARKED STUDENTS RESPONSE: ${response.body}");
-
-    final data = jsonDecode(response.body);
-
-    if (response.statusCode == 200 && data['success'] == true) {
-      return {'success': true, 'data': data['data']};
-    } else {
-      return {
-        'success': false,
-        'message': data['message'] ?? 'Failed to fetch marked students',
       };
     }
   } catch (e) {

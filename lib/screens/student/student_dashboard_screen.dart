@@ -9,6 +9,7 @@ import '../../core/services/student_profile_service.dart';
 import '../../core/services/confirmation_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/config/environment.dart';
+import 'student_report_screen.dart'; // adjust relative path as needed
 
 // Constants
 const String _baseUrl = Environment.apiBaseUrl;
@@ -96,7 +97,30 @@ class StudentNotification {
   }
 }
 
-
+// Notifications — 3 random students ko bheja gaya
+const List<Map<String, String>> _kNotifications = [
+  {
+    'icon': '📡',
+    'title': 'Attendance Session Started',
+    'body': 'Ali Hassan: Your teacher has started a new attendance session.',
+    'time': 'Just now',
+    'type': 'session',
+  },
+  {
+    'icon': '✅',
+    'title': 'Attendance Marked',
+    'body': 'Sara Malik: Your attendance was recorded successfully.',
+    'time': '2 hours ago',
+    'type': 'confirm',
+  },
+  {
+    'icon': '⚠️',
+    'title': 'Low Attendance Warning',
+    'body': 'Usman Khan: Your attendance in one class has dropped below 75%.',
+    'time': 'Yesterday',
+    'type': 'alert',
+  },
+];
 
 // Main Widget
 class StudentDashboardScreen extends StatefulWidget {
@@ -126,6 +150,7 @@ Map<String, dynamic>? _studentInfo;
 
   List<StudentNotification> _notifications = [];
   int _unreadCount = 0;
+  bool _isConfirmationDialogShowing = false;
 
   // ── Confirmation polling ──
   Timer? _confirmationPoller;
@@ -147,7 +172,7 @@ Map<String, dynamic>? _studentInfo;
   // ── Polling & Notifications methods ──────────────────────────
   void _startPolling() {
     _confirmationPoller = Timer.periodic(
-      const Duration(seconds: 5),
+      const Duration(seconds: 15),
       (_) => _loadNotifications(),
     );
   }
@@ -175,11 +200,28 @@ Map<String, dynamic>? _studentInfo;
               _notifications = list.map((e) => StudentNotification.fromJson(e)).toList();
               _unreadCount = body['unread_count'] ?? 0;
             });
+            _checkForPendingConfirmation();
           }
         }
       }
     } catch (e) {
       print("Error loading notifications: $e");
+    }
+  }
+
+  Future<void> _checkForPendingConfirmation() async {
+    if (_isConfirmationDialogShowing || !mounted) return;
+    
+    final result = await ConfirmationService.getPending(studentId);
+    if (!mounted || _isConfirmationDialogShowing) return;
+    
+    if (result['pending'] == true) {
+      _isConfirmationDialogShowing = true;
+      await _showConfirmationDialog(
+        result['request_id'],
+        result['session_id'],
+      );
+      _isConfirmationDialogShowing = false;
     }
   }
   
@@ -275,7 +317,7 @@ Map<String, dynamic>? _studentInfo;
             ),
             const SizedBox(width: 10),
             const Expanded(
-              child: Text('Teacher Confirmation',
+              child: Text('Verification Required',
                   style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             ),
           ],
@@ -284,7 +326,7 @@ Map<String, dynamic>? _studentInfo;
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Is your teacher physically present in the classroom right now?',
+              'Is your teacher currently present in the class?',
               style: TextStyle(fontSize: 14),
               textAlign: TextAlign.center,
             ),
@@ -436,7 +478,9 @@ Map<String, dynamic>? _studentInfo;
             children: List.generate(items.length, (i) {
               final active = _selectedIndex == i;
               return GestureDetector(
-                onTap: () => setState(() => _selectedIndex = i),
+                onTap: () {
+                  setState(() => _selectedIndex = i);
+                },
                 child: SizedBox(
                   width: 72,
                   child: Column(
@@ -546,7 +590,7 @@ Map<String, dynamic>? _studentInfo;
             records: _allRecords,
             dashboardStatus: _dashboardStatus);
       case 1:
-        return _ReportsPage(records: _allRecords, onRefresh: _loadData);
+        return const StudentReportScreen(isEmbedded: true);
       case 2:
         return _NotificationsPage(
           notifications: _notifications,
