@@ -253,11 +253,22 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                   TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
+                    maxLength: 11,
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Please enter the correct number';
+                      }
+                      if (!RegExp(r'^[0-9]{11}$').hasMatch(v.trim())) {
+                        return 'Please enter the correct number';
+                      }
+                      return null;
+                    },
                     decoration: InputDecoration(
                       hintText: "Enter phone number",
                       prefixIcon: const Icon(Icons.phone_outlined),
                       filled: true,
                       fillColor: AppColors.background,
+                      counterText: "",
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: BorderSide.none,

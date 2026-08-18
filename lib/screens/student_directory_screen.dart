@@ -211,8 +211,15 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                 _buildField(
                     'Phone Number', _phoneCtrl, Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
-                    validator: (v) =>
-                        v!.isEmpty ? 'Phone number required' : null),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Please enter the correct number';
+                      }
+                      if (!RegExp(r'^[0-9]{11}$').hasMatch(v.trim())) {
+                        return 'Please enter the correct number';
+                      }
+                      return null;
+                    }),
                 const SizedBox(height: 14),
                 _loadingClasses
                     ? const Center(child: CircularProgressIndicator())
@@ -486,8 +493,15 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                 _buildField(
                     'Phone Number', _phoneCtrl, Icons.phone_outlined,
                     keyboardType: TextInputType.phone,
-                    validator: (v) =>
-                        v!.isEmpty ? 'Phone number required' : null),
+                    validator: (v) {
+                      if (v == null || v.trim().isEmpty) {
+                        return 'Please enter the correct number';
+                      }
+                      if (!RegExp(r'^[0-9]{11}$').hasMatch(v.trim())) {
+                        return 'Please enter the correct number';
+                      }
+                      return null;
+                    }),
                 const SizedBox(height: 14),
 
                 //  class_name key use ho rahi hai — Add dialog se match

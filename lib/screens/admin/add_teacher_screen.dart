@@ -100,10 +100,21 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
+                  maxLength: 11,
                   decoration: const InputDecoration(
                     labelText: "Phone Number",
                     border: OutlineInputBorder(),
+                    counterText: "",
                   ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "Please enter the correct number";
+                    }
+                    if (!RegExp(r'^[0-9]{11}$').hasMatch(value.trim())) {
+                      return "Please enter the correct number";
+                    }
+                    return null;
+                  },
                 ),
                 const SizedBox(height: 20),
 
