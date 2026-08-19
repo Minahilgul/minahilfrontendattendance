@@ -33,7 +33,7 @@ class StudentReportExportService {
     required String fileNamePrefix,
   }) async {
     final query = _buildQuery(filters);
-    final url = Uri.parse('\$_baseUrl\$endpoint\${query.isNotEmpty ? '?\$query' : ''}');
+    final url = Uri.parse('$_baseUrl$endpoint${query.isNotEmpty ? '?$query' : ''}');
 
     final response = await http.get(url, headers: _headers());
 

@@ -253,49 +253,6 @@ Map<String, dynamic>? _studentInfo;
     }
   }
 
-  Future<void> _checkForPendingConfirmation() async {
-    if (_isConfirmationDialogShowing || !mounted) return;
-    
-    final result = await ConfirmationService.getPending(studentId);
-    if (!mounted || _isConfirmationDialogShowing) return;
-    
-    if (result['pending'] == true) {
-      _isConfirmationDialogShowing = true;
-      await _showConfirmationDialog(
-        result['request_id'],
-        result['session_id'],
-      );
-      _isConfirmationDialogShowing = false;
-    }
-  }
-  
-  //marked fetch method
-  Future<void> _loadDashboardStatus() async {
-    try {
-      final token = await _getToken();
-      final headers = {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
-
-      final response = await http.get(
-        Uri.parse('$_baseUrl/student/${widget.userId}/dashboard-status'),
-        headers: headers,
-      );
-
-      if (response.statusCode == 200) {
-        final body = jsonDecode(response.body);
-        if (body['success'] == true && mounted) {
-          setState(() {
-            _dashboardStatus = DashboardStatus.fromJson(body);
-          });
-        }
-      }
-    } catch (e) {
-      print("Error loading dashboard status: $e");
-    }
-  }
 
   Future<void> _markAllRead() async {
     try {

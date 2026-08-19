@@ -104,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ],
                 ),
                 child: Image.asset(
-                  "assets/images/davs_logo.png",
+                  "assets/images/davs_logo.jpg",
                   width: 260,
                 ),
               ),
