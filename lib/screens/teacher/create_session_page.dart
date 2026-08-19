@@ -182,7 +182,34 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
           ),
         );
       } else {
-        _showErrorDialog(result['message'] ?? 'Failed to create session.');
+        if (result['message'] != null && result['message'].toString().contains('already has an active session')) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Icon(Icons.info_outline_rounded, color: AppColors.primary, size: 28),
+                  const SizedBox(width: 8),
+                  const Text('Session Active'),
+                ],
+              ),
+              content: const Text('This class already has an active session. Please return to the dashboard and click "Mark Attendance".'),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Dismiss Dialog
+                    Navigator.of(context).pop(); // Go back
+                  },
+                  child: const Text('Go Back'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          _showErrorDialog(result['message'] ?? 'Failed to create session.');
+        }
       }
     } catch (e) {
       setState(() {
