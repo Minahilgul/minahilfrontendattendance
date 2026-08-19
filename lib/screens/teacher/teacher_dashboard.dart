@@ -74,8 +74,27 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     }
   }
 
+  // ── MERGED: now falls back to fetching the active session from the
+  // backend if activeSessionId isn't already tracked in state, instead
+  // of immediately telling the teacher to start a session. ──
   Future<void> _showResponseDirectory() async {
-    if (activeSessionId == null) {
+    int? sessionId = activeSessionId;
+
+    if (sessionId == null) {
+      final result = await SessionService.getActiveSession(teacherId);
+      if (result['success'] == true &&
+          result['active'] == true &&
+          result['data'] != null) {
+        sessionId = result['data']['id'] is int
+            ? result['data']['id']
+            : int.tryParse(result['data']['id'].toString());
+        if (sessionId != null) {
+          setState(() => activeSessionId = sessionId);
+        }
+      }
+    }
+
+    if (sessionId == null) {
       _showSnack('Start a session first');
       return;
     }
@@ -86,7 +105,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
-    final result = await ConfirmationService.getDirectory(activeSessionId!);
+    final result = await ConfirmationService.getDirectory(sessionId);
     if (!mounted) return;
     Navigator.pop(context);
 
