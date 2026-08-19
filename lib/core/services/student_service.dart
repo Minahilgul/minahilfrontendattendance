@@ -254,6 +254,28 @@ class StudentService {
     }
   }
 
+  // GET /api/students/next-roll-no
+  // Returns the next available roll number (global max + 1) for auto-fill
+  static Future<String?> fetchNextRollNo() async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/students/next-roll-no'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['next_roll_no']?.toString();
+      }
+      return null;
+    } catch (e) {
+      print("FETCH NEXT ROLL NO SERVICE ERROR: ${e.toString()}");
+      return null;
+    }
+  }
 
   static Future<bool> updateStudent({
     required int id,

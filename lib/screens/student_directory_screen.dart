@@ -98,10 +98,13 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
   bool _loadingClasses = true;
   String _selectedClass = '';
 
+  bool _loadingRollNo = true;
+
   @override
   void initState() {
     super.initState();
     _loadClasses();
+    _loadNextRollNo();
   }
 
   Future<void> _loadClasses() async {
@@ -116,6 +119,19 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
           _selectedClass = list[0]['class_name']?.toString() ?? '';
         }
         _loadingClasses = false;
+      });
+    }
+  }
+
+  // Auto-fill roll number field with the next available roll no (max+1, global)
+  Future<void> _loadNextRollNo() async {
+    final nextRollNo = await StudentService.fetchNextRollNo();
+    if (mounted) {
+      setState(() {
+        if (nextRollNo != null) {
+          _rollNoCtrl.text = nextRollNo;
+        }
+        _loadingRollNo = false;
       });
     }
   }
@@ -251,10 +267,39 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                         ),
                       ),
                 const SizedBox(height: 14),
-                _buildField(
-                    'Roll Number', _rollNoCtrl, Icons.format_list_numbered,
-                    validator: (v) =>
-                        v!.isEmpty ? 'Roll number required' : null),
+
+                // Roll Number — auto-filled (max existing + 1) and readonly,
+                // taake duplicate/manual entry ka chance na rahe
+                TextFormField(
+                  controller: _rollNoCtrl,
+                  readOnly: true,
+                  validator: (v) =>
+                      v!.isEmpty ? 'Roll number required' : null,
+                  decoration: InputDecoration(
+                    labelText: 'Roll Number',
+                    hintText: _loadingRollNo ? 'Loading...' : null,
+                    prefixIcon:
+                        const Icon(Icons.format_list_numbered, size: 20),
+                    suffixIcon: _loadingRollNo
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2),
+                            ),
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 14),
+                    isDense: true,
+                    filled: true,
+                    fillColor: const Color(0xFFF0F2F5),
+                  ),
+                ),
                 const SizedBox(height: 24),
                 Row(
                   children: [

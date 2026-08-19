@@ -594,7 +594,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
   List<TeacherModel> _allTeachers = [];
   bool _isLoading = true;
 
-  final List<String> _tabs = ['All Faculty', 'Registered'];
+  final List<String> _tabs = ['All Faculty', 'Pending Approval'];
 
   @override
   void initState() {
@@ -618,8 +618,12 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
 
   List<TeacherModel> get _filteredTeachers {
     List<TeacherModel> list = _allTeachers;
-    if (_selectedTab == 1) {
-      list = list.where((t) => t.status == TeacherStatus.verified || t.registeredInfo!= null).toList();
+    if (_selectedTab == 0) {
+      // All Faculty = only approved/active teachers
+      list = list.where((t) => t.status == TeacherStatus.verified).toList();
+    } else {
+      // Pending Approval = only teachers awaiting admin approval
+      list = list.where((t) => t.status == TeacherStatus.inactive).toList();
     }
     if (_searchQuery.isNotEmpty) {
       list = list.where((t) => t.name.toLowerCase().contains(_searchQuery.toLowerCase()) || t.department.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
@@ -758,7 +762,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            Text('ACTIVE STAFF (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)),
+                            Text(_selectedTab == 0 ? 'ACTIVE STAFF (${_filteredTeachers.length})' : 'PENDING APPROVAL (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)),
                             Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: const Color(0xFF1565C0))),
                           ]),
                         ),
