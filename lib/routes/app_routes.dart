@@ -15,7 +15,7 @@ import '../screens/settings_screen.dart';
 import '../screens/student_directory_screen.dart';
 import '../screens/student/student_dashboard_screen.dart';
 import '../screens/admin/register_teacher_screen.dart';
-import '../screens/attendance_report_screen.dart'; // ✅ NEW IMPORT — teacher-report ab isi screen se khulega
+import '../screens/attendance_report_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
 import '../screens/teacher/teacher_profile_screen.dart';
 import '../screens/teacher/class_roaster.dart';

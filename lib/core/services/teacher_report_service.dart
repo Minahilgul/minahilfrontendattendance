@@ -45,6 +45,32 @@ class TeacherReportService {
     return {};
   }
 
+  // GET /api/teacher/reports/chart
+  static Future<List<Map<String, dynamic>>> getChartData({
+    String? date,
+    String? startDate,
+    String? endDate,
+    int? days,
+    String? status,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/teacher/reports/chart').replace(
+      queryParameters: _cleanParams({
+        'date': date,
+        'start_date': startDate,
+        'end_date': endDate,
+        'days': days,
+        'status': status,
+      }),
+    );
+    final res = await http.get(uri, headers: _headers());
+    if (res.statusCode == 200) {
+      final body = jsonDecode(res.body);
+      return List<Map<String, dynamic>>.from(body['chart'] ?? []);
+    }
+    if (res.statusCode == 403) throw Exception('Unauthorized Access');
+    return [];
+  }
+
   // GET /api/teacher/reports/students  — supports class_id, student_id, student_ids, date range
   static Future<List<Map<String, dynamic>>> getMyStudents({
     int? classId,

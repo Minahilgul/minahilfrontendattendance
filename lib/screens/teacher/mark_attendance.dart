@@ -90,10 +90,10 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
       _error = null;
     });
 
-    // CHANGED: was SessionService.getStudents(widget.sessionId) — that returned the
-    // whole class roster. Now uses the marked-only endpoint so this screen only shows
-    // students the teacher actually marked in StudentSelectionScreen.
-    final result = await SessionService.getMarkedStudents(widget.sessionId);
+    // CHANGED: Now uses getStudents to fetch the full class roster
+    // so the teacher can see all students and mark them on this screen directly,
+    // avoiding the redundant StudentSelectionScreen.
+    final result = await SessionService.getStudents(widget.sessionId);
 
     if (result['success'] == true) {
       final list = List<Map<String, dynamic>>.from(result['data'] ?? []);

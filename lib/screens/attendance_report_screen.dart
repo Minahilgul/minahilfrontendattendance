@@ -7,6 +7,7 @@ import '../core/services/auth_service.dart';
 import '../core/services/session_service.dart';
 import '../core/services/confirmation_service.dart';
 import '../core/services/teacher_report_service.dart';
+import 'admin/admin_report_screen.dart' show AttendanceLineChart;
 import '../core/services/teacher_report_export_service.dart';
 import '../core/theme/app_colors.dart';
 import '../widgets/base_scaffold.dart';
@@ -95,24 +96,34 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         'Authorization': 'Bearer $token',
       };
 
-      final results = await Future.wait([
+      int daysParam = 7;
+      if (_timeFilter == 'Today') daysParam = 1;
+      else if (_timeFilter == 'This Month') daysParam = 30;
+      final statusParam = _statusFilter != 'All' ? _statusFilter : null;
+
+      final results = await Future.wait<dynamic>([
         http.get(
           Uri.parse('${AuthService.baseUrl}/attendance/report')
               .replace(queryParameters: _buildParams()),
           headers: headers,
         ),
-        http.get(
-          Uri.parse('${AuthService.baseUrl}/report/dashboard'),
-          headers: headers,
+        TeacherReportService.getMyStats(
+          days: daysParam,
+          status: statusParam,
         ),
         http.get(
           Uri.parse('${AuthService.baseUrl}/sessions'),
           headers: headers,
         ),
+        TeacherReportService.getChartData(
+          days: daysParam,
+          status: statusParam,
+        ),
       ]);
 
-      if (results[0].statusCode == 200) {
-        final body = jsonDecode(results[0].body);
+      final req1 = results[0] as http.Response;
+      if (req1.statusCode == 200) {
+        final body = jsonDecode(req1.body);
         final List raw = body['data'] ?? [];
         final search = _searchController.text.trim().toLowerCase();
         final filtered = raw.where((r) {
@@ -124,16 +135,15 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         _records = List<Map<String, dynamic>>.from(filtered);
       }
 
-      if (results[1].statusCode == 200) {
-        final body = jsonDecode(results[1].body);
-        _stats = body['stats'] ?? {};
-        _weeklyData = List<Map<String, dynamic>>.from(body['weekly_data'] ?? []);
-      }
+      _stats = results[1] as Map<String, dynamic>;
 
-      if (results[2].statusCode == 200) {
-        final body = jsonDecode(results[2].body);
+      final req3 = results[2] as http.Response;
+      if (req3.statusCode == 200) {
+        final body = jsonDecode(req3.body);
         _allSessions = List<Map<String, dynamic>>.from(body['data'] ?? []);
       }
+
+      _weeklyData = results[3] as List<Map<String, dynamic>>;
 
       setState(() => _loading = false);
       _animController.forward(from: 0);
@@ -156,7 +166,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       };
 
       // Load sessions summary
-      final sUri = Uri.parse('${AuthService.baseUrl}/admin/reports/sessions-summary')
+      final sUri = Uri.parse('${AuthService.baseUrl}/teacher/reports/sessions-summary')
           .replace(queryParameters: {'teacher_id': teacherId.toString()});
       final sRes = await http.get(sUri, headers: headers);
       List<Map<String, dynamic>> sessionsList = [];
@@ -166,7 +176,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       }
 
       // Load classes summary
-      final cUri = Uri.parse('${AuthService.baseUrl}/admin/reports/classes-summary')
+      final cUri = Uri.parse('${AuthService.baseUrl}/teacher/reports/classes-summary')
           .replace(queryParameters: {'teacher_id': teacherId.toString()});
       final cRes = await http.get(cUri, headers: headers);
       List<Map<String, dynamic>> classesList = [];
@@ -279,6 +289,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     final p = <String, String>{};
     if (_statusFilter != 'All') p['status'] = _statusFilter;
     if (widget.teacherId != null) p['teacher_id'] = widget.teacherId.toString();
+    if (_timeFilter == 'Today') p['days'] = '1';
+    else if (_timeFilter == 'Last 7 Days') p['days'] = '7';
+    else if (_timeFilter == 'This Month') p['days'] = '30';
     return p;
   }
 
@@ -788,12 +801,6 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
 
   // ── Trend card ────────────────────────────────────
   Widget _buildTrendCard() {
-    final maxVal = _weeklyData.isEmpty
-        ? 1.0
-        : _weeklyData.map((e) => (e['percentage'] as num).toDouble())
-            .reduce((a, b) => a > b ? a : b).clamp(1.0, 100.0);
-    final today = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][DateTime.now().weekday - 1];
-
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -811,41 +818,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
               Text('Details', style: TextStyle(color: _primary, fontSize: 12, fontWeight: FontWeight.w600)),
             ],
           ),
-          const SizedBox(height: 6),
-          const Text('WEEKLY ATTENDANCE %',
-              style: TextStyle(color: _textMid, fontSize: 10, letterSpacing: 1.1)),
-          const SizedBox(height: 4),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text('${_weeklyAvg.toStringAsFixed(1)}%',
-                  style: const TextStyle(color: _textDark, fontSize: 30, fontWeight: FontWeight.bold, height: 1.1)),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                decoration: BoxDecoration(color: _green.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                child: Row(children: [
-                  const Icon(Icons.arrow_upward_rounded, size: 11, color: _green),
-                  Text('$_presentCount present', style: const TextStyle(color: _green, fontSize: 11)),
-                ]),
-              ),
-            ],
-          ),
           const SizedBox(height: 18),
           SizedBox(
-            height: 80,
-            child: _weeklyData.isEmpty
-                ? const Center(child: Text('No weekly data', style: TextStyle(color: _textMid)))
-                : _BarLineChart(data: _weeklyData, maxVal: maxVal, today: today, primaryColor: _primary),
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _weeklyData.map((d) => Text(d['day'],
-                style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: d['day'] == today ? FontWeight.bold : FontWeight.normal,
-                    color: d['day'] == today ? _primary : _textMid))).toList(),
+            height: 180,
+            child: AttendanceLineChart(chartData: _weeklyData),
           ),
         ],
       ),
@@ -858,10 +834,11 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       children: [
         Expanded(child: _statCard('Total Sessions', '${_stats['total_sessions'] ?? 0}',
             Icons.play_circle_fill_rounded, _primary,
-            sub: '+${_stats['active_today'] ?? 0} active today', subUp: true)),
+            sub: '${_stats['total_students'] ?? 0} total students', subUp: true)),
         const SizedBox(width: 12),
-        Expanded(child: _statCard('Flagged Logs', '${_stats['flagged'] ?? 0}',
-            Icons.flag_rounded, _red, sub: '▼ 2% improvement', subUp: false)),
+        Expanded(child: _statCard('Attendance %', '${_stats['attendance_pct'] ?? 0}%',
+            Icons.verified_user_rounded, _green,
+            sub: 'Trend: ${_stats['trend'] != null && _stats['trend'] > 0 ? '+' : ''}${_stats['trend'] ?? 0}%', subUp: (_stats['trend'] != null && _stats['trend'] >= 0))),
       ],
     );
   }

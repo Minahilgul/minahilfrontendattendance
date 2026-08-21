@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:get/get.dart';
 import '../core/services/device_service.dart';
 import '../core/theme/app_colors.dart';
+import 'package:geolocator/geolocator.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -49,9 +50,32 @@ class _LoginScreenState extends State<LoginScreen> {
     _isLoading = true;
   });
 
+  double? lat;
+  double? lng;
+
+  try {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (serviceEnabled) {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.whileInUse || permission == LocationPermission.always) {
+        Position pos = await Geolocator.getCurrentPosition(
+            desiredAccuracy: LocationAccuracy.high, timeLimit: const Duration(seconds: 10));
+        lat = pos.latitude;
+        lng = pos.longitude;
+      }
+    }
+  } catch (e) {
+    print("Error getting location: $e");
+  }
+
   final result = await AuthService.login(
     emailController.text,
     passwordController.text,
+    latitude: lat,
+    longitude: lng,
   );
 
   setState(() {

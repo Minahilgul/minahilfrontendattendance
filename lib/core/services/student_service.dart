@@ -277,7 +277,7 @@ class StudentService {
     }
   }
 
-  static Future<bool> updateStudent({
+  static Future<Map<String, dynamic>> updateStudent({
     required int id,
     required String username,
     required String email,
@@ -304,10 +304,15 @@ class StudentService {
         },
         body: jsonEncode(body),
       );
-      return response.statusCode == 200;
+      if (response.statusCode == 200) {
+        return {'success': true};
+      } else {
+        final data = jsonDecode(response.body);
+        return {'success': false, 'message': data['message'] ?? 'Failed to update student'};
+      }
     } catch (e) {
       print("UPDATE STUDENT SERVICE ERROR: ${e.toString()}");
-      return false;
+      return {'success': false, 'message': e.toString()};
     }
   }
 

@@ -12,7 +12,7 @@ class StudentReportExportService {
     final token = GetStorage().read<String>('token');
     return {
       'Accept': 'application/octet-stream',
-      if (token != null) 'Authorization': 'Bearer \$token',
+      if (token != null) 'Authorization': 'Bearer $token',
     };
   }
 
@@ -39,10 +39,10 @@ class StudentReportExportService {
 
     if (response.statusCode == 403) throw Exception('Unauthorized Access');
     if (response.statusCode != 200) {
-      throw Exception('Export failed (status \${response.statusCode})');
+      throw Exception('Export failed (status ${response.statusCode})');
     }
 
-    final fileName = '\${fileNamePrefix}_\${DateTime.now().millisecondsSinceEpoch}.\$extension';
+    final fileName = '${fileNamePrefix}_${DateTime.now().millisecondsSinceEpoch}.$extension';
     await file_saver.saveAndOpenBytes(response.bodyBytes, fileName);
   }
 

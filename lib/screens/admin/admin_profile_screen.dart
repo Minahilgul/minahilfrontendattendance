@@ -141,7 +141,18 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             const SizedBox(height: 16),
             Text(_error ?? 'Unknown error', textAlign: TextAlign.center, style: TextStyle(color: AppColors.danger)),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
+                const SizedBox(width: 16),
+                OutlinedButton(
+                  onPressed: _logout,
+                  style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger),
+                  child: const Text('Log Out'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
