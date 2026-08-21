@@ -389,6 +389,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
   }
 
   Future<void> startSession() async {
+    if (isLoading) return;
     setState(() => isLoading = true);
     print("1. BUTTON TAPPED ✅");
 
@@ -424,13 +425,28 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       );
       print("6. Location OK: ${pos.latitude}");
 
-      if (_classes.isEmpty) {
-        _showSnack('No classes found. Cannot start session.');
+      final eligibleClasses = _classes.where((c) {
+        final count = c['students_count'];
+        if (count is int) return count > 0;
+        if (count is String) return int.tryParse(count) != null && int.parse(count) > 0;
+        return false;
+      }).toList();
+
+      if (eligibleClasses.isEmpty) {
+        _showSnack('No classes with enrolled students found. Cannot start session.');
         setState(() => isLoading = false);
         return;
       }
 
       int? pickedClassId = _selectedClassId;
+      if (pickedClassId != null) {
+        final isEligible = eligibleClasses.any((c) => 
+            (c['id'] is int ? c['id'] : int.tryParse(c['id'].toString())) == pickedClassId);
+        if (!isEligible) {
+          pickedClassId = null;
+        }
+      }
+
       if (pickedClassId == null) {
         pickedClassId = await showDialog<int>(
           context: context,
@@ -444,7 +460,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 ),
                 hint: const Text('Select a class'),
                 value: null,
-                items: _classes.map((c) {
+                items: eligibleClasses.map((c) {
                   return DropdownMenuItem<int>(
                     value: c['id'] is int ? c['id'] : int.tryParse(c['id'].toString()),
                     child: Text(c['class_name'] ?? c['name'] ?? 'Class ${c['id']}'),
@@ -511,7 +527,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     }
     final result = await SessionService.endSession(activeSessionId!);
     if (result['success']) {
-      setState(() => activeSessionId = null);
+      setState(() {
+        activeSessionId = null;
+        _selectedClassId = null; // Clear cached class selection
+      });
       _showSnack('Session Ended');
     } else {
       _showSnack(result['message'] ?? 'Error ending session');
@@ -527,7 +546,10 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
           teacherId: teacherId,
           onSessionEnded: (sessionId) {
             if (activeSessionId == sessionId) {
-              setState(() => activeSessionId = null);
+              setState(() {
+                activeSessionId = null;
+                _selectedClassId = null; // Clear cached class selection
+              });
             }
           },
         ),
@@ -857,9 +879,18 @@ class _TeacherSessionsScreenState extends State<TeacherSessionsScreen> {
                           : int.tryParse(s['id'].toString()) ?? 0;
                       final isEnding = _endingIds.contains(sessionId);
 
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 10),
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MarkAttendanceScreen(sessionId: sessionId),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
@@ -954,7 +985,7 @@ class _TeacherSessionsScreenState extends State<TeacherSessionsScreen> {
                                   ),
                           ],
                         ),
-                      );
+                      ));
                     },
                   ),
                 ),

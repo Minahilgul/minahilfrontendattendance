@@ -6,8 +6,7 @@ import '../config/environment.dart';
 
 class AuthService {
   // 🔥 BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakho
-  // static const String baseUrl = Environment.apiBaseUrl;
-  static const String baseUrl = "http://attendance.sandbox.pk/api";
+  static const String baseUrl = Environment.apiBaseUrl;
 
   static Map<String, dynamic>? currentUser;
   static String? token;
@@ -15,7 +14,7 @@ class AuthService {
 
   // ───────────────── LOGIN ─────────────────
   static Future<Map<String, dynamic>> login(
-      String email, String password) async {
+      String email, String password, {double? latitude, double? longitude}) async {
     try {
       final deviceId = await DeviceService.getDeviceId();
       print(deviceId);
@@ -29,6 +28,8 @@ class AuthService {
           "email": email,
           "password": password,
           "device_id": deviceId,
+          "latitude": latitude,
+          "longitude": longitude,
         }),
       );
 

@@ -118,11 +118,21 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     );
   }
 
-  void _showAddStudentPopup(BuildContext context) {
+  void _showAddStudentPopup(BuildContext context) async {
     _nameController.clear();
     _rollController.clear();
     _selectedClass = '';
     _selectedStatus = 'Active';
+
+    // Show loading state in roll number field while fetching
+    _rollController.text = 'Loading...';
+
+    // Fetch the next roll number (last max roll no + 1)
+    StudentService.fetchNextRollNo().then((nextRoll) {
+      if (mounted) {
+        _rollController.text = nextRoll ?? '';
+      }
+    });
 
     showDialog(
       context: context,

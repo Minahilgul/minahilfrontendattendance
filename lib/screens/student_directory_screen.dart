@@ -52,7 +52,7 @@ class StudentModel {
   }
 }
 
-Future<bool> updateStudent(
+Future<Map<String, dynamic>> updateStudent(
   int id,
   String username,
   String email,
@@ -503,18 +503,18 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
       return;
     }
     setState(() => _isLoading = true);
-    final success = await updateStudent(
-      widget.student.id,
-      _usernameCtrl.text.trim(),
-      _emailCtrl.text.trim(),
-      _phoneCtrl.text.trim(),
+    final result = await StudentService.updateStudent(
+      id: widget.student.id,
+      username: _usernameCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      phone: _phoneCtrl.text.trim(),
       cls: _selectedClass,
       rollNo: _rollNoCtrl.text.trim(),
     );
     if (!mounted) return;
     setState(() => _isLoading = false);
 
-    if (success) {
+    if (result['success'] == true) {
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -524,9 +524,9 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Failed to update student'),
-            backgroundColor: Color(0xFFC62828)),
+        SnackBar(
+            content: Text(result['message'] ?? 'Failed to update student'),
+            backgroundColor: const Color(0xFFC62828)),
       );
     }
   }

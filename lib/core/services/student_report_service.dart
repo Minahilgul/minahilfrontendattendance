@@ -10,7 +10,7 @@ class StudentReportService {
     final token = GetStorage().read<String>('token');
     return {
       'Accept': 'application/json',
-      if (token != null) 'Authorization': 'Bearer \$token',
+      if (token != null) 'Authorization': 'Bearer $token',
     };
   }
 
@@ -22,7 +22,7 @@ class StudentReportService {
     if (startDate != null) params['start_date'] = startDate;
     if (endDate != null) params['end_date'] = endDate;
 
-    final uri = Uri.parse('\$_baseUrl/student/reports/my-report')
+    final uri = Uri.parse('$_baseUrl/student/reports/my-report')
         .replace(queryParameters: params.isNotEmpty ? params : null);
 
     final response = await http.get(uri, headers: _headers());
@@ -31,8 +31,8 @@ class StudentReportService {
 
     final data = jsonDecode(response.body);
 
-    if (response.statusCode == 200 && data['success'] == true) {
-      return Map<String, dynamic>.from(data['data'] ?? {});
+    if (response.statusCode == 200) {
+      return Map<String, dynamic>.from(data);
     } else {
       throw Exception(data['message'] ?? 'Failed to load report');
     }
