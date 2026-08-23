@@ -372,7 +372,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                             return DropdownMenuItem<int>(
                               value: idVal,
                               child: Text(
-                                "${c['class_name'] ?? 'Class'} (${c['name'] ?? 'No Teacher'})",
+                                c['class_name'] ?? 'Class',
                                 style: const TextStyle(fontSize: 14),
                               ),
                             );

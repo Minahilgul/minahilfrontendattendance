@@ -59,33 +59,33 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
     }
   }
  
-  Future<void> _logoutAllDevices() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Logout All Devices', style: TextStyle(fontWeight: FontWeight.bold)),
-        content: const Text('This will log you out from all devices. Continue?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Logout All', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true) {
-      try {
-        await _profileService.logoutAllDevices();
-        if (mounted) Get.offAllNamed('/login');
+  // Future<void> _logoutAllDevices() async {
+  //   final confirmed = await showDialog<bool>(
+  //     context: context,
+  //     builder: (ctx) => AlertDialog(
+  //       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+  //       title: const Text('Logout All Devices', style: TextStyle(fontWeight: FontWeight.bold)),
+  //       content: const Text('This will log you out from all devices. Continue?'),
+  //       actions: [
+  //         TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+  //         ElevatedButton(
+  //           style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
+  //           onPressed: () => Navigator.pop(ctx, true),
+  //           child: const Text('Logout All', style: TextStyle(color: Colors.white)),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  //   if (confirmed == true) {
+  //     try {
+  //       await _profileService.logoutAllDevices();
+  //       if (mounted) Get.offAllNamed('/login');
         
-      } catch (e) {
-        if (mounted) _showSnackbar(e.toString(), isError: true);
-      }
-    }
-  }
+  //     } catch (e) {
+  //       if (mounted) _showSnackbar(e.toString(), isError: true);
+  //     }
+  //   }
+  // }
  
   void _showSnackbar(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -381,18 +381,18 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Column(
           children: [
-            ListTile(
-              leading: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
-                child: Icon(Icons.devices_outlined, color: AppColors.warning, size: 22),
-              ),
-              title: const Text('Logout All Devices', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
-              subtitle: Text('Sign out from all active sessions', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
-              onTap: _logoutAllDevices,
-            ),
-            const Divider(height: 1, indent: 56),
+            // ListTile(
+            //   leading: Container(
+            //     padding: const EdgeInsets.all(8),
+            //     decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            //     child: Icon(Icons.devices_outlined, color: AppColors.warning, size: 22),
+            //   ),
+            //   title: const Text('Logout All Devices', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+            //   subtitle: Text('Sign out from all active sessions', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+            //   trailing: Icon(Icons.chevron_right, color: AppColors.textSecondary),
+            //   onTap: _logoutAllDevices,
+            // ),
+            // const Divider(height: 1, indent: 56),
             ListTile(
               leading: Container(
                 padding: const EdgeInsets.all(8),
