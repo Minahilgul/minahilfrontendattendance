@@ -422,7 +422,7 @@ Map<String, dynamic>? _studentInfo;
       };
 
       final profileRes = await http.get(
-        Uri.parse('$_baseUrl/students/${widget.userId}'),
+      Uri.parse('$_baseUrl/student/profile'),
         headers: headers,
       );
 

@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import '../core/services/device_service.dart';
 import '../core/theme/app_colors.dart';
 import 'package:geolocator/geolocator.dart';
+import 'forget_password_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -231,13 +233,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Text(
-                    "Forgot password?",
-                    style: TextStyle(color: AppColors.primary),
-                  ),
-                ),
+               Align(
+               alignment: Alignment.centerRight,
+               child: GestureDetector(
+               onTap: () {
+               Get.to(() => const ForgotPasswordScreen());
+               },
+              child: Text(
+             "Forgot password?",
+             style: TextStyle(color: AppColors.primary),
+             ),
+           ),
+        ),
                 const SizedBox(height: 25),
                 SizedBox(
                   width: double.infinity,
