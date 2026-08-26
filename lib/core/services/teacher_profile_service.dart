@@ -96,7 +96,7 @@ class TeacherProfileService {
 
   // POST /api/teacher/profile/change-email
   Future<void> changeEmail({
-    required String currentPassword,
+    required String currentEmail,
     required String newEmail,
   }) async {
     final token = await _getToken();
@@ -106,7 +106,7 @@ class TeacherProfileService {
       Uri.parse('$baseUrl/teacher/profile/change-email'),
       headers: _headers(token),
       body: jsonEncode({
-        'current_password': currentPassword,
+        'current_email': currentEmail,
         'new_email': newEmail,
       }),
     );

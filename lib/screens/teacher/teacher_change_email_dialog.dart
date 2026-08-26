@@ -17,17 +17,15 @@ class ChangeEmailDialog extends StatefulWidget {
 }
 
 class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
-  final _formKey       = GlobalKey<FormState>();
-  final _emailCtrl     = TextEditingController();
-  final _passwordCtrl  = TextEditingController();
-
-  bool _isLoading      = false;
-  bool _obscurePass    = true;
+  final _formKey = GlobalKey<FormState>();
+  final _currentEmailController = TextEditingController();
+  final _emailController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
-    _passwordCtrl.dispose();
+    _currentEmailController.dispose();
+    _emailController.dispose();
     super.dispose();
   }
 
@@ -36,102 +34,107 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
     setState(() => _isLoading = true);
     try {
       await widget.profileService.changeEmail(
-        currentPassword: _passwordCtrl.text,
-        newEmail:        _emailCtrl.text.trim(),
+        currentEmail: _currentEmailController.text.trim(),
+        newEmail: _emailController.text.trim(),
       );
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger),
+          SnackBar(content: Text(e.toString()), backgroundColor: AppColors.danger, behavior: SnackBarBehavior.floating),
         );
       }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: const Text('Change Email', style: TextStyle(fontWeight: FontWeight.bold)),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Current email (read-only display)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.background,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: AppColors.border),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Current Email', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                  const SizedBox(height: 2),
-                  Text(widget.currentEmail,
-                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            // New Email
-            TextFormField(
-              controller: _emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              decoration: InputDecoration(
-                labelText: 'New Email',
-                prefixIcon: const Icon(Icons.email_outlined),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              validator: (val) {
-                if (val == null || val.trim().isEmpty) return 'New email is required';
-                if (!val.contains('@') || !val.contains('.')) return 'Enter a valid email';
-                if (val.trim() == widget.currentEmail) return 'New email must be different';
-                return null;
-              },
-            ),
-            const SizedBox(height: 12),
-            // Current Password (for verification)
-            TextFormField(
-              controller: _passwordCtrl,
-              obscureText: _obscurePass,
-              decoration: InputDecoration(
-                labelText: 'Current Password',
-                prefixIcon: const Icon(Icons.lock_outline),
-                suffixIcon: IconButton(
-                  icon: Icon(_obscurePass ? Icons.visibility_off : Icons.visibility),
-                  onPressed: () => setState(() => _obscurePass = !_obscurePass),
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Icon(Icons.email_outlined, color: AppColors.primary),
+                const SizedBox(width: 8),
+                const Text('Change Email', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Spacer(),
+                IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+              ]),
+              const SizedBox(height: 8),
+              Text('Current: ${widget.currentEmail}', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+              const SizedBox(height: 20),
+              TextFormField(
+                controller: _currentEmailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Current Email',
+                  prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Current email is required';
+                  if (v.trim().toLowerCase() != widget.currentEmail.toLowerCase()) {
+                    return 'Entered email does not match your current email';
+                  }
+                  return null;
+                },
               ),
-              validator: (val) =>
-                  (val == null || val.isEmpty) ? 'Password is required to verify' : null,
-            ),
-          ],
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'New Email Address',
+                  prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'New email is required';
+                  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) return 'Enter a valid email address';
+                  if (v.trim().toLowerCase() == widget.currentEmail.toLowerCase()) return 'New email must be different from current';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              Row(children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: _isLoading ? null : () => Navigator.pop(context),
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: _isLoading
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('Update Email', style: TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ]),
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.success,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          onPressed: _isLoading ? null : _submit,
-          child: _isLoading
-              ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-              : const Text('Update', style: TextStyle(color: Colors.white)),
-        ),
-      ],
     );
   }
 }

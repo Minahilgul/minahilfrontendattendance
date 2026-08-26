@@ -14,14 +14,13 @@ class ChangeEmailDialog extends StatefulWidget {
 
 class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _passwordController = TextEditingController();
+  final _currentEmailController = TextEditingController();
   final _emailController = TextEditingController();
   bool _isLoading = false;
-  bool _showPassword = false;
 
   @override
   void dispose() {
-    _passwordController.dispose();
+    _currentEmailController.dispose();
     _emailController.dispose();
     super.dispose();
   }
@@ -31,7 +30,7 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
     setState(() => _isLoading = true);
     try {
       await widget.profileService.changeEmail(
-        currentPassword: _passwordController.text,
+        currentEmail: _currentEmailController.text.trim(),
         newEmail: _emailController.text.trim(),
       );
       if (mounted) Navigator.pop(context, true);
@@ -69,20 +68,22 @@ class _ChangeEmailDialogState extends State<ChangeEmailDialog> {
               Text('Current: ${widget.currentEmail}', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
               const SizedBox(height: 20),
               TextFormField(
-                controller: _passwordController,
-                obscureText: !_showPassword,
+                controller: _currentEmailController,
+                keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  labelText: 'Current Password',
-                  prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
-                  suffixIcon: IconButton(
-                    icon: Icon(_showPassword ? Icons.visibility_off : Icons.visibility, color: AppColors.textSecondary),
-                    onPressed: () => setState(() => _showPassword = !_showPassword),
-                  ),
+                  labelText: 'Current Email',
+                  prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: AppColors.primary, width: 2)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 ),
-                validator: (v) => (v == null || v.isEmpty) ? 'Current password is required' : null,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Current email is required';
+                  if (v.trim().toLowerCase() != widget.currentEmail.toLowerCase()) {
+                    return 'Entered email does not match your current email';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 14),
               TextFormField(

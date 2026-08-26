@@ -65,12 +65,12 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
               children: [
                 Row(children: [
                   Icon(Icons.lock_outline, color: AppColors.primary),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   const Text('Change Password', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const Spacer(),
                   IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
                 ]),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text('Enter your current password and choose a new one.', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                 const SizedBox(height: 20),
                 _buildPasswordField('Current Password', _currentPassController, _showCurrent, () => setState(() => _showCurrent = !_showCurrent),
@@ -80,7 +80,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 _buildPasswordField('New Password', _newPassController, _showNew, () => setState(() => _showNew = !_showNew),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'New password is required';
-                    if (v.length < 8) return 'Password must be at least 8 characters';
+                    if (v.length < 6) return 'Password must be at least 6 characters';
                     return null;
                   },
                 ),
@@ -88,6 +88,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 _buildPasswordField('Confirm New Password', _confirmPassController, _showConfirm, () => setState(() => _showConfirm = !_showConfirm),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Please confirm your password';
+                    if (v.length < 6) return 'Password must be at least 6 characters';
                     if (v != _newPassController.text) return 'Passwords do not match';
                     return null;
                   },

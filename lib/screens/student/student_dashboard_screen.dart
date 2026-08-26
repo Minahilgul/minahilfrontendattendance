@@ -1165,6 +1165,20 @@ class _ProfilePageState extends State<_ProfilePage> {
     ));
   }
 
+  String _getInitials(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '?';
+
+    final parts = trimmed.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+
+    if (parts.isEmpty) return '?';
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    final word = parts[0];
+    return (word.length >= 2 ? word.substring(0, 2) : word).toUpperCase();
+  }
+
   Future<void> _openChangePassword() async {
     final formKey = GlobalKey<FormState>();
     final currentPw = TextEditingController();
@@ -1353,10 +1367,11 @@ class _ProfilePageState extends State<_ProfilePage> {
     final className =
         info?['class_name']?.toString() ?? info?['class']?.toString() ?? '—';
     final rollNo = info?['roll_no'] ?? info?['roll_number'] ?? '—';
-    final parts = widget.name.trim().split(' ');
-    final initials = parts.length >= 2
-        ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
-        : widget.name.substring(0, 2).toUpperCase();
+    // final parts = widget.name.trim().split(' ');
+    // final initials = parts.length >= 2
+    //     ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
+    //     : widget.name.substring(0, 2).toUpperCase();
+    final initials = _getInitials(widget.name);
 
     return Container(
       color: AppColors.background,
