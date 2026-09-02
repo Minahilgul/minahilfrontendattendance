@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import '../core/services/admin_profile_service.dart';
-import '../core/theme/app_colors.dart';
+import '../../core/services/student_profile_service.dart';
+import '../../core/theme/app_colors.dart';
 
 
-class ChangePasswordDialog extends StatefulWidget {
-  final AdminProfileService profileService;
-  const ChangePasswordDialog({Key? key, required this.profileService}) : super(key: key);
+class StudentChangePasswordDialog extends StatefulWidget {
+  final StudentProfileService profileService;
+  const StudentChangePasswordDialog({Key? key, required this.profileService}) : super(key: key);
 
   @override
-  State<ChangePasswordDialog> createState() => _ChangePasswordDialogState();
+  State<StudentChangePasswordDialog> createState() => _StudentChangePasswordDialogState();
 }
 
-class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
+class _StudentChangePasswordDialogState extends State<StudentChangePasswordDialog> {
   final _formKey = GlobalKey<FormState>();
   final _currentPassController = TextEditingController();
   final _newPassController = TextEditingController();
@@ -125,9 +125,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     );
   }
 
-  // FIXED: icon now reflects the CURRENT state of the field, not the tap-action.
-  // Hidden (obscured) -> closed/crossed eye (visibility_off).
-  // Visible (revealed) -> open eye (visibility).
+  // Icon reflects CURRENT state: hidden -> closed/crossed eye, visible -> open eye.
   Widget _buildPasswordField(String label, TextEditingController controller, bool showPass, VoidCallback toggle, {String? Function(String?)? validator}) {
     return TextFormField(
       controller: controller,
