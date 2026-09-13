@@ -4,7 +4,8 @@ import 'auth_service.dart';
 
 class ClassService {
   // ============================================================
-  // FETCH ALL CLASSES
+  // FETCH ALL CLASSES (subject-offerings: one entry per class+subject+teacher)
+  // Use this for: session creation, teacher's own class list.
   // ============================================================
 
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
@@ -44,8 +45,51 @@ class ClassService {
   }
 
   // ============================================================
-  // FETCH ALL TEACHERS
+  // FETCH ALL CLASS GROUPS (physical classes, e.g. "BS Zoology")
+  // Use this for: student enrollment / editing a student's class —
+  // NOT fetchClasses() above, since that returns one row per subject
+  // and would double-list the same physical class.
   // ============================================================
+
+  static Future<List<Map<String, dynamic>>> fetchClassGroups() async {
+    try {
+      final token = await AuthService.getToken();
+
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/class-groups'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      print('FETCH CLASS GROUPS STATUS: ${response.statusCode}');
+      print('FETCH CLASS GROUPS RESPONSE: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+
+        final List data = jsonData is Map
+            ? (jsonData['data'] ?? [])
+            : (jsonData is List ? jsonData : []);
+
+        return data
+            .map<Map<String, dynamic>>(
+              (item) => Map<String, dynamic>.from(item),
+            )
+            .toList();
+      }
+
+      return [];
+    } catch (e) {
+      print('FETCH CLASS GROUPS SERVICE ERROR: $e');
+      return [];
+    }
+  }
+
+
+  // FETCH ALL TEACHERS
+
 
   static Future<List<Map<String, dynamic>>> fetchTeachers() async {
     try {

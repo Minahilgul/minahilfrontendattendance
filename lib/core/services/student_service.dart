@@ -25,11 +25,15 @@ class StudentService {
     }
   }
 
+  // Used only for the Add Student class dropdown — must be the physical
+  // class list (/class-groups), NOT the subject-offering list (/classes),
+  // otherwise the same class (e.g. "BS Zoology") would show once per
+  // subject taught under it.
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
     try {
       final token = await AuthService.getToken();
       final response = await http.get(
-        Uri.parse('${AuthService.baseUrl}/classes'),
+        Uri.parse('${AuthService.baseUrl}/class-groups'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $token',
