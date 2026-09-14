@@ -80,6 +80,7 @@ Future<bool> addTeacher(
   String email,
   String password,
   String phone,
+  String address,
   String deviceId, {
   int? status,
 }) async {
@@ -163,6 +164,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController();
   final _imeiCtrl = TextEditingController(); //  added MAC controller
   bool _isActive = true; // NEW: Active/Inactive toggle, defaults to Active
   bool _obscurePassword = true;
@@ -174,6 +176,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _phoneCtrl.dispose();
+    _addressCtrl.dispose();
     _imeiCtrl.dispose(); //  dispose MAC controller
     super.dispose();
   }
@@ -188,6 +191,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
       _passwordCtrl.text.trim(),
       _phoneCtrl.text.trim(),
       _imeiCtrl.text.trim(),
+      _addressCtrl.text.trim(),
       status: _isActive ? 1 : 0, 
     );
     if (!mounted) return;
@@ -220,6 +224,8 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                 _buildField('Username', _usernameCtrl, Icons.person_outline, validator: (v) => v!.isEmpty? 'Username required' : null),
                 const SizedBox(height: 14),
                 _buildField('Email', _emailCtrl, Icons.email_outlined, keyboardType: TextInputType.emailAddress, validator: (v) => v!.isEmpty? 'Email required' : null),
+                const SizedBox(height: 14),
+                _buildField('Address', _addressCtrl, Icons.home_outlined, validator: (v) => v!.isEmpty? 'Address required' : null),
                 const SizedBox(height: 14),
                 _buildPasswordField(),
                 const SizedBox(height: 14),

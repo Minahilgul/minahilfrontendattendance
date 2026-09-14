@@ -10,6 +10,7 @@ import '../../core/services/confirmation_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/config/environment.dart';
 import 'student_report_screen.dart'; // adjust relative path as needed
+import 'student_change_password_dialog.dart';
 
 // Constants
 const String _baseUrl = Environment.apiBaseUrl;
@@ -1165,158 +1166,28 @@ class _ProfilePageState extends State<_ProfilePage> {
     ));
   }
 
-  Future<void> _openChangePassword() async {
-    final formKey = GlobalKey<FormState>();
-    final currentPw = TextEditingController();
-    final newPw = TextEditingController();
-    final confirmPw = TextEditingController();
+  String _getInitials(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) return '?';
 
-    await showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        bool showCurrent = false, showNew = false, showConfirm = false;
-        bool loading = false;
+    final parts = trimmed.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
 
-        return StatefulBuilder(
-          builder: (ctx, setS) => Dialog(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Form(
-                key: formKey,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(children: [
-                      const Icon(Icons.lock_outline, color: AppColors.primary),
-                      const SizedBox(width: 8),
-                      const Text('Change Password',
-                          style: TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.bold)),
-                      const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.pop(ctx),
-                      ),
-                    ]),
-                    const SizedBox(height: 16),
-                    _dialogPwField('Current Password', currentPw, showCurrent,
-                        () => setS(() => showCurrent = !showCurrent),
-                        validator: (v) =>
-                            (v == null || v.isEmpty) ? 'Required' : null),
-                    const SizedBox(height: 12),
-                    _dialogPwField('New Password', newPw, showNew,
-                        () => setS(() => showNew = !showNew), validator: (v) {
-                      if (v == null || v.isEmpty) return 'Required';
-                      if (v.length < 8) return 'Min 8 characters';
-                      return null;
-                    }),
-                    const SizedBox(height: 12),
-                    _dialogPwField('Confirm Password', confirmPw, showConfirm,
-                        () => setS(() => showConfirm = !showConfirm),
-                        validator: (v) =>
-                            v != newPw.text ? 'Passwords do not match' : null),
-                    const SizedBox(height: 20),
-                    Row(children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: const Text('Cancel'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: loading
-                              ? null
-                              : () async {
-                                  if (!formKey.currentState!.validate()) return;
-                                  setS(() => loading = true);
-                                  try {
-                                    await _service.changePassword(
-                                      currentPassword: currentPw.text,
-                                      newPassword: newPw.text,
-                                      confirmPassword: confirmPw.text,
-                                    );
-                                    if (ctx.mounted) Navigator.pop(ctx);
-                                    if (mounted) {
-                                      _showSnackbar(
-                                          'Password changed successfully');
-                                    }
-                                  } catch (e) {
-                                    if (ctx.mounted)
-                                      setS(() => loading = false);
-                                    if (mounted)
-                                      _showSnackbar(e.toString(),
-                                          isError: true);
-                                  }
-                                },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(vertical: 13),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                          ),
-                          child: loading
-                              ? const SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                      color: Colors.white, strokeWidth: 2))
-                              : const Text('Update',
-                                  style: TextStyle(color: Colors.white)),
-                        ),
-                      ),
-                    ]),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-
-    currentPw.dispose();
-    newPw.dispose();
-    confirmPw.dispose();
+    if (parts.isEmpty) return '?';
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+    final word = parts[0];
+    return (word.length >= 2 ? word.substring(0, 2) : word).toUpperCase();
   }
 
-  Widget _dialogPwField(
-    String label,
-    TextEditingController ctrl,
-    bool show,
-    VoidCallback toggle, {
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: ctrl,
-      obscureText: !show,
-      validator: validator,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
-        suffixIcon: IconButton(
-          icon: Icon(show ? Icons.visibility_off : Icons.visibility,
-              color: AppColors.textSecondary),
-          onPressed: toggle,
-        ),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      ),
+  Future<void> _openChangePassword() async {
+    final result = await showDialog(
+      context: context,
+      builder: (_) => StudentChangePasswordDialog(profileService: _service),
     );
+    if (result == true) {
+      _showSnackbar('Password changed successfully');
+    }
   }
 
   Future<void> _logout() async {
@@ -1353,10 +1224,11 @@ class _ProfilePageState extends State<_ProfilePage> {
     final className =
         info?['class_name']?.toString() ?? info?['class']?.toString() ?? '—';
     final rollNo = info?['roll_no'] ?? info?['roll_number'] ?? '—';
-    final parts = widget.name.trim().split(' ');
-    final initials = parts.length >= 2
-        ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
-        : widget.name.substring(0, 2).toUpperCase();
+    // final parts = widget.name.trim().split(' ');
+    // final initials = parts.length >= 2
+    //     ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
+    //     : widget.name.substring(0, 2).toUpperCase();
+    final initials = _getInitials(widget.name);
 
     return Container(
       color: AppColors.background,

@@ -5,7 +5,12 @@ import 'package:get/get.dart';
 import '../core/services/device_service.dart';
 import '../core/theme/app_colors.dart';
 import 'package:geolocator/geolocator.dart';
+<<<<<<< HEAD
 import 'forgot_password_screen.dart';
+=======
+import 'forget_password_screen.dart';
+
+>>>>>>> 604a1e3e1959a4c41ab42f3c0a9d565de65987c6
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

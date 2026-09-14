@@ -16,7 +16,7 @@ class CreateSessionPage extends StatefulWidget {
 
 class _CreateSessionPageState extends State<CreateSessionPage> {
   final _storage = GetStorage();
-  
+
   double? _latitude;
   double? _longitude;
   bool _gpsFetched = false;
@@ -57,11 +57,15 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
     });
 
     try {
+      // Backend already filters this list to the logged-in teacher's own
+      // classes (admins still see all classes) — no change needed here.
       final List<Map<String, dynamic>> data = await ClassService.fetchClasses();
       setState(() {
         _classes = data;
         if (_classes.isNotEmpty) {
           _selectedClassId = int.tryParse(_classes.first['id']?.toString() ?? '') ?? 0;
+        } else {
+          _selectedClassId = null;
         }
         _isLoadingClasses = false;
       });
@@ -343,7 +347,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                         )
                       else if (_classes.isEmpty)
                         const Text(
-                          "No classes available. Add a class in Class Directory first.",
+                          "No classes assigned to you yet. Contact the admin to get a class assigned.",
                           style: TextStyle(color: Colors.black54, fontSize: 13),
                         )
                       else
@@ -369,10 +373,15 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
                           ),
                           items: _classes.map((c) {
                             final int idVal = int.tryParse(c['id']?.toString() ?? '') ?? 0;
+                            final String className = (c['class_name'] ?? c['name'] ?? 'Class').toString();
+                            final String subjectName = (c['subject'] ?? '').toString().trim();
+                            final String label = subjectName.isNotEmpty
+                                ? "$className ($subjectName)"
+                                : className;
                             return DropdownMenuItem<int>(
                               value: idVal,
                               child: Text(
-                                c['class_name'] ?? 'Class',
+                                label,
                                 style: const TextStyle(fontSize: 14),
                               ),
                             );

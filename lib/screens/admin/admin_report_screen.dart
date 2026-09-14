@@ -1764,6 +1764,7 @@ class StudentReportModal extends StatefulWidget {
 class _StudentReportModalState extends State<StudentReportModal> with SingleTickerProviderStateMixin {
   bool _loading = true;
   bool _hasError = false;
+  bool _downloading = false;
   Map<String, dynamic>? _reportData;
   late AnimationController _animController;
   late Animation<double> _scaleAnim;
@@ -1815,6 +1816,65 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
     }
   }
 
+  // ── NEW: download this student's own report (PDF / Excel) ──
+  void _showStudentDownloadOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.picture_as_pdf, color: Colors.red),
+                title: const Text('Download PDF'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _downloadStudentReport(isPdf: true);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.table_chart, color: Colors.green),
+                title: const Text('Download Excel'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await _downloadStudentReport(isPdf: false);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _downloadStudentReport({required bool isPdf}) async {
+    if (_downloading) return;
+    setState(() => _downloading = true);
+    try {
+      if (isPdf) {
+        await AdminReportExportService.downloadStudentPdf(widget.student.studentId);
+      } else {
+        await AdminReportExportService.downloadStudentExcel(widget.student.studentId);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(isPdf ? 'PDF downloaded' : 'Excel downloaded')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScaleTransition(
@@ -1836,14 +1896,31 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Student Attendance Report',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
+                  Expanded(
+                    child: Text(
+                      'Student Attendance Report',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.textPrimary,
+                      ),
                     ),
                   ),
+                  if (!_loading && !_hasError)
+                    _downloading
+                        ? const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : IconButton(
+                            icon: Icon(Icons.download_outlined, color: AppColors.primary, size: 20),
+                            tooltip: 'Download report',
+                            onPressed: _showStudentDownloadOptions,
+                          ),
                   IconButton(
                     icon: const Icon(Icons.close, color: AppColors.textSecondary, size: 20),
                     onPressed: () => Navigator.pop(context),

@@ -425,6 +425,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       );
       print("6. Location OK: ${pos.latitude}");
 
+      // NOTE: _classes now only contains THIS teacher's own assigned
+      // classes (backend filters by teacher_id for the 'teacher' role).
       final eligibleClasses = _classes.where((c) {
         final count = c['students_count'];
         if (count is int) return count > 0;
@@ -460,10 +462,16 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
                 ),
                 hint: const Text('Select a class'),
                 value: null,
+                isExpanded: true,
                 items: eligibleClasses.map((c) {
+                  final String className = (c['class_name'] ?? c['name'] ?? 'Class ${c['id']}').toString();
+                  final String subjectName = (c['subject'] ?? '').toString().trim();
+                  final String label = subjectName.isNotEmpty
+                      ? "$className ($subjectName)"
+                      : className;
                   return DropdownMenuItem<int>(
                     value: c['id'] is int ? c['id'] : int.tryParse(c['id'].toString()),
-                    child: Text(c['class_name'] ?? c['name'] ?? 'Class ${c['id']}'),
+                    child: Text(label, overflow: TextOverflow.ellipsis),
                   );
                 }).toList(),
                 onChanged: (val) {

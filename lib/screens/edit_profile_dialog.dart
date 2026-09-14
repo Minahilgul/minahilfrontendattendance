@@ -89,9 +89,13 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 controller: _phoneController,
                 decoration: _inputDecoration('Phone Number (Optional)', Icons.phone_outlined),
                 keyboardType: TextInputType.phone,
+                maxLength: 11,
                 validator: (v) {
                   if (v != null && v.trim().isNotEmpty) {
-                    if (!RegExp(r'^\+?[\d\s\-()]{7,15}$').hasMatch(v.trim())) return 'Enter a valid phone number';
+                    final phone = v.trim();
+                    if (!RegExp(r'^03\d{9}$').hasMatch(phone)) {
+                      return 'Enter a valid 11-digit phone number (e.g. 03001234567)';
+                    }
                   }
                   return null;
                 },

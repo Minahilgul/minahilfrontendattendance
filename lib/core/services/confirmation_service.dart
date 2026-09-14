@@ -90,22 +90,42 @@ class ConfirmationService {
       return {'success': false, 'message': 'Connection error: $e'};
     }
   }
+
   // Teacher: get full response directory
-static Future<Map<String, dynamic>> getDirectory(int sessionId) async {
-  try {
-    final token = await AuthService.getToken();
-    final response = await http.get(
-      Uri.parse('${AuthService.baseUrl}/confirmation/directory')
-          .replace(queryParameters: {'session_id': sessionId.toString()}),
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-    );
-    print("DIRECTORY STATUS: ${response.statusCode}");
-    return jsonDecode(response.body);
-  } catch (e) {
-    return {'success': false, 'message': 'Connection error: $e'};
+  static Future<Map<String, dynamic>> getDirectory(int sessionId) async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/confirmation/directory')
+            .replace(queryParameters: {'session_id': sessionId.toString()}),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("DIRECTORY STATUS: ${response.statusCode}");
+      return jsonDecode(response.body);
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
+    }
   }
-}
+
+  // ── NEW: Admin — overview of all sessions that have confirmation requests,
+  // with yes/no/pending counts and verdict per session ──
+  static Future<Map<String, dynamic>> getAdminOverview() async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/admin/confirmation-overview'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      print("ADMIN OVERVIEW STATUS: ${response.statusCode}");
+      return jsonDecode(response.body);
+    } catch (e) {
+      return {'success': false, 'message': 'Connection error: $e'};
+    }
+  }
 }
