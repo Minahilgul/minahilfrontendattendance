@@ -9,7 +9,7 @@ import '../../core/services/student_profile_service.dart';
 import '../../core/services/confirmation_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/config/environment.dart';
-import 'student_report_screen.dart'; // adjust relative path as needed
+import 'student_report_screen.dart'; 
 import 'student_change_password_dialog.dart';
 
 // Constants

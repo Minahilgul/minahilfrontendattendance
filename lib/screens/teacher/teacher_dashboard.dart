@@ -307,7 +307,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     return BaseScaffold(
       title: 'Teacher Dashboard',
       role: widget.role,
-      // ✅ CHANGE 2: FAB (? help button) removed — no floatingActionButton
+      //  CHANGE 2: FAB (? help button) removed — no floatingActionButton
       bottomNav: _buildBottomNavBar(),
       body: _buildBody(),
     );
@@ -334,8 +334,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             type: DashboardCardType.danger,
             onTap: _openEndSessionScreen,
           ),
-          // ✅ CHANGE 3: Class Roaster card removed
-          // ✅ CHANGE 4: Reports card replaced with Attendance card (Reports moved to drawer)
+          //  CHANGE 3: Class Roaster card removed
+          //  CHANGE 4: Reports card replaced with Attendance card (Reports moved to drawer)
           DashboardCard(
             title: 'Attendance',
             iconData: Icons.checklist_rounded,

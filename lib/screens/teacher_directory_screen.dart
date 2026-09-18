@@ -73,7 +73,7 @@ class TeacherModel {
 // API SERVICE WRAPPERS
 
 
-//      Added deviceId param to match service signature.
+//  Added deviceId param to match service signature.
 //  Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> addTeacher(
   String username,
@@ -96,7 +96,7 @@ Future<bool> addTeacher(
 }
 
 //  TeacherService.updateTeacher now returns Map<String,dynamic> not bool.
-//      Added deviceId param to match service signature.
+//  Added deviceId param to match service signature.
 //  Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> updateTeacher(
   int id,
