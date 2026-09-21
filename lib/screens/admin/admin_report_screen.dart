@@ -1434,7 +1434,7 @@ void _showDownloadOptions() {
                   ),
                   Text(
                     '$pct%',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                   ),
                 ],
               ),
@@ -1444,7 +1444,7 @@ void _showDownloadOptions() {
                 child: LinearProgressIndicator(
                   value: pct / 100,
                   backgroundColor: Colors.grey.shade100,
-                  valueColor: AlwaysStoppedAnimation<Color>(pct >= 75 ? AppColors.success : AppColors.danger),
+                  valueColor: AlwaysStoppedAnimation<Color>(pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                   minHeight: 6,
                 ),
               ),
@@ -1516,7 +1516,7 @@ void _showDownloadOptions() {
                     children: [
                       Text(
                         '$pct%',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -1618,7 +1618,7 @@ void _showDownloadOptions() {
                     children: [
                       Text(
                         '$pct%',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                       ),
                       const SizedBox(height: 2),
                       Text(

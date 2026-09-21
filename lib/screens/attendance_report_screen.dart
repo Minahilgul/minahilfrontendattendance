@@ -50,6 +50,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   late Animation<double> _fadeAnim;
   final TextEditingController _searchController = TextEditingController();
 
+  // ── Pagination (Recent Audit Logs) ──
+  int _currentPage = 1;
+  static const int _itemsPerPage = 5;
+
   static const Color _bg      = AppColors.background;
   static const Color _card    = AppColors.surface;
   static const Color _primary = AppColors.primary;
@@ -63,6 +67,19 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     if (widget.teacherId != null) return widget.teacherId;
     final raw = AuthService.currentUser?['id'];
     return raw is int ? raw : int.tryParse(raw?.toString() ?? '');
+  }
+
+  // NEW: pagination getters for _records
+  int get _totalLogPages {
+    if (_records.isEmpty) return 1;
+    return (_records.length / _itemsPerPage).ceil();
+  }
+
+  List<Map<String, dynamic>> get _pagedRecords {
+    final start = (_currentPage - 1) * _itemsPerPage;
+    if (start >= _records.length) return [];
+    final end = (start + _itemsPerPage).clamp(0, _records.length);
+    return _records.sublist(start, end);
   }
 
   @override
@@ -145,7 +162,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
 
       _weeklyData = results[3] as List<Map<String, dynamic>>;
 
-      setState(() => _loading = false);
+      setState(() {
+        _loading = false;
+        if (!silent) _currentPage = 1; // NEW: reset to first page on a real (non-background) reload
+      });
       _animController.forward(from: 0);
       _loadSummaries();
       _loadTeacherStudents(silent: silent);
@@ -1047,6 +1067,8 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   }
 
   // ── Log cards ─────────────────────────────────────
+  // NEW: now renders only the current page of _records, plus a
+  // pagination bar at the end of the list.
   List<Widget> _buildLogCards() {
     if (_records.isEmpty) {
       return [
@@ -1061,7 +1083,44 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         ),
       ];
     }
-    return _records.map((r) => _buildLogCard(r)).toList();
+    return [
+      ..._pagedRecords.map((r) => _buildLogCard(r)),
+      _buildLogsPaginationBar(),
+    ];
+  }
+
+  // ── NEW: pagination control bar for Recent Audit Logs ──
+  // Same "Page X of Y" prev/next style used across the other
+  // Reports & Audit screens.
+  Widget _buildLogsPaginationBar() {
+    if (_records.length <= _itemsPerPage) return const SizedBox();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          IconButton(
+            icon: Icon(Icons.chevron_left,
+                color: _currentPage > 1 ? _primary : _textMid),
+            onPressed: _currentPage > 1
+                ? () => setState(() => _currentPage--)
+                : null,
+          ),
+          Text(
+            'Page $_currentPage of $_totalLogPages',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _textMid),
+          ),
+          IconButton(
+            icon: Icon(Icons.chevron_right,
+                color: _currentPage < _totalLogPages ? _primary : _textMid),
+            onPressed: _currentPage < _totalLogPages
+                ? () => setState(() => _currentPage++)
+                : null,
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildLogCard(Map<String, dynamic> r) {
