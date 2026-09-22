@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get_storage/get_storage.dart';
@@ -175,7 +176,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
             ),
             content: Text(result['message'] ?? 'Attendance session created successfully!'),
             actions: [
-              ElevatedButton(
+              GradientButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Dismiss Dialog
                   Navigator.of(context).pop(); // Go back
@@ -201,7 +202,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
               ),
               content: const Text('This class already has an active session. Please return to the dashboard and click "Mark Attendance".'),
               actions: [
-                ElevatedButton(
+                GradientButton(
                   onPressed: () {
                     Navigator.of(context).pop(); // Dismiss Dialog
                     Navigator.of(context).pop(); // Go back
@@ -507,7 +508,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
               SizedBox(
                 width: double.infinity,
                 height: 52,
-                child: ElevatedButton(
+                child: GradientButton(
                   onPressed: (_isCreatingSession || !_gpsFetched || _selectedClassId == null)
                       ? null
                       : _submitSession,

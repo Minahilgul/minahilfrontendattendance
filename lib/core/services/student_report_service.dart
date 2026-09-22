@@ -17,10 +17,14 @@ class StudentReportService {
   static Future<Map<String, dynamic>> getMyReport({
     String? startDate,
     String? endDate,
+    String? status,
+    int? classId,
   }) async {
     final params = <String, String>{};
     if (startDate != null) params['start_date'] = startDate;
     if (endDate != null) params['end_date'] = endDate;
+    if (status != null && status != 'All') params['status'] = status;
+    if (classId != null) params['class_id'] = classId.toString();
 
     final uri = Uri.parse('$_baseUrl/student/reports/my-report')
         .replace(queryParameters: params.isNotEmpty ? params : null);

@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/teacher_profile_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -99,7 +100,7 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
           onPressed: _isLoading ? null : () => Navigator.pop(context, false),
           child: const Text('Cancel'),
         ),
-        ElevatedButton(
+        GradientButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.success,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../core/services/attendance_service.dart';
@@ -337,7 +338,7 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
           const SizedBox(height: 12),
           Text(_error!, style: TextStyle(color: AppColors.danger)),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadStudents, child: const Text('Retry')),
+          GradientButton(onPressed: _loadStudents, child: const Text('Retry')),
         ],
       ),
     );
@@ -531,7 +532,7 @@ class _BottomSaveSection extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton.icon(
+              child: GradientButton.icon(
                 onPressed: isSaving ? null : onSave,
                 style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,

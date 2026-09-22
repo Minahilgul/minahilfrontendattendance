@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/admin_profile_service.dart';
 import '../edit_profile_dialog.dart';
@@ -44,7 +45,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
@@ -68,7 +69,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         content: const Text('This will log you out from all devices. Continue?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout All', style: TextStyle(color: Colors.white)),
@@ -144,7 +145,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
+                GradientButton(onPressed: _loadProfile, child: const Text('Retry')),
                 const SizedBox(width: 16),
                 OutlinedButton(
                   onPressed: _logout,

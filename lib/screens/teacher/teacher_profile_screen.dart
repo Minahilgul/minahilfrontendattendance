@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/teacher_profile_service.dart';
 import 'teacher_edit_profile_dialog.dart';
@@ -44,7 +45,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         content: const Text('Are you sure you want to logout?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
@@ -67,7 +68,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         content: const Text('This will log you out from all devices. Continue?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout All', style: TextStyle(color: Colors.white)),
@@ -140,7 +141,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             const SizedBox(height: 16),
             Text(_error ?? 'Unknown error', textAlign: TextAlign.center, style: TextStyle(color: AppColors.danger)),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _loadProfile, child: const Text('Retry')),
+            GradientButton(onPressed: _loadProfile, child: const Text('Retry')),
           ],
         ),
       ),

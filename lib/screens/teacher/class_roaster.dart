@@ -1,3 +1,5 @@
+import '../../core/theme/app_colors.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -52,7 +54,7 @@ class StudentModel {
 
   Color get avatarColor {
     final colors = [
-      const Color(0xFF1565C0),
+      AppColors.primary,
       const Color(0xFF6A1B9A),
       const Color(0xFF00695C),
       const Color(0xFF37474F),
@@ -437,7 +439,7 @@ class _AddStudentButton extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: 50,
-        child: ElevatedButton(
+        child: GradientButton(
           onPressed: onTap,
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF2962FF),
@@ -645,7 +647,7 @@ class _AddStudentSheetState extends State<_AddStudentSheet> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
+                    child: GradientButton(
                       onPressed: _save,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF2962FF),

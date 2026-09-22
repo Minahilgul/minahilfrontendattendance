@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../core/services/teacher_service.dart';
@@ -85,7 +86,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
           ),
           content: Text(result['message'] ?? 'Registration successful. Admin approval required.'),
           actions: [
-            ElevatedButton(
+            GradientButton(
               onPressed: () {
                 Navigator.pop(context); // close dialog
                 Get.offAllNamed('/login'); // go to login
@@ -308,10 +309,9 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: ElevatedButton(
+                    child: GradientButton(
                       onPressed: (_isLoading || _isLoadingDevice) ? null : _register,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -330,6 +330,7 @@ class _RegisterTeacherScreenState extends State<RegisterTeacherScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
+                                color: Colors.white,
                               ),
                             ),
                     ),

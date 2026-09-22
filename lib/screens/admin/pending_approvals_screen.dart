@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/base_scaffold.dart';
 import '../../core/services/student_service.dart';
@@ -138,7 +139,7 @@ class ApprovalCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: GradientButton.icon(
                     onPressed: onApprove,
                     icon: const Icon(Icons.check_circle_outline, size: 15),
                     label: const Text('Approve',

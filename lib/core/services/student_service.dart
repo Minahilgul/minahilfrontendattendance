@@ -25,10 +25,27 @@ class StudentService {
     }
   }
 
-  // Used only for the Add Student class dropdown — must be the physical
-  // class list (/class-groups), NOT the subject-offering list (/classes),
-  // otherwise the same class (e.g. "BS Zoology") would show once per
-  // subject taught under it.
+  static Future<int> fetchPendingCount() async {
+    try {
+      final token = await AuthService.getToken();
+      final response = await http.get(
+        Uri.parse('${AuthService.baseUrl}/pending-students/count'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['count'] ?? 0;
+      }
+      return 0;
+    } catch (e) {
+      print("FETCH PENDING COUNT SERVICE ERROR: ${e.toString()}");
+      return 0;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
     try {
       final token = await AuthService.getToken();

@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/teacher_service.dart';
 import '../../core/services/device_service.dart';
@@ -135,7 +136,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 50,
-                  child: ElevatedButton(
+                  child: GradientButton(
                     onPressed: _submitTeacher,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,

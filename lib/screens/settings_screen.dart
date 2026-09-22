@@ -43,7 +43,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final fetchedSettings = await SystemSettingService.fetchSettings(token);
       setState(() {
-        settings = fetchedSettings;
+        // Filter out the parent_verification_mode as requested
+        settings = fetchedSettings.where((s) => 
+          s['key'] != 'parent_verification_mode' && 
+          s['key'] != 'parent_verificiation_mode'
+        ).toList();
         isLoading = false;
       });
     } catch (e) {

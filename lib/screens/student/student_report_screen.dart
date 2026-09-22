@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/student_report_service.dart';
 import '../../core/services/student_report_export_service.dart';
@@ -19,6 +20,10 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
 
   String? _startDate;
   String? _endDate;
+  String _statusFilter = 'All';
+  int? _selectedClassId;
+  String _selectedClassName = 'All Subjects';
+  List<Map<String, dynamic>> _availableSubjects = [];
 
   @override
   void initState() {
@@ -35,10 +40,30 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
       final result = await StudentReportService.getMyReport(
         startDate: _startDate,
         endDate: _endDate,
+        status: _statusFilter,
+        classId: _selectedClassId,
       );
       if (mounted) {
         setState(() {
           _data = result;
+          
+          if (_availableSubjects.isEmpty) {
+            final recs = result['records'] as List<dynamic>? ?? [];
+            final Set<int> seen = {};
+            for (var r in recs) {
+              final cid = r['class_id'];
+              if (cid != null && !seen.contains(cid)) {
+                seen.add(cid);
+                final cname = r['class_name'] ?? 'Unknown';
+                final subj = r['subject'] != null ? ' (${r['subject']})' : '';
+                _availableSubjects.add({
+                  'id': cid,
+                  'name': '$cname$subj',
+                });
+              }
+            }
+          }
+
           _loading = false;
         });
       }
@@ -96,6 +121,8 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
               onTap: () => _runDownload(() => StudentReportExportService.downloadMyPdf(
                     startDate: _startDate,
                     endDate: _endDate,
+                    status: _statusFilter,
+                    classId: _selectedClassId,
                   )),
             ),
             ListTile(
@@ -104,6 +131,8 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
               onTap: () => _runDownload(() => StudentReportExportService.downloadMyExcel(
                     startDate: _startDate,
                     endDate: _endDate,
+                    status: _statusFilter,
+                    classId: _selectedClassId,
                   )),
             ),
           ],
@@ -180,7 +209,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
         Center(child: Text(_error!, style: const TextStyle(color: AppColors.textSecondary))),
         const SizedBox(height: 20),
         Center(
-          child: ElevatedButton(
+          child: GradientButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: _load,
             child: const Text('Retry', style: TextStyle(color: Colors.white)),
@@ -240,36 +269,34 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
         ),
         const SizedBox(height: 16),
 
-        // Date range filter
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _pickDateRange,
-                icon: const Icon(Icons.date_range, size: 16, color: AppColors.primary),
-                label: Text(
-                  _startDate != null && _endDate != null
-                      ? '${_startDate!.substring(5)} to ${_endDate!.substring(5)}'
-                      : 'Filter by Date Range',
-                  style: const TextStyle(color: AppColors.textPrimary, fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  side: BorderSide(color: Colors.grey.shade300),
-                ),
-              ),
-            ),
-            if (_startDate != null) ...[
+        // Filters
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              _chip(_selectedClassName, onTap: _showSubjectPicker),
               const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.clear, color: AppColors.danger),
-                onPressed: _clearDateRange,
-                tooltip: 'Clear filter',
+              _chip(_statusFilter == 'All' ? 'All Status' : _statusFilter, onTap: _showStatusSheet),
+              const SizedBox(width: 8),
+              _chip(
+                _startDate != null && _endDate != null
+                    ? '${_startDate!.substring(5)} to ${_endDate!.substring(5)}'
+                    : 'Date Range',
+                onTap: _pickDateRange,
               ),
+              if (_startDate != null) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: _clearDateRange,
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(color: AppColors.danger, shape: BoxShape.circle),
+                    child: const Icon(Icons.clear, color: Colors.white, size: 14),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
         const SizedBox(height: 16),
 
@@ -404,6 +431,88 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _chip(String label, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500)),
+            const SizedBox(width: 4),
+            const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Colors.white),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSubjectPicker() => showModalBottomSheet(
+    context: context,
+    backgroundColor: AppColors.background,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (_) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 16),
+          const Text('Select Subject', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ListTile(
+                  title: const Text('All Subjects', style: TextStyle(color: AppColors.textPrimary)),
+                  trailing: _selectedClassId == null ? const Icon(Icons.check, color: AppColors.primary) : null,
+                  onTap: () {
+                    setState(() { _selectedClassId = null; _selectedClassName = 'All Subjects'; });
+                    Navigator.pop(context);
+                    _load();
+                  },
+                ),
+                ..._availableSubjects.map((s) => ListTile(
+                  title: Text(s['name'] ?? 'Unknown', style: const TextStyle(color: AppColors.textPrimary)),
+                  trailing: _selectedClassId == s['id'] ? const Icon(Icons.check, color: AppColors.primary) : null,
+                  onTap: () {
+                    setState(() { _selectedClassId = s['id']; _selectedClassName = s['name'] ?? 'Unknown'; });
+                    Navigator.pop(context);
+                    _load();
+                  },
+                )).toList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+
+  void _showStatusSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(width: 36, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+          const SizedBox(height: 8),
+          for (final s in ['All', 'present', 'absent', 'late'])
+            ListTile(
+              title: Text(s == 'All' ? 'All Status' : s.toUpperCase(), style: const TextStyle(color: AppColors.textPrimary)),
+              trailing: _statusFilter == s ? const Icon(Icons.check_rounded, color: AppColors.primary) : null,
+              onTap: () { setState(() => _statusFilter = s); Navigator.pop(context); _load(); },
+            ),
+          const SizedBox(height: 12),
         ],
       ),
     );

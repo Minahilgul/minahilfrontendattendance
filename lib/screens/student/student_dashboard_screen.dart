@@ -1,3 +1,5 @@
+import 'package:attendence_verification/core/utils.dart/date_formatter.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -342,7 +344,7 @@ Map<String, dynamic>? _studentInfo;
         actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
           // NO
-          ElevatedButton.icon(
+          GradientButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.danger.withOpacity(0.1),
               foregroundColor: AppColors.danger,
@@ -360,7 +362,7 @@ Map<String, dynamic>? _studentInfo;
             },
           ),
           // YES
-          ElevatedButton.icon(
+          GradientButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.success,
               foregroundColor: Colors.white,
@@ -572,7 +574,7 @@ Map<String, dynamic>? _studentInfo;
             const Text('Could not load data',
                 style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 8),
-            ElevatedButton(
+            GradientButton(
               onPressed: _loadData,
               style:
                   ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
@@ -1115,7 +1117,7 @@ class _NotificationsPage extends StatelessWidget {
                                             color: AppColors.textSecondary,
                                             height: 1.3)),
                                     const SizedBox(height: 6),
-                                    Text(n.createdAt,
+                                    Text(DateFormatter.format(n.createdAt),
                                         style: const TextStyle(
                                             fontSize: 10,
                                             color: Colors.grey)),
@@ -1202,7 +1204,7 @@ class _ProfilePageState extends State<_ProfilePage> {
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
