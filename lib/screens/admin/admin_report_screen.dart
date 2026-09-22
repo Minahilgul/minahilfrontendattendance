@@ -1,3 +1,5 @@
+import 'package:attendence_verification/core/utils/date_formatter.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../widgets/base_scaffold.dart';
@@ -500,11 +502,28 @@ void _showDownloadOptions() {
     if (!mounted) return;
     setState(() => _loadingSummaries = true);
     try {
-      final t = await AdminReportService.getTeachersSummary();
-      final c = await AdminReportService.getClassesSummary(teacherId: _selectedTeacherId);
+      final t = await AdminReportService.getTeachersSummary(
+        classId: _selectedClassId,
+        days: _selectedDays,
+        date: _filterDate,
+        startDate: _filterStartDate,
+        endDate: _filterEndDate,
+      );
+      final c = await AdminReportService.getClassesSummary(
+        teacherId: _selectedTeacherId,
+        days: _selectedDays,
+        date: _filterDate,
+        startDate: _filterStartDate,
+        endDate: _filterEndDate,
+      );
       final s = await AdminReportService.getSessionsSummary(
         teacherId: _selectedTeacherId,
         classId: _selectedClassId,
+        days: _selectedDays,
+        date: _filterDate,
+        startDate: _filterStartDate,
+        endDate: _filterEndDate,
+        status: _filterStatus,
       );
       if (mounted) {
         setState(() {
@@ -979,7 +998,7 @@ void _showDownloadOptions() {
                   ),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton.icon(
+                GradientButton.icon(
                   onPressed: _resetFilters,
                   icon: const Icon(Icons.clear_all, size: 16, color: Colors.white),
                   label: const Text('Reset', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -1197,11 +1216,31 @@ void _showDownloadOptions() {
           trailing: _selectedClassId == null ? Icon(Icons.check, color: AppColors.primary) : null,
           onTap: () { setState(() { _selectedClassId = null; _selectedClassName = 'All Classes'; }); Navigator.pop(context); _onFilterChanged(); },
         ),
-        ..._classes.map((c) => ListTile(
-          title: Text(c['class_name'] ?? ''),
-          trailing: _selectedClassId == c['id'] ? Icon(Icons.check, color: AppColors.primary) : null,
-          onTap: () { setState(() { _selectedClassId = c['id']; _selectedClassName = c['class_name'] ?? ''; }); Navigator.pop(context); _onFilterChanged(); },
-        )),
+        Expanded(
+          child: ListView(
+            shrinkWrap: true,
+            children: _classes.map((c) {
+              final className = c['class_name'] ?? '';
+              final subject = c['subject'];
+              final displayName = (subject != null && subject.toString().trim().isNotEmpty)
+                  ? '$className ($subject)'
+                  : className;
+
+              return ListTile(
+                title: Text(displayName),
+                trailing: _selectedClassId == c['id'] ? Icon(Icons.check, color: AppColors.primary) : null,
+                onTap: () { 
+                  setState(() { 
+                    _selectedClassId = c['id']; 
+                    _selectedClassName = displayName; 
+                  }); 
+                  Navigator.pop(context); 
+                  _onFilterChanged(); 
+                },
+              );
+            }).toList(),
+          ),
+        ),
         const SizedBox(height: 16),
       ],
     ),
@@ -1567,9 +1606,13 @@ void _showDownloadOptions() {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    c['class_name'],
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  Expanded(
+                    child: Text(
+                      c['subject'] != null && c['subject'].toString().trim().isNotEmpty
+                          ? "${c['class_name']} (${c['subject']})"
+                          : c['class_name'],
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -1986,7 +2029,7 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
             const SizedBox(height: 16),
             SizedBox(
               height: 36,
-              child: ElevatedButton(
+              child: GradientButton(
                 onPressed: _loadReport,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -2497,7 +2540,7 @@ class _SessionsListSheetState extends State<SessionsListSheet> {
                                           ),
                                         ]),
                                         const SizedBox(height: 2),
-                                        Text(s['date'] ?? '', style: TextStyle(fontSize: 10, color: AppColors.textLight)),
+                                        Text(DateFormatter.formatShort(s['date']), style: TextStyle(fontSize: 10, color: AppColors.textLight)),
                                       ],
                                     ),
                                   ),

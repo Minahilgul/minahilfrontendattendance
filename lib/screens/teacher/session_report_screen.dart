@@ -1,3 +1,5 @@
+import 'package:attendence_verification/core/utils/date_formatter.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -290,7 +292,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                       Text('Session #${s['id']}',
                           style: const TextStyle(
                               color: _textDark, fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text(s['date'] ?? '-',
+                      Text(DateFormatter.formatShort(s['date']),
                           style: TextStyle(color: AppColors.textLight, fontSize: 12)),
                     ],
                   ),
@@ -562,7 +564,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                 Row(children: [
                   Icon(Icons.access_time, size: 11, color: AppColors.textLight),
                   const SizedBox(width: 3),
-                  Text(log['time'] ?? '',
+                  Text(DateFormatter.format(log['time']),
                       style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                   const SizedBox(width: 8),
                   Icon(isSession ? Icons.videocam_rounded : Icons.check_circle,
@@ -597,7 +599,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
           const SizedBox(height: 12),
           Text(_error!, style: TextStyle(color: AppColors.danger)),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadAll, child: const Text('Retry')),
+          GradientButton(onPressed: _loadAll, child: const Text('Retry')),
         ],
       ),
     );

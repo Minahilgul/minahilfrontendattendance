@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/student_profile_service.dart';
 import '../../core/theme/app_colors.dart';
+import '../../widgets/gradient_button.dart';
 
 
 class StudentChangePasswordDialog extends StatefulWidget {
@@ -104,16 +105,18 @@ class _StudentChangePasswordDialogState extends State<StudentChangePasswordDialo
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: SizedBox(
+                      height: 48,
+                      child: GradientButton(
+                        onPressed: _isLoading ? null : _submit,
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text("Change Password", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white)),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                          : const Text('Update Password', style: TextStyle(color: Colors.white)),
                     ),
                   ),
                 ]),

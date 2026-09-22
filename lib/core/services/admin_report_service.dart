@@ -214,12 +214,24 @@ class AdminReportService {
   }
 
   // ── NEW summary endpoints ──
-  static Future<List<Map<String, dynamic>>> getTeachersSummary() async {
+  static Future<List<Map<String, dynamic>>> getTeachersSummary({
+    int? classId,
+    int? days,
+    String? date,
+    String? startDate,
+    String? endDate,
+  }) async {
     try {
-      final res = await http.get(
-        Uri.parse('$_baseUrl/admin/reports/teachers-summary'),
-        headers: _headers(),
-      );
+      final params = {
+        if (classId != null) 'class_id': classId.toString(),
+        if (days != null) 'days': days.toString(),
+        if (date != null) 'date': date,
+        if (startDate != null) 'start_date': startDate,
+        if (endDate != null) 'end_date': endDate,
+      };
+      final uri = Uri.parse('$_baseUrl/admin/reports/teachers-summary')
+          .replace(queryParameters: params);
+      final res = await http.get(uri, headers: _headers());
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
         return List<Map<String, dynamic>>.from(data['teachers'] ?? []);
@@ -230,10 +242,20 @@ class AdminReportService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getClassesSummary({int? teacherId}) async {
+  static Future<List<Map<String, dynamic>>> getClassesSummary({
+    int? teacherId,
+    int? days,
+    String? date,
+    String? startDate,
+    String? endDate,
+  }) async {
     try {
       final params = {
         if (teacherId != null) 'teacher_id': teacherId.toString(),
+        if (days != null) 'days': days.toString(),
+        if (date != null) 'date': date,
+        if (startDate != null) 'start_date': startDate,
+        if (endDate != null) 'end_date': endDate,
       };
       final uri = Uri.parse('$_baseUrl/admin/reports/classes-summary')
           .replace(queryParameters: params);
@@ -248,11 +270,24 @@ class AdminReportService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getSessionsSummary({int? teacherId, int? classId}) async {
+  static Future<List<Map<String, dynamic>>> getSessionsSummary({
+    int? teacherId,
+    int? classId,
+    int? days,
+    String? date,
+    String? startDate,
+    String? endDate,
+    String? status,
+  }) async {
     try {
       final params = {
         if (teacherId != null) 'teacher_id': teacherId.toString(),
         if (classId != null) 'class_id': classId.toString(),
+        if (days != null) 'days': days.toString(),
+        if (date != null) 'date': date,
+        if (startDate != null) 'start_date': startDate,
+        if (endDate != null) 'end_date': endDate,
+        if (status != null) 'status': status,
       };
       final uri = Uri.parse('$_baseUrl/admin/reports/sessions-summary')
           .replace(queryParameters: params);

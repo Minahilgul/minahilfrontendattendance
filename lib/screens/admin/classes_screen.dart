@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -397,7 +398,7 @@ class _ClassesScreenState extends State<ClassesScreen>
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            GradientButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.danger,
@@ -1638,7 +1639,7 @@ class _DialogButtons extends StatelessWidget {
 
         const SizedBox(width: 8),
 
-        ElevatedButton(
+        GradientButton(
           onPressed: isLoading ? null : onSubmit,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,

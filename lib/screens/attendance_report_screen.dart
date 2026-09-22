@@ -1,3 +1,5 @@
+import 'package:attendence_verification/core/utils/date_formatter.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import '../core/services/auth_service.dart';
 import '../core/services/session_service.dart';
+import '../core/services/class_service.dart';
 import '../core/services/confirmation_service.dart';
 import '../core/services/teacher_report_service.dart';
 import 'admin/admin_report_screen.dart' show AttendanceLineChart;
@@ -44,6 +47,9 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
   String? _error;
   String _statusFilter = 'All';
   String _timeFilter = 'Last 7 Days';
+  int? _selectedClassId;
+  String _selectedClassName = 'All Classes';
+  List<Map<String, dynamic>> _classes = [];
   Timer? _debounce;
   Timer? _refreshTimer;
   late AnimationController _animController;
@@ -118,6 +124,10 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       else if (_timeFilter == 'This Month') daysParam = 30;
       final statusParam = _statusFilter != 'All' ? _statusFilter : null;
 
+      if (_classes.isEmpty) {
+        _classes = await ClassService.fetchClasses();
+      }
+
       final results = await Future.wait<dynamic>([
         http.get(
           Uri.parse('${AuthService.baseUrl}/attendance/report')
@@ -127,14 +137,17 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
         TeacherReportService.getMyStats(
           days: daysParam,
           status: statusParam,
+          classId: _selectedClassId,
         ),
         http.get(
-          Uri.parse('${AuthService.baseUrl}/sessions'),
+          Uri.parse('${AuthService.baseUrl}/sessions')
+              .replace(queryParameters: _selectedClassId != null ? {'class_id': _selectedClassId.toString()} : null),
           headers: headers,
         ),
         TeacherReportService.getChartData(
           days: daysParam,
           status: statusParam,
+          classId: _selectedClassId,
         ),
       ]);
 
@@ -309,6 +322,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
     final p = <String, String>{};
     if (_statusFilter != 'All') p['status'] = _statusFilter;
     if (widget.teacherId != null) p['teacher_id'] = widget.teacherId.toString();
+    if (_selectedClassId != null) p['class_id'] = _selectedClassId.toString();
     if (_timeFilter == 'Today') p['days'] = '1';
     else if (_timeFilter == 'Last 7 Days') p['days'] = '7';
     else if (_timeFilter == 'This Month') p['days'] = '30';
@@ -763,11 +777,14 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
+          _chip(_selectedClassName, onTap: _showClassPicker),
+          const SizedBox(width: 8),
           _chip(_statusFilter == 'All' ? 'All Status' : _statusFilter, onTap: _showStatusSheet),
           const SizedBox(width: 8),
           _chip(_timeFilter, onTap: () {
             final opts = ['Today', 'Last 7 Days', 'This Month'];
             setState(() { _timeFilter = opts[(opts.indexOf(_timeFilter) + 1) % opts.length]; });
+            _loadAll();
           }),
         ],
       ),
@@ -791,6 +808,50 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
       ),
     );
   }
+
+  void _showClassPicker() => showModalBottomSheet(
+    context: context,
+    backgroundColor: _bg,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (_) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 16),
+          const Text('Select Class', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: _textDark)),
+          const SizedBox(height: 16),
+          Expanded(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ListTile(
+                  title: const Text('All Classes', style: TextStyle(color: _textDark)),
+                  trailing: _selectedClassId == null ? const Icon(Icons.check, color: _primary) : null,
+                  onTap: () {
+                    setState(() { _selectedClassId = null; _selectedClassName = 'All Classes'; });
+                    Navigator.pop(context);
+                    _loadAll();
+                  },
+                ),
+                ..._classes.map((c) {
+                  final name = c['subject'] != null ? "${c['name']} (${c['subject']})" : c['name'];
+                  return ListTile(
+                    title: Text(name ?? 'Unknown', style: const TextStyle(color: _textDark)),
+                    trailing: _selectedClassId == c['id'] ? const Icon(Icons.check, color: _primary) : null,
+                    onTap: () {
+                      setState(() { _selectedClassId = c['id']; _selectedClassName = name ?? 'Unknown'; });
+                      Navigator.pop(context);
+                      _loadAll();
+                    },
+                  );
+                }).toList(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 
   void _showStatusSheet() {
     showModalBottomSheet(
@@ -962,7 +1023,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
                       children: [
                         Text('Session #${s['id']}',
                             style: const TextStyle(color: _textDark, fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text(s['date'] ?? '-', style: const TextStyle(color: _textMid, fontSize: 12)),
+                        Text(DateFormatter.formatShort(s['date']), style: const TextStyle(color: _textMid, fontSize: 12)),
                       ],
                     ),
                   ],
@@ -1200,7 +1261,7 @@ class _AttendanceReportScreenState extends State<AttendanceReportScreen>
           const SizedBox(height: 12),
           Text(_error!, style: const TextStyle(color: _textMid)),
           const SizedBox(height: 20),
-          ElevatedButton(
+          GradientButton(
             style: ElevatedButton.styleFrom(
                 backgroundColor: _primary,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),

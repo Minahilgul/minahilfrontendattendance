@@ -8,7 +8,7 @@ class AppTheme {
 
     colorScheme: ColorScheme.light(
       primary: AppColors.primary,
-      secondary: AppColors.primaryLight,
+      secondary: AppColors.secondary,
       surface: AppColors.surface,
       error: AppColors.danger,
     ),
@@ -33,17 +33,19 @@ class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
     ),
 
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.background,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
+        borderSide: BorderSide.none,
       ),
+      isDense: true,
     ),
 
     textTheme: const TextTheme(

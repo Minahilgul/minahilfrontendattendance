@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -947,7 +948,7 @@ class _TeacherSessionsScreenState extends State<TeacherSessionsScreen> {
                             isActive
                                 ? SizedBox(
                                     height: 32,
-                                    child: ElevatedButton(
+                                    child: GradientButton(
                                       onPressed: isEnding
                                           ? null
                                           : () => _endSession(index),

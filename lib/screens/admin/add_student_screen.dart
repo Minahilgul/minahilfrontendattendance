@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/student_service.dart';
@@ -54,7 +55,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             child: SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton.icon(
+              child: GradientButton.icon(
                 icon: const Icon(Icons.person_add),
                 label: const Text("Add New Student"),
                 style: ElevatedButton.styleFrom(
@@ -255,7 +256,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Cancel'),
                     ),
-                    ElevatedButton(
+                    GradientButton(
                       onPressed: _submitForApproval,
                       child: const Text('Save'),
                     ),

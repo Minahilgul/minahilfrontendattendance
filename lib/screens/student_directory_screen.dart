@@ -1,3 +1,5 @@
+import '../core/theme/app_colors.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import '../core/services/student_service.dart';
@@ -40,7 +42,7 @@ class StudentModel {
     return StudentModel(
       id: json['id'] ?? 0,
       initials: initials.isEmpty ? 'ST' : initials,
-      avatarColor: const Color(0xFF0F9D58),
+      avatarColor: AppColors.primary,
       name: name,
       role: json['role'] ?? 'Student',
       email: json['email'],
@@ -336,10 +338,10 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: GradientButton(
                         onPressed: _isLoading ? null : _onSave,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F9D58),
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
@@ -636,10 +638,10 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: GradientButton(
                         onPressed: _isLoading ? null : _onUpdate,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F9D58),
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
@@ -756,7 +758,7 @@ class StudentCard extends StatelessWidget {
                       style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F9D58))),
+                          color: AppColors.primary)),
                 ],
               ),
             ),
@@ -875,7 +877,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
           TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE53935)),
@@ -910,7 +912,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
       role: _currentRole,
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddStudentDialog,
-        backgroundColor: const Color(0xFF0F9D58),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 4,
         shape:
