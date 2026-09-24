@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class StudentService {
-  // AuthService.baseUrl = 'attendance.sandbox.pk/api' rakho Flutter Web ke liye
+  
 
   static Future<Map<String, dynamic>> fetchApprovedStudents(String teacherId) async {
     try {
@@ -25,10 +25,7 @@ class StudentService {
     }
   }
 
-  // Used only for the Add Student class dropdown — must be the physical
-  // class list (/class-groups), NOT the subject-offering list (/classes),
-  // otherwise the same class (e.g. "BS Zoology") would show once per
-  // subject taught under it.
+  // Used only for the Add Student class dropdown 
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
     try {
       final token = await AuthService.getToken();
@@ -66,7 +63,7 @@ class StudentService {
         "class": cls,
         "roll_no": roll,
         "student_status": status,
-        "teacher_id": teacherId == 'null' ? null : teacherId, // ✅ teacher_id sahi key, null handle
+        "teacher_id": teacherId == 'null' ? null : teacherId, 
         "approval_status": "pending"
       };
 
@@ -75,7 +72,7 @@ class StudentService {
         body: jsonEncode(body),
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json", // ✅ Accept add kiya
+          "Accept": "application/json", 
           "Authorization": "Bearer $token",
         },
       );
@@ -97,17 +94,17 @@ class StudentService {
   static Future<List<dynamic>> fetchPendingStudents() async {
     try {
       final token = await AuthService.getToken();
-      print("Token sending: $token"); // Debug
+      print("Token sending: $token"); 
       
       final response = await http.get(
         Uri.parse('${AuthService.baseUrl}/pending-students'),
         headers: {
           'Accept': 'application/json',
-          'Authorization': 'Bearer $token', // 403 fix
+          'Authorization': 'Bearer $token', 
         },
       );
       print("FETCH PENDING STATUS: ${response.statusCode}");
-      print("FETCH PENDING BODY: ${response.body}"); // Debug
+      print("FETCH PENDING BODY: ${response.body}"); 
       
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -126,7 +123,7 @@ class StudentService {
       final response = await http.post(
         Uri.parse('${AuthService.baseUrl}/pending-students/approve/$id'),
         headers: {
-          'Accept': 'application/json', // Accept add
+          'Accept': 'application/json', 
           'Authorization': 'Bearer $token',
         },
       );
@@ -143,7 +140,7 @@ class StudentService {
       final response = await http.post(
         Uri.parse('${AuthService.baseUrl}/pending-students/reject/$id'),
         headers: {
-          'Accept': 'application/json', // Accept add
+          'Accept': 'application/json', 
           'Authorization': 'Bearer $token',
         },
       );
@@ -162,7 +159,7 @@ class StudentService {
         body: jsonEncode({'ids': ids}),
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json', //  Accept add
+          'Accept': 'application/json', 
           'Authorization': 'Bearer $token',
         },
       );
@@ -258,8 +255,8 @@ class StudentService {
     }
   }
 
-  // GET /api/students/next-roll-no
-  // Returns the next available roll number (global max + 1) for auto-fill
+  // get /api/students/next-roll-no
+ 
   static Future<String?> fetchNextRollNo() async {
     try {
       final token = await AuthService.getToken();
@@ -337,8 +334,8 @@ class StudentService {
     }
   }
 
-  // GET /api/admin/late-students
-  // Returns students whose attendance status = 'late' from attendances table
+  // GET /api/admin/late students
+  
   static Future<List<Map<String, dynamic>>> fetchLateStudents() async {
     try {
       final token = await AuthService.getToken();

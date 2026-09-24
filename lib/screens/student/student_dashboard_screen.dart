@@ -1,3 +1,5 @@
+import 'package:attendence_verification/core/utils/date_formatter.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -153,7 +155,7 @@ Map<String, dynamic>? _studentInfo;
   int _unreadCount = 0;
   bool _isConfirmationDialogShowing = false;
 
-  // ── Confirmation polling ──
+  //  Confirmation polling
   Timer? _confirmationPoller;
   int get studentId => widget.userId;
 
@@ -170,7 +172,7 @@ Map<String, dynamic>? _studentInfo;
     super.dispose();
   }
 
-  // ── Polling & Notifications methods ──────────────────────────
+  // polling and notification method
   void _startPolling() {
     _confirmationPoller = Timer.periodic(
       const Duration(seconds: 15),
@@ -341,8 +343,8 @@ Map<String, dynamic>? _studentInfo;
         ),
         actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
-          // NO
-          ElevatedButton.icon(
+          
+          GradientButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.danger.withOpacity(0.1),
               foregroundColor: AppColors.danger,
@@ -360,7 +362,7 @@ Map<String, dynamic>? _studentInfo;
             },
           ),
           // YES
-          ElevatedButton.icon(
+          GradientButton.icon(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.success,
               foregroundColor: Colors.white,
@@ -401,7 +403,7 @@ Map<String, dynamic>? _studentInfo;
     }
   }
 
-  // ── Data loading ─────────────────────────────
+  // data loading 
   Future<String?> _getToken() async {
     final storage = GetStorage();
     return storage.read<String>('token');
@@ -452,7 +454,7 @@ Map<String, dynamic>? _studentInfo;
     }
   }
 
-  // ── Bottom Nav ───────────────────────────────
+  //  Bottom Nav 
   Widget _buildBottomNav() {
     final items = const [
       {'icon': Icons.home_rounded, 'label': 'Home'},
@@ -546,7 +548,7 @@ Map<String, dynamic>? _studentInfo;
     );
   }
 
-  // ── Body ─────────────────────────────────────
+  // Body
   Widget _buildBody() {
     if (_loading) {
       return const Center(
@@ -572,7 +574,7 @@ Map<String, dynamic>? _studentInfo;
             const Text('Could not load data',
                 style: TextStyle(color: AppColors.textSecondary)),
             const SizedBox(height: 8),
-            ElevatedButton(
+            GradientButton(
               onPressed: _loadData,
               style:
                   ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
@@ -628,9 +630,7 @@ Map<String, dynamic>? _studentInfo;
   }
 }
 
-// ════════════════════════════════════════════
-// PAGE 1 — HOME
-// ════════════════════════════════════════════
+
   class _HomePage extends StatelessWidget {
   final String name;
   final int userId;
@@ -795,9 +795,7 @@ Map<String, dynamic>? _studentInfo;
   }
 }
 
-// ════════════════════════════════════════════
-// PAGE 2 — REPORTS
-// ════════════════════════════════════════════
+
 
 class _ReportsPage extends StatefulWidget {
   final List<AttendanceRecord> records;
@@ -972,9 +970,6 @@ class _ReportsPageState extends State<_ReportsPage> {
   }
 }
 
-// ════════════════════════════════════════════
-// PAGE 3 — NOTIFICATIONS
-// ════════════════════════════════════════════
 
 class _NotificationsPage extends StatelessWidget {
   final List<StudentNotification> notifications;
@@ -1115,7 +1110,7 @@ class _NotificationsPage extends StatelessWidget {
                                             color: AppColors.textSecondary,
                                             height: 1.3)),
                                     const SizedBox(height: 6),
-                                    Text(n.createdAt,
+                                    Text(DateFormatter.format(n.createdAt),
                                         style: const TextStyle(
                                             fontSize: 10,
                                             color: Colors.grey)),
@@ -1135,9 +1130,7 @@ class _NotificationsPage extends StatelessWidget {
   }
 }
 
-// ════════════════════════════════════════════
-// PAGE 4 — PROFILE
-// ════════════════════════════════════════════
+
 
 class _ProfilePage extends StatefulWidget {
   final String name;
@@ -1202,7 +1195,7 @@ class _ProfilePageState extends State<_ProfilePage> {
           TextButton(
               onPressed: () => Navigator.pop(ctx, false),
               child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(ctx, true),
             child: const Text('Logout', style: TextStyle(color: Colors.white)),
@@ -1224,10 +1217,7 @@ class _ProfilePageState extends State<_ProfilePage> {
     final className =
         info?['class_name']?.toString() ?? info?['class']?.toString() ?? '—';
     final rollNo = info?['roll_no'] ?? info?['roll_number'] ?? '—';
-    // final parts = widget.name.trim().split(' ');
-    // final initials = parts.length >= 2
-    //     ? '${parts[0][0]}${parts[1][0]}'.toUpperCase()
-    //     : widget.name.substring(0, 2).toUpperCase();
+    
     final initials = _getInitials(widget.name);
 
     return Container(
@@ -1356,9 +1346,7 @@ class _ProfilePageState extends State<_ProfilePage> {
   }
 }
 
-// ════════════════════════════════════════════
-// SHARED SMALL WIDGETS
-// ════════════════════════════════════════════
+
 
 class _SectionCard extends StatelessWidget {
   final IconData icon;

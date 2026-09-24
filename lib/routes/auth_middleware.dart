@@ -9,13 +9,11 @@ class AuthMiddleware extends GetMiddleware {
 
   @override
   RouteSettings? redirect(String? route) {
-    // 1. Check if token exists
     final token = AuthService.token;
     if (token == null || token.isEmpty) {
       return const RouteSettings(name: '/login');
     }
     
-    // 2. Check role if allowedRoles is provided
     if (allowedRoles != null && allowedRoles!.isNotEmpty) {
       final currentUser = AuthService.currentUser;
       if (currentUser == null) {
@@ -25,7 +23,7 @@ class AuthMiddleware extends GetMiddleware {
       final String userRole = currentUser['role'] ?? '';
       
       if (!allowedRoles!.contains(userRole)) {
-        // Redirect unauthorized users to their respective dashboards
+        
         if (userRole == 'admin') return const RouteSettings(name: '/admin-dashboard');
         if (userRole == 'teacher') return const RouteSettings(name: '/teacher-dashboard');
         if (userRole == 'student') return const RouteSettings(name: '/student-dashboard');
@@ -34,7 +32,7 @@ class AuthMiddleware extends GetMiddleware {
       }
     }
 
-    // 3. Allow access
+    //  allow access
     return null;
   }
 }

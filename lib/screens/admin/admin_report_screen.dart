@@ -1,3 +1,5 @@
+import 'package:attendence_verification/core/utils/date_formatter.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../widgets/base_scaffold.dart';
@@ -6,7 +8,7 @@ import '../../core/services/admin_report_export_service.dart';
 import '../../core/theme/app_colors.dart';
 
 
-// MODELS
+// models
 
 
 enum StudentStatus { good, warning, critical, noData }
@@ -60,7 +62,7 @@ class StudentRecord {
 }
 
 
-// HELPERS
+
 
 
 Color _statusColor(StudentStatus s) {
@@ -91,7 +93,7 @@ IconData _statusIcon(StudentStatus s) {
 }
 
 
-// WIDGETS
+// widgets
 
 
 class StatCard extends StatelessWidget {
@@ -183,7 +185,7 @@ class StudentListItem extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Name + Roll No
+                // Name, Roll no
                 Row(children: [
                   Flexible(child: Text(record.studentName,
                       style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.textPrimary),
@@ -351,7 +353,7 @@ class AttendanceLineChart extends StatelessWidget {
 }
 
 
-// MAIN SCREEN
+
 
 
 class ReportsAuditScreen extends StatefulWidget {
@@ -366,13 +368,13 @@ enum ReportTab { students, classes, teachers, sessions }
 class _ReportsAuditScreenState extends State<ReportsAuditScreen> {
   ReportTab _activeTab = ReportTab.students;
 
-  // Summaries
+  // summaries
   List<Map<String, dynamic>> _teachersSummary = [];
   List<Map<String, dynamic>> _classesSummary = [];
   List<Map<String, dynamic>> _sessionsSummary = [];
   bool _loadingSummaries = false;
 
-  // Filters
+  // filters
   int?   _selectedClassId;
   String _selectedClassName = 'All Classes';
   int?   _selectedTeacherId;
@@ -500,11 +502,28 @@ void _showDownloadOptions() {
     if (!mounted) return;
     setState(() => _loadingSummaries = true);
     try {
-      final t = await AdminReportService.getTeachersSummary();
-      final c = await AdminReportService.getClassesSummary(teacherId: _selectedTeacherId);
+      final t = await AdminReportService.getTeachersSummary(
+        classId: _selectedClassId,
+        days: _selectedDays,
+        date: _filterDate,
+        startDate: _filterStartDate,
+        endDate: _filterEndDate,
+      );
+      final c = await AdminReportService.getClassesSummary(
+        teacherId: _selectedTeacherId,
+        days: _selectedDays,
+        date: _filterDate,
+        startDate: _filterStartDate,
+        endDate: _filterEndDate,
+      );
       final s = await AdminReportService.getSessionsSummary(
         teacherId: _selectedTeacherId,
         classId: _selectedClassId,
+        days: _selectedDays,
+        date: _filterDate,
+        startDate: _filterStartDate,
+        endDate: _filterEndDate,
+        status: _filterStatus,
       );
       if (mounted) {
         setState(() {
@@ -599,7 +618,7 @@ void _showDownloadOptions() {
   }
   bool get _trendPositive => ((_stats['trend'] as num?)?.toDouble() ?? 0.0) >= 0;
 
-  // ── NEW: open the sessions list bottom sheet ──
+  
   void _showSessionsList() {
     showModalBottomSheet(
       context: context,
@@ -629,7 +648,7 @@ void _showDownloadOptions() {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── FILTERS ──
+                // filters
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   child: Wrap(
@@ -651,7 +670,7 @@ void _showDownloadOptions() {
 
                 const SizedBox(height: 16),
 
-                // ── REPORT TABS ──
+                // report tabs
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: SingleChildScrollView(
@@ -673,7 +692,7 @@ void _showDownloadOptions() {
                 const SizedBox(height: 16),
 
                 if (_activeTab == ReportTab.students) ...[
-                  // ── CHART ──
+                  // chart
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Container(
@@ -724,7 +743,7 @@ void _showDownloadOptions() {
 
                   const SizedBox(height: 14),
 
-                  // ── STAT CARDS ROW 1: Sessions + Students ──
+                  // stat card: Sessions + Students
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _loadingStats
@@ -740,7 +759,7 @@ void _showDownloadOptions() {
 
                   const SizedBox(height: 10),
 
-                  // ── STAT CARDS ROW 2: Present + Absent ──
+                  // stat card : Present + absent 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: _loadingStudents
@@ -979,7 +998,7 @@ void _showDownloadOptions() {
                   ),
                 ),
                 const SizedBox(width: 12),
-                ElevatedButton.icon(
+                GradientButton.icon(
                   onPressed: _resetFilters,
                   icon: const Icon(Icons.clear_all, size: 16, color: Colors.white),
                   label: const Text('Reset', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -1181,7 +1200,7 @@ void _showDownloadOptions() {
     ]),
   );
 
-  //  Bottom Sheet Pickers 
+  //  Bottom Sheet 
 
   void _showClassPicker() => showModalBottomSheet(
     context: context,
@@ -1197,11 +1216,31 @@ void _showDownloadOptions() {
           trailing: _selectedClassId == null ? Icon(Icons.check, color: AppColors.primary) : null,
           onTap: () { setState(() { _selectedClassId = null; _selectedClassName = 'All Classes'; }); Navigator.pop(context); _onFilterChanged(); },
         ),
-        ..._classes.map((c) => ListTile(
-          title: Text(c['class_name'] ?? ''),
-          trailing: _selectedClassId == c['id'] ? Icon(Icons.check, color: AppColors.primary) : null,
-          onTap: () { setState(() { _selectedClassId = c['id']; _selectedClassName = c['class_name'] ?? ''; }); Navigator.pop(context); _onFilterChanged(); },
-        )),
+        Expanded(
+          child: ListView(
+            shrinkWrap: true,
+            children: _classes.map((c) {
+              final className = c['class_name'] ?? '';
+              final subject = c['subject'];
+              final displayName = (subject != null && subject.toString().trim().isNotEmpty)
+                  ? '$className ($subject)'
+                  : className;
+
+              return ListTile(
+                title: Text(displayName),
+                trailing: _selectedClassId == c['id'] ? Icon(Icons.check, color: AppColors.primary) : null,
+                onTap: () { 
+                  setState(() { 
+                    _selectedClassId = c['id']; 
+                    _selectedClassName = displayName; 
+                  }); 
+                  Navigator.pop(context); 
+                  _onFilterChanged(); 
+                },
+              );
+            }).toList(),
+          ),
+        ),
         const SizedBox(height: 16),
       ],
     ),
@@ -1434,7 +1473,7 @@ void _showDownloadOptions() {
                   ),
                   Text(
                     '$pct%',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                   ),
                 ],
               ),
@@ -1444,7 +1483,7 @@ void _showDownloadOptions() {
                 child: LinearProgressIndicator(
                   value: pct / 100,
                   backgroundColor: Colors.grey.shade100,
-                  valueColor: AlwaysStoppedAnimation<Color>(pct >= 75 ? AppColors.success : AppColors.danger),
+                  valueColor: AlwaysStoppedAnimation<Color>(pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                   minHeight: 6,
                 ),
               ),
@@ -1516,7 +1555,7 @@ void _showDownloadOptions() {
                     children: [
                       Text(
                         '$pct%',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -1567,9 +1606,13 @@ void _showDownloadOptions() {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    c['class_name'],
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  Expanded(
+                    child: Text(
+                      c['subject'] != null && c['subject'].toString().trim().isNotEmpty
+                          ? "${c['class_name']} (${c['subject']})"
+                          : c['class_name'],
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    ),
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -1618,7 +1661,7 @@ void _showDownloadOptions() {
                     children: [
                       Text(
                         '$pct%',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : AppColors.danger),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: pct >= 75 ? AppColors.success : (pct >= 50 ? AppColors.warning : AppColors.danger)),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -1637,7 +1680,7 @@ void _showDownloadOptions() {
   }
 }
 
-// ── TEACHER LIST COMPONENT ──
+// teacher list component
 class TeacherList extends StatelessWidget {
   final List<Map<String, dynamic>> teachers;
   final int? selectedTeacherId;
@@ -1750,7 +1793,7 @@ class TeacherList extends StatelessWidget {
   }
 }
 
-// ── STUDENT REPORT MODAL ──
+
 class StudentReportModal extends StatefulWidget {
   final StudentRecord student;
   final VoidCallback? onUpdateNeeded;
@@ -1816,7 +1859,7 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
     }
   }
 
-  // ── NEW: download this student's own report (PDF / Excel) ──
+  
   void _showStudentDownloadOptions() {
     showModalBottomSheet(
       context: context,
@@ -1986,7 +2029,7 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
             const SizedBox(height: 16),
             SizedBox(
               height: 36,
-              child: ElevatedButton(
+              child: GradientButton(
                 onPressed: _loadReport,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -2374,9 +2417,8 @@ class _StudentReportModalState extends State<StudentReportModal> with SingleTick
   }
 }
 
-// ── SESSIONS LIST BOTTOM SHEET (NEW) ──
-// Shows all sessions with their timing and active/inactive status.
-// A switch lets the admin toggle a session's status on the fly.
+// session list bottom sheet
+
 class SessionsListSheet extends StatefulWidget {
   const SessionsListSheet({super.key});
 
@@ -2408,7 +2450,7 @@ class _SessionsListSheetState extends State<SessionsListSheet> {
         _sessions[index] = {
           ..._sessions[index],
           'status': result['status'],
-          'end_time': result['end_time'], // NEW: keep displayed time in sync with the toggle
+          'end_time': result['end_time'], 
         };
       });
     } else if (mounted) {
@@ -2497,7 +2539,7 @@ class _SessionsListSheetState extends State<SessionsListSheet> {
                                           ),
                                         ]),
                                         const SizedBox(height: 2),
-                                        Text(s['date'] ?? '', style: TextStyle(fontSize: 10, color: AppColors.textLight)),
+                                        Text(DateFormatter.formatShort(s['date']), style: TextStyle(fontSize: 10, color: AppColors.textLight)),
                                       ],
                                     ),
                                   ),

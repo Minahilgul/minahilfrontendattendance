@@ -46,21 +46,56 @@ class StudentReportExportService {
     await file_saver.saveAndOpenBytes(response.bodyBytes, fileName);
   }
 
-  static Future<void> downloadMyPdf({String? startDate, String? endDate}) {
-    return _downloadAndOpen(
-      endpoint: '/student/reports/export/pdf',
-      filters: {'start_date': startDate, 'end_date': endDate},
-      extension: 'pdf',
-      fileNamePrefix: 'my_attendance_report',
+  static Future<void> _downloadFile({
+    required String endpoint,
+    required Map<String, String> queryParams,
+    required String fallbackFileName,
+  }) async {
+    final extension = fallbackFileName.split('.').last;
+    final fileNamePrefix = fallbackFileName.split('.').first.toLowerCase();
+    await _downloadAndOpen(
+      endpoint: endpoint,
+      filters: queryParams,
+      extension: extension,
+      fileNamePrefix: fileNamePrefix,
     );
   }
 
-  static Future<void> downloadMyExcel({String? startDate, String? endDate}) {
-    return _downloadAndOpen(
+  static Future<void> downloadMyPdf({
+    String? startDate,
+    String? endDate,
+    String? status,
+    int? classId,
+  }) async {
+    final queryParams = <String, String>{};
+    if (startDate != null) queryParams['start_date'] = startDate;
+    if (endDate != null) queryParams['end_date'] = endDate;
+    if (status != null && status != 'All') queryParams['status'] = status;
+    if (classId != null) queryParams['class_id'] = classId.toString();
+
+    await _downloadFile(
+      endpoint: '/student/reports/export/pdf',
+      queryParams: queryParams,
+      fallbackFileName: 'My_Attendance_Report.pdf',
+    );
+  }
+
+  static Future<void> downloadMyExcel({
+    String? startDate,
+    String? endDate,
+    String? status,
+    int? classId,
+  }) async {
+    final queryParams = <String, String>{};
+    if (startDate != null) queryParams['start_date'] = startDate;
+    if (endDate != null) queryParams['end_date'] = endDate;
+    if (status != null && status != 'All') queryParams['status'] = status;
+    if (classId != null) queryParams['class_id'] = classId.toString();
+
+    await _downloadFile(
       endpoint: '/student/reports/export/excel',
-      filters: {'start_date': startDate, 'end_date': endDate},
-      extension: 'xlsx',
-      fileNamePrefix: 'my_attendance_report',
+      queryParams: queryParams,
+      fallbackFileName: 'My_Attendance_Report.xlsx',
     );
   }
 }

@@ -1,5 +1,7 @@
+import 'package:attendence_verification/core/utils/date_formatter.dart';
+import '../core/theme/app_colors.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
-import 'package:attendence_verification/core/services/auth_service.dart';
 import '../core/services/teacher_service.dart';
 import '../widgets/base_scaffold.dart';
 
@@ -53,7 +55,7 @@ class TeacherModel {
     return TeacherModel(
       id: json['id']?? 0,
       initials: initials,
-      avatarColor: const Color(0xFF1565C0),
+      avatarColor: AppColors.primary,
       name: name,
       department: json['department']?? 'N/A',
       role: json['role']?? 'Teacher',
@@ -70,11 +72,9 @@ class TeacherModel {
 }
 
 
-// API SERVICE WRAPPERS
+// Api service wrappers
 
 
-//  Added deviceId param to match service signature.
-//  Added optional named `status` param (0 = inactive, 1 = active).
 Future<bool> addTeacher(
   String username,
   String email,
@@ -89,15 +89,14 @@ Future<bool> addTeacher(
     email: email,
     password: password,
     phone: phone,
+    address: address, 
     deviceId: deviceId,
     status: status,
   );
   return result['success'] == true;
 }
 
-//  TeacherService.updateTeacher now returns Map<String,dynamic> not bool.
-//  Added deviceId param to match service signature.
-//  Added optional named `status` param (0 = inactive, 1 = active).
+
 Future<bool> updateTeacher(
   int id,
   String username,
@@ -122,7 +121,6 @@ Future<bool> deleteTeacher(int id) async {
 }
 
 
-// STATUS BADGE WIDGET
 
 
 class StatusBadge extends StatelessWidget {
@@ -149,7 +147,6 @@ class StatusBadge extends StatelessWidget {
 }
 
 
-// ADD TEACHER DIALOG
 
 
 class AddTeacherDialog extends StatefulWidget {
@@ -165,8 +162,8 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   final _passwordCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
-  final _imeiCtrl = TextEditingController(); //  added MAC controller
-  bool _isActive = true; // NEW: Active/Inactive toggle, defaults to Active
+  final _imeiCtrl = TextEditingController(); 
+  bool _isActive = true;
   bool _obscurePassword = true;
   bool _isLoading = false;
 
@@ -184,14 +181,14 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
   Future<void> _onSave() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
-    //  pass _imeiCtrl as 5th arg to match updated wrapper signature
+   
     final success = await addTeacher(
       _usernameCtrl.text.trim(),
       _emailCtrl.text.trim(),
       _passwordCtrl.text.trim(),
       _phoneCtrl.text.trim(),
-      _imeiCtrl.text.trim(),
-      _addressCtrl.text.trim(),
+      _addressCtrl.text.trim(), // address
+      _imeiCtrl.text.trim(),    // deviceId
       status: _isActive ? 1 : 0, 
     );
     if (!mounted) return;
@@ -245,7 +242,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                 ),
                 const SizedBox(height: 14),
 
-                // NEW: Active/Inactive status toggle — placed below last field, right corner
+               
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -260,7 +257,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                     const SizedBox(width: 8),
                     Switch(
                       value: _isActive,
-                      activeColor: const Color(0xFF1565C0),
+                      activeColor: AppColors.primary,
                       onChanged: (val) => setState(() => _isActive = val),
                     ),
                   ],
@@ -278,9 +275,9 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: GradientButton(
                         onPressed: _isLoading? null : _onSave,
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                         child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Save'),
                       ),
                     ),
@@ -321,7 +318,7 @@ class _AddTeacherDialogState extends State<AddTeacherDialog> {
 }
 
 
-// EDIT TEACHER DIALOG 
+
 
 
 class EditTeacherDialog extends StatefulWidget {
@@ -440,7 +437,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
                 const SizedBox(width: 8),
                 Switch(
                   value: _isActive,
-                  activeColor: const Color(0xFF1565C0),
+                  activeColor: AppColors.primary,
                   onChanged: (val) => setState(() => _isActive = val),
                 ),
               ],
@@ -458,9 +455,9 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: GradientButton(
                     onPressed: _isLoading? null : _onUpdate,
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1565C0), foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                     child: _isLoading? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) : const Text('Update'),
                   ),
                 ),
@@ -485,7 +482,7 @@ class _EditTeacherDialogState extends State<EditTeacherDialog> {
 }
 
 
-// TEACHER CARD WIDGET
+
 
 
 class TeacherCard extends StatelessWidget {
@@ -529,9 +526,9 @@ class TeacherCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Text('${teacher.activeClasses} Active Classes', style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                         if (teacher.deviceInfo!= null)...[const SizedBox(width: 12), Icon(Icons.smartphone, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.deviceInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
-                        if (teacher.registeredInfo!= null)...[const SizedBox(width: 12), Icon(Icons.check_circle_outline, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(teacher.registeredInfo!, style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
+                        if (teacher.registeredInfo!= null)...[const SizedBox(width: 12), Icon(Icons.check_circle_outline, size: 14, color: Colors.grey[500]), const SizedBox(width: 4), Text(DateFormatter.format(teacher.registeredInfo!), style: TextStyle(fontSize: 12, color: Colors.grey[600]))],
                       ]),
-                      if (teacher.lastSeen!= null)...[const SizedBox(height: 4), Text('LAST SEEN ${teacher.lastSeen}', style: TextStyle(fontSize: 10, color: Colors.grey[400], letterSpacing: 0.3))],
+                      if (teacher.lastSeen!= null)...[const SizedBox(height: 4), Text('LAST SEEN ${DateFormatter.format(teacher.lastSeen)}', style: TextStyle(fontSize: 10, color: Colors.grey[400], letterSpacing: 0.3))],
                     ],
                   ),
                 ),
@@ -556,12 +553,12 @@ class TeacherCard extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
               child: Align(
                 alignment: Alignment.centerRight,
-                child: ElevatedButton.icon(
+                child: GradientButton.icon(
                   onPressed: onApprove,
                   icon: const Icon(Icons.check, size: 14, color: Colors.white),
                   label: const Text('APPROVE TEACHER', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[700],
+                    backgroundColor: AppColors.success,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -576,7 +573,7 @@ class TeacherCard extends StatelessWidget {
 }
 
 
-// MAIN SCREEN - SIRF CONSTRUCTOR UPDATE KIYA
+
 
 
 class TeacherDirectoryScreen extends StatefulWidget {
@@ -651,7 +648,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
         content: Text('Are you sure you want to delete ${teacher.name}?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFE53935)),
             child: const Text('Delete', style: TextStyle(color: Colors.white)),
@@ -682,9 +679,9 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
         content: Text('Are you sure you want to approve and activate the account of ${teacher.name}?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green[700]),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.success),
             child: const Text('Approve', style: TextStyle(color: Colors.white)),
           ),
         ],
@@ -715,7 +712,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
       role: 'admin',
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTeacherDialog,
-        backgroundColor: const Color(0xFF1565C0),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -750,7 +747,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                       child: Container(
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                        decoration: BoxDecoration(color: selected? const Color(0xFF1565C0) : Colors.transparent, borderRadius: BorderRadius.circular(20)),
+                        decoration: BoxDecoration(color: selected? AppColors.primary : Colors.transparent, borderRadius: BorderRadius.circular(20)),
                         child: Text(_tabs[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: selected? Colors.white : Colors.grey[600])),
                       ),
                     );
@@ -769,7 +766,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                           child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                             Text(_selectedTab == 0 ? 'ACTIVE STAFF (${_filteredTeachers.length})' : 'PENDING APPROVAL (${_filteredTeachers.length})', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.grey[500], letterSpacing: 0.5)),
-                            Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: const Color(0xFF1565C0))),
+                            Text('Sort by: Recent', style: TextStyle(fontSize: 11, color: AppColors.primary)),
                           ]),
                         ),
                         const SizedBox(height: 4),

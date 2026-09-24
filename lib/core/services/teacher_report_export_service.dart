@@ -48,7 +48,7 @@ class TeacherReportExportService {
     await file_saver.saveAndOpenBytes(response.bodyBytes, fileName);
   }
 
-  // Full class report, OR pass studentIds to restrict to selected students
+  // Full class report or pass studentIds to restrict to selected students
   static Future<void> downloadClassPdf({List<int>? studentIds, Map<String, dynamic>? filters}) {
     return _downloadAndOpen(
       endpoint: '/teacher/reports/export/pdf',

@@ -35,7 +35,8 @@ class AdminReportExportService {
     required String fileNamePrefix,
   }) async {
     final query = _buildQuery(filters);
-    final url = Uri.parse('$_baseUrl$endpoint${query.isNotEmpty ? '?$query' : ''}');
+    final url =
+        Uri.parse('$_baseUrl$endpoint${query.isNotEmpty ? '?$query' : ''}');
 
     final response = await http.get(url, headers: _headers());
 
@@ -43,11 +44,10 @@ class AdminReportExportService {
       throw Exception('Export failed (status ${response.statusCode})');
     }
 
-    final fileName = '${fileNamePrefix}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+    final fileName =
+        '${fileNamePrefix}_${DateTime.now().millisecondsSinceEpoch}.$extension';
     await file_saver.saveAndOpenBytes(response.bodyBytes, fileName);
   }
-
-  
 
   static Future<void> downloadPdf(Map<String, dynamic> filters) {
     return _downloadAndOpen(

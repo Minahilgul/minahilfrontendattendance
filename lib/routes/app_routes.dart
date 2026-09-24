@@ -10,7 +10,6 @@ import '../screens/teacher_directory_screen.dart';
 import '../screens/admin/pending_approvals_screen.dart';
 import '../screens/admin/admin_report_screen.dart';
 import '../screens/admin/admin_verification_screen.dart';
-import '../screens/role_screen.dart';
 import '../screens/teacher/create_session_page.dart';
 import '../screens/settings_screen.dart';
 import '../screens/student_directory_screen.dart';
@@ -97,7 +96,7 @@ class AppRoutes {
     ),
     GetPage(
       name: '/teacher-report',
-      page: () => const AttendanceReportScreen(), // ✅ CHANGED — pehle TeacherReportScreen tha
+      page: () => const AttendanceReportScreen(), 
       middlewares: [AuthMiddleware(allowedRoles:['teacher', 'admin'])],
     ),
     GetPage(
@@ -144,11 +143,7 @@ class AppRoutes {
       page: () => const SettingsScreen(),
       middlewares: [AuthMiddleware(allowedRoles: ['admin'])],
     ),
-    GetPage(
-      name: '/roles',
-      page: () => const RoleScreen(),
-      middlewares: [AuthMiddleware(allowedRoles: ['admin'])],
-    ),
+   
     GetPage(
       name: '/admin-verification',
       page: () => const AdminVerificationScreen(),

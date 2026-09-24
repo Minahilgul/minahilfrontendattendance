@@ -1,3 +1,5 @@
+import 'package:attendence_verification/core/utils/date_formatter.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -62,7 +64,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
     }
   }
 
-  // ── Toggle session active/inactive ────────────────
+  
   Future<void> _toggleSession(int sessionId, bool newVal) async {
     // 1. Instant UI update
     setState(() {
@@ -86,7 +88,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
       );
 
       if (response.statusCode == 200) {
-        // Sync actual status from server response
+        // sync actual status from server response
         final body = jsonDecode(response.body);
         final serverStatus = body['status'] as String? ?? (newVal ? 'active' : 'inactive');
         setState(() {
@@ -103,7 +105,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
           ));
         }
       } else {
-        // Revert on failure
+        // revert on failure
         setState(() {
           final idx = _sessions.indexWhere((s) => (s['id'] as num?)?.toInt() == sessionId);
           if (idx != -1) {
@@ -121,7 +123,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
         }
       }
     } catch (e) {
-      // Revert on network error
+      // revert on network error
       setState(() {
         final idx = _sessions.indexWhere((s) => (s['id'] as num?)?.toInt() == sessionId);
         if (idx != -1) {
@@ -196,7 +198,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
         ]),
         const SizedBox(height: 20),
 
-        // ── Sessions with toggle ──
+        
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -223,7 +225,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
 
         const SizedBox(height: 20),
 
-        // ── Audit logs ──
+        // Audit logs
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -246,7 +248,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
     );
   }
 
-  // ── Session card with toggle ──────────────────────
+
   Widget _buildSessionCard(Map<String, dynamic> s) {
     final status      = s['status'] as String? ?? '';
     final isActive    = status == 'active';
@@ -290,7 +292,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                       Text('Session #${s['id']}',
                           style: const TextStyle(
                               color: _textDark, fontWeight: FontWeight.bold, fontSize: 14)),
-                      Text(s['date'] ?? '-',
+                      Text(DateFormatter.formatShort(s['date']),
                           style: TextStyle(color: AppColors.textLight, fontSize: 12)),
                     ],
                   ),
@@ -562,7 +564,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
                 Row(children: [
                   Icon(Icons.access_time, size: 11, color: AppColors.textLight),
                   const SizedBox(width: 3),
-                  Text(log['time'] ?? '',
+                  Text(DateFormatter.format(log['time']),
                       style: TextStyle(fontSize: 11, color: AppColors.textLight)),
                   const SizedBox(width: 8),
                   Icon(isSession ? Icons.videocam_rounded : Icons.check_circle,
@@ -597,7 +599,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
           const SizedBox(height: 12),
           Text(_error!, style: TextStyle(color: AppColors.danger)),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadAll, child: const Text('Retry')),
+          GradientButton(onPressed: _loadAll, child: const Text('Retry')),
         ],
       ),
     );

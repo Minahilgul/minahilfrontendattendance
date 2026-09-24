@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/teacher_service.dart';
 import '../../core/services/device_service.dart';
@@ -15,18 +16,19 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
   final TextEditingController emailController    = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController phoneController    = TextEditingController();
+  final TextEditingController addressController  = TextEditingController(); 
   final TextEditingController deviceIdController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
-  // Add initState here
+  
   @override
   void initState() {
     super.initState();
     _fetchDeviceId(); // auto fill device ID on screen open
   }
 
-  // ✅ STEP 2: Add this function here
+  
   Future<void> _fetchDeviceId() async {
     final id = await DeviceService.getDeviceId();
     setState(() {
@@ -40,6 +42,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
     emailController.dispose();
     passwordController.dispose();
     phoneController.dispose();
+    addressController.dispose(); // ADDED
     deviceIdController.dispose();
     super.dispose();
   }
@@ -118,10 +121,27 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // MAC field is now auto-filled and read-only
+                // Address field 
+                TextFormField(
+                  controller: addressController,
+                  decoration: const InputDecoration(
+                    labelText: "Address",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.home_outlined),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return "Please enter the address";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
+
+                // MAC field is auto-filled and read-only
                 TextFormField(
                   controller: deviceIdController,
-                  readOnly: true, // user cannot edit — auto filled
+                  readOnly: true, // user cannot edit  auto filled
                   decoration: InputDecoration(
                     labelText: "Device ID (Auto Detected)",
                     border: const OutlineInputBorder(),
@@ -135,7 +155,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 50,
-                  child: ElevatedButton(
+                  child: GradientButton(
                     onPressed: _submitTeacher,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
@@ -162,6 +182,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
       email:            emailController.text.trim(),
       password:         passwordController.text.trim(),
       phone:            phoneController.text.trim(),
+      address:          addressController.text.trim(), 
       deviceId: deviceIdController.text.trim(),
     );
 

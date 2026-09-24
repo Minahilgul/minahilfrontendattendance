@@ -5,14 +5,14 @@ import 'device_service.dart';
 import '../config/environment.dart';
 
 class AuthService {
-  // 🔥 BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakhna ha
+  //  BASE URL - Web ke liye localhost nahi, 127.0.0.1 rakhna ha
   static const String baseUrl = Environment.apiBaseUrl;
 
   static Map<String, dynamic>? currentUser;
   static String? token;
   static final storage = GetStorage();
 
-  // ───────────────── LOGIN ─────────────────
+  //  login function 
   static Future<Map<String, dynamic>> login(
       String email, String password, {double? latitude, double? longitude}) async {
     try {
@@ -64,7 +64,7 @@ class AuthService {
     }
   }
 
-  // ───────────────── REGISTER ─────────────────
+  // register 
   static Future<Map<String, dynamic>> register(
       Map<String, dynamic> body) async {
     try {
@@ -104,7 +104,7 @@ class AuthService {
     }
   }
 
-  // ───────────────── GET TOKEN ─────────────────
+  // get token
   static Future<String?> getToken() async {
     if (token == null) {
       token = storage.read<String>('token');
@@ -113,7 +113,7 @@ class AuthService {
     return token;
   }
 
-  // ───────────────── LOAD TOKEN ─────────────────
+  // load token
   static Future<void> loadToken() async {
     token = storage.read<String>('token');
     final String? userJson = storage.read<String>('user');
@@ -124,7 +124,7 @@ class AuthService {
     print("User Loaded: $currentUser");
   }
 
-  // ───────────────── LOGOUT ─────────────────
+  // logout function
   static Future<void> logout() async {
     token = null;
     currentUser = null;

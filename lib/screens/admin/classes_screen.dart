@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -5,9 +6,6 @@ import 'package:attendence_verification/core/services/class_service.dart';
 import 'package:attendence_verification/core/theme/app_colors.dart';
 import 'package:attendence_verification/widgets/base_scaffold.dart';
 
-/// ===============================================================
-/// DATA MODEL
-/// ===============================================================
 
 enum ClassStatus {
   active,
@@ -64,15 +62,8 @@ class ClassItem {
   }
 }
 
-/// ===============================================================
-/// GLOBAL DATA
-/// ===============================================================
-
 List<ClassItem> allClasses = [];
 
-/// ===============================================================
-/// API FUNCTIONS
-/// ===============================================================
 
 Future<void> fetchClasses() async {
   final data = await ClassService.fetchClasses();
@@ -128,9 +119,7 @@ Future<bool> deleteClass(int id) async {
   return await ClassService.deleteClass(id);
 }
 
-/// ===============================================================
-/// CLASSES SCREEN
-/// ===============================================================
+
 
 class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
@@ -397,7 +386,7 @@ class _ClassesScreenState extends State<ClassesScreen>
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel'),
             ),
-            ElevatedButton(
+            GradientButton(
               onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.danger,
@@ -617,9 +606,7 @@ class _ClassesScreenState extends State<ClassesScreen>
   }
 }
 
-/// ===============================================================
-/// TAB CHIP
-/// ===============================================================
+
 
 class _TabChip extends StatelessWidget {
   final String label;
@@ -642,9 +629,7 @@ class _TabChip extends StatelessWidget {
   }
 }
 
-/// ===============================================================
-/// CLASS CARD
-/// ===============================================================
+
 
 class ClassCard extends StatelessWidget {
   final ClassItem item;
@@ -896,9 +881,7 @@ class ClassCard extends StatelessWidget {
   }
 }
 
-/// ===============================================================
-/// STATUS BADGE
-/// ===============================================================
+
 
 class _StatusBadge extends StatelessWidget {
   final String label;
@@ -959,9 +942,6 @@ class _StatusBadge extends StatelessWidget {
   }
 }
 
-/// ===============================================================
-/// ADD CLASS DIALOG
-/// ===============================================================
 
 class AddClassDialog extends StatefulWidget {
   final List<Map<String, dynamic>> teachers;
@@ -1206,9 +1186,7 @@ class _AddClassDialogState extends State<AddClassDialog> {
   }
 }
 
-/// ===============================================================
-/// EDIT CLASS DIALOG
-/// ===============================================================
+
 
 class EditClassDialog extends StatefulWidget {
   final ClassItem item;
@@ -1471,9 +1449,6 @@ class _EditClassDialogState extends State<EditClassDialog> {
   }
 }
 
-/// ===============================================================
-/// TEXT FIELD
-/// ===============================================================
 
 class _DialogTextField extends StatelessWidget {
   final TextEditingController controller;
@@ -1558,9 +1533,7 @@ class _DialogTextField extends StatelessWidget {
   }
 }
 
-/// ===============================================================
-/// INPUT DECORATION
-/// ===============================================================
+
 
 InputDecoration _inputDecoration({
   required String label,
@@ -1593,9 +1566,9 @@ InputDecoration _inputDecoration({
   );
 }
 
-/// ===============================================================
-/// DIALOG BUTTONS
-/// ===============================================================
+
+
+
 
 class _DialogButtons extends StatelessWidget {
   final bool isLoading;
@@ -1638,7 +1611,7 @@ class _DialogButtons extends StatelessWidget {
 
         const SizedBox(width: 8),
 
-        ElevatedButton(
+        GradientButton(
           onPressed: isLoading ? null : onSubmit,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,

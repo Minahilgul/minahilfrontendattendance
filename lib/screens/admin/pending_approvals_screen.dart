@@ -1,10 +1,11 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/base_scaffold.dart';
 import '../../core/services/student_service.dart';
 import '../../core/theme/app_colors.dart';
 
 
-// ── DATA MODELS ───────────────────────────────────────────────────────────────
+// Data Models
 
 class ApprovalRequest {
   final String id;
@@ -51,7 +52,7 @@ class LateStudent {
 }
 
 
-// ── APPROVAL CARD ─────────────────────────────────────────────────────────────
+// approval card
 
 class ApprovalCard extends StatelessWidget {
   final ApprovalRequest request;
@@ -138,7 +139,7 @@ class ApprovalCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Expanded(
-                  child: ElevatedButton.icon(
+                  child: GradientButton.icon(
                     onPressed: onApprove,
                     icon: const Icon(Icons.check_circle_outline, size: 15),
                     label: const Text('Approve',
@@ -162,7 +163,7 @@ class ApprovalCard extends StatelessWidget {
 }
 
 
-// ── LATE STUDENT CARD ─────────────────────────────────────────────────────────
+// late student card
 
 class LateStudentCard extends StatelessWidget {
   final LateStudent student;
@@ -243,7 +244,7 @@ class LateStudentCard extends StatelessWidget {
 }
 
 
-// ── MAIN SCREEN ───────────────────────────────────────────────────────────────
+
 
 class ApprovalsScreen extends StatefulWidget {
   const ApprovalsScreen({super.key});
@@ -253,7 +254,7 @@ class ApprovalsScreen extends StatefulWidget {
 
 class _ApprovalsScreenState extends State<ApprovalsScreen>
     with SingleTickerProviderStateMixin {
-  // ✅ TabController length: 3 → 2 (Attendance Exceptions removed)
+  
   late TabController _tabController;
   final TextEditingController _searchCtrl = TextEditingController();
   String _searchQuery = '';
@@ -270,7 +271,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
   @override
   void initState() {
     super.initState();
-    // ✅ length 2 — only 'All Students' and 'Late'
+    //  length 2 only 'All Students' and 'Late'
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       // Load late students when tab 1 is first opened
@@ -288,7 +289,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
     super.dispose();
   }
 
-  // ── Load pending approval requests ────────────────────────────────────────
+  //  Load pending approval requests
   Future<void> _loadRequests() async {
     setState(() => _loadingRequests = true);
     try {
@@ -323,7 +324,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
     }
   }
 
-  // ── Load late students from real API ──────────────────────────────────────
+  //  Load late students from real API 
   Future<void> _loadLateStudents() async {
     setState(() { _loadingLate = true; });
     try {
@@ -466,7 +467,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Search ──────────────────────────────────────────────────────
+            // Search
             Container(
               color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
@@ -494,7 +495,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
               ),
             ),
 
-            // ── Tabs: only 2 now ─────────────────────────────────────────────
+          
             Container(
               color: AppColors.surface,
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -513,20 +514,20 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                 padding: EdgeInsets.zero,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 4),
                 tabs: [
-                  // ✅ Tab 0: All Students (pending approvals)
+                  
                   _buildTab('All Students (${_requests.length})'),
-                  // ✅ Tab 1: Late (real data, Attendance Exceptions removed)
+                  
                   _buildTab('Late'),
                 ],
               ),
             ),
 
-            // ── Tab views ────────────────────────────────────────────────────
+            // Tabs
             Expanded(
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  // ── Tab 0: Pending approvals ─────────────────────────────
+                  // Pending approvals
                   _loadingRequests
                       ? const Center(child: CircularProgressIndicator())
                       : Column(children: [
@@ -570,7 +571,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
                           ),
                         ]),
 
-                  // ── Tab 1: Late students (real API) ──────────────────────
+                  //  Late students (real API) 
                   _loadingLate
                       ? const Center(child: CircularProgressIndicator())
                       : Column(children: [

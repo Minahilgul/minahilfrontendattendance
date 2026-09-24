@@ -9,7 +9,10 @@ class PasswordResetService {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/forgot-password'),
-        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: jsonEncode({"email": email}),
       );
 
@@ -23,11 +26,15 @@ class PasswordResetService {
     }
   }
 
-  static Future<Map<String, dynamic>> verifyOtp(String email, String otp) async {
+  static Future<Map<String, dynamic>> verifyOtp(
+      String email, String otp) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/verify-otp'),
-        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: jsonEncode({"email": email, "otp": otp}),
       );
 
@@ -41,12 +48,15 @@ class PasswordResetService {
     }
   }
 
-  static Future<Map<String, dynamic>> resetPassword(
-      String email, String otp, String password, String passwordConfirmation) async {
+  static Future<Map<String, dynamic>> resetPassword(String email, String otp,
+      String password, String passwordConfirmation) async {
     try {
       final response = await http.post(
         Uri.parse('$baseUrl/reset-password'),
-        headers: {"Content-Type": "application/json", "Accept": "application/json"},
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: jsonEncode({
           "email": email,
           "otp": otp,

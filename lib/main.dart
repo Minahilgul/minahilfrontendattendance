@@ -5,9 +5,9 @@ import 'routes/app_routes.dart';
 import 'core/services/auth_service.dart'; 
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); //  Flutter init karna lazmi hai
-  await GetStorage.init(); //  GetStorage initialize 
-  await AuthService.loadToken(); //  Token + User load karna app start pe
+  WidgetsFlutterBinding.ensureInitialized(); 
+  await GetStorage.init(); 
+  await AuthService.loadToken(); 
   
   runApp(const MyApp());
 }

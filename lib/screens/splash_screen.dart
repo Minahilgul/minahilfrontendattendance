@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:get_storage/get_storage.dart';
-import '../core/services/auth_service.dart';
 import 'package:get/get.dart';
 import '../core/theme/app_colors.dart';
 

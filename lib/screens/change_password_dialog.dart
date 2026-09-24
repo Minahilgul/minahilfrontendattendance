@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../core/services/admin_profile_service.dart';
 import '../core/theme/app_colors.dart';
@@ -104,7 +105,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: ElevatedButton(
+                    child: GradientButton(
                       onPressed: _isLoading ? null : _submit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
@@ -125,9 +126,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     );
   }
 
-  // FIXED: icon now reflects the CURRENT state of the field, not the tap-action.
-  // Hidden (obscured) -> closed/crossed eye (visibility_off).
-  // Visible (revealed) -> open eye (visibility).
+  
   Widget _buildPasswordField(String label, TextEditingController controller, bool showPass, VoidCallback toggle, {String? Function(String?)? validator}) {
     return TextFormField(
       controller: controller,

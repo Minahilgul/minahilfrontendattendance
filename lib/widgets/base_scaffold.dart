@@ -49,9 +49,7 @@ class BaseScaffold extends StatelessWidget {
     return null;
   }
 
-  // Finds the teacher's currently active session, then shows the
-  // confirmation directory (who said yes/no/pending) for it. Works from
-  // any screen — the teacher doesn't need to be on the dashboard.
+  
   Future<void> _showResponseDirectory(BuildContext context) async {
     Navigator.pop(context); // close drawer first
 
@@ -272,9 +270,7 @@ class BaseScaffold extends StatelessWidget {
     );
   }
 
-  // Finds the teacher's currently active session, then opens Mark
-  // Attendance for it — same logic TeacherDashboardScreen uses for its
-  // "Attendance" card, so drawer and dashboard behave identically.
+  
   Future<void> _openAttendance(BuildContext context) async {
     Navigator.pop(context); // close drawer first
 
@@ -301,7 +297,7 @@ class BaseScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Drawer header label — use displayName if provided, else role label
+    // Drawer header label
     final String headerLabel = displayName?.isNotEmpty == true
         ? displayName!
         : role == 'admin'
@@ -426,27 +422,27 @@ class BaseScaffold extends StatelessWidget {
                     Get.toNamed('/settings');
                   }),
             ],
-// Teacher items 
-if (role == 'teacher') ...[
-  ListTile(
-      leading: const Icon(Icons.home),
-      title: const Text('Dashboard'),
-      onTap: () {
-        Navigator.pop(context);
-        Get.toNamed('/teacher-dashboard');
-      }),
-  ListTile(
-      leading: const Icon(Icons.checklist_rounded),
-      title: const Text('Attendance'),
-      onTap: () => _openAttendance(context)),
-  ListTile(
+            // Teacher items 
+          if (role == 'teacher') ...[
+            ListTile(
+            leading: const Icon(Icons.home),
+           title: const Text('Dashboard'),
+           onTap: () {
+           Navigator.pop(context);
+           Get.toNamed('/teacher-dashboard');
+             }),
+        ListTile(
+        leading: const Icon(Icons.checklist_rounded),
+        title: const Text('Attendance'),
+       onTap: () => _openAttendance(context)),
+       ListTile(
       leading: const Icon(Icons.person_outline),
-      title: const Text('Student Directory'),
+       title: const Text('Student Directory'),
       onTap: () {
         Navigator.pop(context);
         Get.toNamed('/student-directory');
       }),
-  ListTile(
+     ListTile(
     leading: const Icon(Icons.how_to_reg_rounded,
         color: AppColors.success),
     title: const Text('View Responses'),
@@ -492,9 +488,7 @@ if (role == 'teacher') ...[
 
             const Divider(),
 
-            // Profile / Reports — admin & teacher only.
-            // Each appears exactly once here (route picked by role), so
-            // both work correctly no matter which role opened the drawer.
+            
             if (role != 'student') ...[
               ListTile(
                   leading: const Icon(Icons.person),
@@ -512,7 +506,7 @@ if (role == 'teacher') ...[
                   }),
             ],
 
-            // Logout — always shown
+            // Logout 
             ListTile(
               leading: const Icon(Icons.logout, color: AppColors.danger),
               title: const Text('Logout',

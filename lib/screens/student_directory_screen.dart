@@ -1,10 +1,12 @@
+import '../core/theme/app_colors.dart';
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import '../core/services/student_service.dart';
 import '../widgets/base_scaffold.dart';
 
 
-// DATA MODELS
+// data models
 
 
 class StudentModel {
@@ -40,7 +42,7 @@ class StudentModel {
     return StudentModel(
       id: json['id'] ?? 0,
       initials: initials.isEmpty ? 'ST' : initials,
-      avatarColor: const Color(0xFF0F9D58),
+      avatarColor: AppColors.primary,
       name: name,
       role: json['role'] ?? 'Student',
       email: json['email'],
@@ -75,7 +77,7 @@ Future<bool> deleteStudent(int id) async {
 }
 
 
-// ADD STUDENT DIALOG
+
 
 
 class AddStudentDialog extends StatefulWidget {
@@ -135,7 +137,7 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
     }
   }
 
-  // Auto-fill roll number field with the next available roll no (max+1, global)
+ 
   Future<void> _loadNextRollNo() async {
     final nextRollNo = await StudentService.fetchNextRollNo();
     if (mounted) {
@@ -284,8 +286,7 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                 }),
                 const SizedBox(height: 14),
 
-                // Roll Number — auto-filled (max existing + 1) and readonly,
-                // taake duplicate/manual entry ka chance na rahe
+                
                 TextFormField(
                   controller: _rollNoCtrl,
                   readOnly: true,
@@ -336,10 +337,10 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: GradientButton(
                         onPressed: _isLoading ? null : _onSave,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F9D58),
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
@@ -413,7 +414,7 @@ class _AddStudentDialogState extends State<AddStudentDialog> {
 }
 
 
-// EDIT STUDENT DIALOG
+
 
 
 class EditStudentDialog extends StatefulWidget {
@@ -575,7 +576,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                     }),
                 const SizedBox(height: 14),
 
-                //  class_name key use ho rahi hai — Add dialog se match
+                
                 Builder(builder: (context) {
                   final options = _classOptions;
                   final dropdownValue = options.contains(_selectedClass)
@@ -636,10 +637,10 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: GradientButton(
                         onPressed: _isLoading ? null : _onUpdate,
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F9D58),
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             padding:
                                 const EdgeInsets.symmetric(vertical: 12),
@@ -688,7 +689,7 @@ class _EditStudentDialogState extends State<EditStudentDialog> {
 }
 
 
-// STUDENT CARD WIDGET
+// student card widget
 
 
 class StudentCard extends StatelessWidget {
@@ -756,7 +757,7 @@ class StudentCard extends StatelessWidget {
                       style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF0F9D58))),
+                          color: AppColors.primary)),
                 ],
               ),
             ),
@@ -792,7 +793,7 @@ class StudentCard extends StatelessWidget {
 }
 
 
-// MAIN DIRECTORY SCREEN
+// Main Directory Screen
 
 class StudentDirectoryScreen extends StatefulWidget {
   const StudentDirectoryScreen({super.key});
@@ -875,7 +876,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
           TextButton(
               onPressed: () => Navigator.pop(context, false),
               child: const Text('Cancel')),
-          ElevatedButton(
+          GradientButton(
             onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE53935)),
@@ -910,7 +911,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
       role: _currentRole,
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddStudentDialog,
-        backgroundColor: const Color(0xFF0F9D58),
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 4,
         shape:

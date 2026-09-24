@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../../core/services/attendance_service.dart';
@@ -40,8 +41,7 @@ class StudentModel {
         ? json['id'] as int
         : int.tryParse(json['id'].toString()) ?? 0;
 
-    // NEW: parse the status the teacher already marked this student with,
-    // so re-opening the attendance box shows the saved state instead of resetting.
+   
     AttendanceStatus parsedStatus = AttendanceStatus.none;
     final statusStr = json['status']?.toString();
     if (statusStr == 'present') {
@@ -90,9 +90,7 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
       _error = null;
     });
 
-    // CHANGED: Now uses getStudents to fetch the full class roster
-    // so the teacher can see all students and mark them on this screen directly,
-    // avoiding the redundant StudentSelectionScreen.
+    
     final result = await SessionService.getStudents(widget.sessionId);
 
     if (result['success'] == true) {
@@ -118,8 +116,7 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
   void _setStatus(int index, AttendanceStatus status) {
     setState(() {
       _students[index].status = status;
-      // Reset the reason whenever status changes away from (or into) absent,
-      // so a stale reason from a previous "Absent" tap never lingers.
+     
       if (status != AttendanceStatus.absent) {
         _students[index].absentReason = null;
       }
@@ -337,7 +334,7 @@ class _MarkAttendanceScreenState extends State<MarkAttendanceScreen> {
           const SizedBox(height: 12),
           Text(_error!, style: TextStyle(color: AppColors.danger)),
           const SizedBox(height: 16),
-          ElevatedButton(onPressed: _loadStudents, child: const Text('Retry')),
+          GradientButton(onPressed: _loadStudents, child: const Text('Retry')),
         ],
       ),
     );
@@ -531,7 +528,7 @@ class _BottomSaveSection extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton.icon(
+              child: GradientButton.icon(
                 onPressed: isSaving ? null : onSave,
                 style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,

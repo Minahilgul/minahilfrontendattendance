@@ -4,7 +4,7 @@ import 'auth_service.dart';
 
 class SessionService {
   
-  // CREATE SESSION
+  // create session
   
   static Future<Map<String, dynamic>> createSession({
     required int teacherId,
@@ -56,7 +56,7 @@ class SessionService {
     }
   }
 
-// GET ACTIVE SESSION (restore state on app load)
+// get active sessions(restore state on app load)
 
 static Future<Map<String, dynamic>> getActiveSession(int teacherId) async {
   try {
@@ -89,7 +89,7 @@ static Future<Map<String, dynamic>> getActiveSession(int teacherId) async {
   }
 }
 
-// GET STUDENTS FOR SESSION
+// get students for sessions
 static Future<Map<String, dynamic>> getStudents(int sessionId) async {
   try {
     final token = await AuthService.getToken();
@@ -120,7 +120,7 @@ static Future<Map<String, dynamic>> getStudents(int sessionId) async {
   }
 }
   
-  // GET MARKED STUDENTS (only students marked in this session)
+  // get marked students (only students marked in this session)
 static Future<Map<String, dynamic>> getMarkedStudents(int sessionId) async {
   try {
     final token = await AuthService.getToken();
@@ -150,7 +150,7 @@ static Future<Map<String, dynamic>> getMarkedStudents(int sessionId) async {
     return {'success': false, 'message': 'Connection error: $e'};
   }
 }
-  // SAVE SELECTED STUDENTS
+  
   
   static Future<Map<String, dynamic>> saveSessionStudents({
     required int sessionId,
@@ -201,7 +201,7 @@ static Future<Map<String, dynamic>> getMarkedStudents(int sessionId) async {
       return {'success': false, 'message': 'Connection error: $e'};
     }
   }
-  // END SESSION
+  
   static Future<Map<String, dynamic>> endSession(int sessionId) async {
     try {
       final token = await AuthService.getToken();
@@ -238,7 +238,7 @@ static Future<Map<String, dynamic>> getMarkedStudents(int sessionId) async {
     }
   }
 
-  // ── NEW: GET ALL SESSIONS CREATED BY THIS TEACHER ──
+  // get all sesssions created by teacher 
   static Future<Map<String, dynamic>> getTeacherSessions(int teacherId) async {
     try {
       final token = await AuthService.getToken();

@@ -9,7 +9,7 @@ class AttendanceService {
     required double latitude,
     required double longitude,
     required String status,
-    String? reason, // optional: only relevant when status == 'absent'
+    String? reason, // optional: only relevant when status == absent
   }) async {
     try {
       final body = {

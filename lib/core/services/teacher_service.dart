@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
-import 'package:device_info_plus/device_info_plus.dart';
+
 
 class TeacherService {
 
-  // FETCH ALL TEACHERS
+  
   
   static Future<List<Map<String, dynamic>>> fetchTeachers() async {
     try {
@@ -35,15 +35,14 @@ class TeacherService {
   }
 
   
-  // ADD TEACHER
-  
   static Future<Map<String, dynamic>> addTeacher({
     required String username,
     required String email,
     required String password,
     required String phone,
+    required String address, 
     String? deviceId,
-    int? status, // NEW: 1 = active, 0 = inactive. Backend defaults to 1 if omitted.
+    int? status, 
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -53,8 +52,9 @@ class TeacherService {
         'email': email,
         'password': password,
         'phone': phone,
+        'address': address, 
         if (deviceId != null && deviceId.isNotEmpty) 'device_id': deviceId,
-        if (status != null) 'status': status, // NEW
+        if (status != null) 'status': status, 
       };
 
       final response = await http.post(
@@ -72,12 +72,12 @@ class TeacherService {
 
       final jsonData = jsonDecode(response.body);
 
-      //  return full response so UI can show specific validation errors
+      //  return full response 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return {'success': true, 'message': jsonData['message'] ?? 'Teacher added'};
       }
 
-      // Extract Laravel validation errors for display
+      
       String errorMessage = jsonData['message'] ?? 'Failed to add teacher';
       if (jsonData['errors'] != null) {
         final errors = jsonData['errors'] as Map<String, dynamic>;
@@ -93,9 +93,8 @@ class TeacherService {
     }
   }
 
-  // ─────────────────────────────
-  // UPDATE TEACHER
-  // ─────────────────────────────
+  
+ 
   static Future<Map<String, dynamic>> updateTeacher({
     required int id,
     required String username,
@@ -103,7 +102,7 @@ class TeacherService {
     required String phone,
     String? deviceId,
     String? password,
-    int? status, // NEW: 1 = active, 0 = inactive. Backend preserves current value if omitted.
+    int? status, 
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -113,13 +112,13 @@ class TeacherService {
         'email': email,
         'phone': phone,
         'password': password,
-        // send null instead of empty string so Laravel treats it as nullable
+        
          if (deviceId != null && deviceId.isNotEmpty)
              'device_id': deviceId,
-        if (status != null) 'status': status, // NEW
+        if (status != null) 'status': status, 
       };
 
-      //  Only include password if user typed a new one
+      
       if (password != null && password.isNotEmpty) {
         body['password'] = password;
       }
@@ -143,7 +142,7 @@ class TeacherService {
         return {'success': true, 'message': jsonData['message'] ?? 'Teacher updated'};
       }
 
-      // ✅ Extract Laravel validation errors for display
+      
       String errorMessage = jsonData['message'] ?? 'Failed to update teacher';
       if (jsonData['errors'] != null) {
         final errors = jsonData['errors'] as Map<String, dynamic>;
@@ -159,9 +158,7 @@ class TeacherService {
     }
   }
 
-  // ─────────────────────────────
-  // DELETE TEACHER
-  // ─────────────────────────────
+  
   static Future<bool> deleteTeacher(int id) async {
     try {
       final token = await AuthService.getToken();
@@ -184,9 +181,9 @@ class TeacherService {
     }
   }
 
-  // ─────────────────────────────
-  // SELF-REGISTER TEACHER
-  // ─────────────────────────────
+
+  // self register teacher
+  
   static Future<Map<String, dynamic>> registerTeacher({
     required String username,
     required String email,
@@ -236,7 +233,7 @@ class TeacherService {
     }
   }
 
-  // APPROVE TEACHER
+  
   
   static Future<bool> approveTeacher(int id) async {
     try {

@@ -13,7 +13,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final storage = GetStorage(); 
-  String token = ""; //  hardcoded token hata diya
+  String token = ""; 
 
   List<dynamic> settings = [];
   bool isLoading = true;
@@ -21,17 +21,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    loadToken(); // direct fetchSettings nahi
+    loadToken(); 
   }
 
-  //  ye naya function add kiya
+  
   Future<void> loadToken() async {
-    String? savedToken = storage.read<String>('token'); // 👈 GetStorage
+    String? savedToken = storage.read<String>('token'); //  GetStorage
     print("Secure Token Loaded: $savedToken");
 
     if (savedToken != null && savedToken.isNotEmpty) {
       setState(() => token = savedToken);
-      fetchSettings(); //  token milne ke baad call kro
+      fetchSettings(); 
     } else {
       setState(() => isLoading = false);
       _showSnack('Login karo pehle');
@@ -43,7 +43,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final fetchedSettings = await SystemSettingService.fetchSettings(token);
       setState(() {
-        settings = fetchedSettings;
+        
+        settings = fetchedSettings.where((s) => 
+          s['key'] != 'parent_verification_mode' && 
+          s['key'] != 'parent_verificiation_mode'
+        ).toList();
         isLoading = false;
       });
     } catch (e) {

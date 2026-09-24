@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 
@@ -40,7 +39,6 @@ class DashboardCard extends StatelessWidget {
 
       case DashboardCardType.purple:
         return AppColors.purple;
-          
     }
   }
 

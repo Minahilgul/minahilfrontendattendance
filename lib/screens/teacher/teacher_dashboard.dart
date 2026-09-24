@@ -1,14 +1,10 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
-import '../settings_screen.dart';
 import '../../widgets/base_scaffold.dart';
 import '../../core/services/session_service.dart';
 import '../../core/services/class_service.dart';
-import '../../core/services/auth_service.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'session_report_screen.dart';
 import 'mark_attendance.dart';
 import '../attendance_report_screen.dart';
 import '../../core/services/confirmation_service.dart';
@@ -38,7 +34,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
 
   int get teacherId => widget.userId;
 
-  // ✅ CHANGE 1: Classes & Settings removed → Profile & View Responses added
+  
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home_rounded,        label: 'Home'),
     _NavItem(icon: Icons.bar_chart_rounded,   label: 'Reports'),
@@ -74,9 +70,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     }
   }
 
-  // ── MERGED: now falls back to fetching the active session from the
-  // backend if activeSessionId isn't already tracked in state, instead
-  // of immediately telling the teacher to start a session. ──
+  
   Future<void> _showResponseDirectory() async {
     int? sessionId = activeSessionId;
 
@@ -307,7 +301,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     return BaseScaffold(
       title: 'Teacher Dashboard',
       role: widget.role,
-      //  CHANGE 2: FAB (? help button) removed — no floatingActionButton
+  
       bottomNav: _buildBottomNavBar(),
       body: _buildBody(),
     );
@@ -334,8 +328,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
             type: DashboardCardType.danger,
             onTap: _openEndSessionScreen,
           ),
-          //  CHANGE 3: Class Roaster card removed
-          //  CHANGE 4: Reports card replaced with Attendance card (Reports moved to drawer)
+          
           DashboardCard(
             title: 'Attendance',
             iconData: Icons.checklist_rounded,
@@ -353,10 +346,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
-  // Opens Mark Attendance for whichever session is currently active.
-  // Reuses the already-tracked activeSessionId if we have it, otherwise
-  // asks the backend fresh — so this keeps working even if the teacher
-  // navigated away mid-session (e.g. to mark a student who arrived late).
+ 
   Future<void> _openAttendance() async {
     int? sessionId = activeSessionId;
 
@@ -425,8 +415,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
       );
       print("6. Location OK: ${pos.latitude}");
 
-      // NOTE: _classes now only contains THIS teacher's own assigned
-      // classes (backend filters by teacher_id for the 'teacher' role).
+      
       final eligibleClasses = _classes.where((c) {
         final count = c['students_count'];
         if (count is int) return count > 0;
@@ -545,7 +534,7 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     }
   }
 
-  // ── UPDATED: "End Session" now opens a full page instead of a bottom sheet ──
+  
   void _openEndSessionScreen() async {
     await Navigator.push(
       context,
@@ -702,11 +691,8 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
               return GestureDetector(
                 onTap: () {
                   setState(() => _selectedIndex = index);
-                  // ✅ CHANGE 1: Updated nav actions
-                  // index 0 = Home (stay)
-                  // index 1 = Reports
-                  // index 2 = View Responses
-                  // index 3 = Profile
+                  
+                 
                   if (index == 1) {
                     Navigator.push(
                       context,
@@ -758,12 +744,7 @@ class _NavItem {
   const _NavItem({required this.icon, required this.label});
 }
 
-// ── TEACHER SESSIONS SCREEN (was a bottom sheet, now a full page) ──
-// Lists every session this teacher has created. If a session is active,
-// an "End" button lets the teacher end it. Ended sessions show an "Ended" badge.
-// Because this writes to the same attendance_sessions row/status that the
-// admin's Reports & Audit screen reads, the admin's sessions list reflects
-// this the next time it loads/refreshes.
+
 class TeacherSessionsScreen extends StatefulWidget {
   final int teacherId;
   final void Function(int sessionId)? onSessionEnded;
@@ -947,7 +928,7 @@ class _TeacherSessionsScreenState extends State<TeacherSessionsScreen> {
                             isActive
                                 ? SizedBox(
                                     height: 32,
-                                    child: ElevatedButton(
+                                    child: GradientButton(
                                       onPressed: isEnding
                                           ? null
                                           : () => _endSession(index),

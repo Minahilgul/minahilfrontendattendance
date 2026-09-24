@@ -24,6 +24,7 @@ class TeacherReportService {
 
   // GET /api/teacher/reports/stats
   static Future<Map<String, dynamic>> getMyStats({
+    int? classId,
     String? date,
     String? startDate,
     String? endDate,
@@ -32,6 +33,7 @@ class TeacherReportService {
   }) async {
     final uri = Uri.parse('$_baseUrl/teacher/reports/stats').replace(
       queryParameters: _cleanParams({
+        'class_id': classId,
         'date': date,
         'start_date': startDate,
         'end_date': endDate,
@@ -47,6 +49,7 @@ class TeacherReportService {
 
   // GET /api/teacher/reports/chart
   static Future<List<Map<String, dynamic>>> getChartData({
+    int? classId,
     String? date,
     String? startDate,
     String? endDate,
@@ -55,6 +58,7 @@ class TeacherReportService {
   }) async {
     final uri = Uri.parse('$_baseUrl/teacher/reports/chart').replace(
       queryParameters: _cleanParams({
+        'class_id': classId,
         'date': date,
         'start_date': startDate,
         'end_date': endDate,
@@ -71,7 +75,7 @@ class TeacherReportService {
     return [];
   }
 
-  // GET /api/teacher/reports/students  — supports class_id, student_id, student_ids, date range
+  // GET /api/teacher/reports/students supports class_id, student_id, student_ids, date range
   static Future<List<Map<String, dynamic>>> getMyStudents({
     int? classId,
     int? studentId,
@@ -105,13 +109,14 @@ class TeacherReportService {
     return [];
   }
 
-  // GET /api/teacher/reports/student/{id}  — supports optional start_date/end_date
+  
   static Future<Map<String, dynamic>> getStudentReport(
     int studentId, {
     String? startDate,
     String? endDate,
   }) async {
-    final uri = Uri.parse('$_baseUrl/teacher/reports/student/$studentId').replace(
+    final uri =
+        Uri.parse('$_baseUrl/teacher/reports/student/$studentId').replace(
       queryParameters: _cleanParams({
         'start_date': startDate,
         'end_date': endDate,

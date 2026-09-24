@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/student_service.dart';
@@ -12,7 +13,7 @@ class AddStudentScreen extends StatefulWidget {
 }
 
 class _AddStudentScreenState extends State<AddStudentScreen> {
-  //  SAFE teacherId (NO 'null' STRING EVER)
+  
   String? get teacherIdValue {
     final user = AuthService.currentUser;
 
@@ -21,7 +22,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     }
 
     if (user?['role'] == 'admin') {
-      return null; // admin allowed
+      return null;
     }
 
     return user?['id']?.toString();
@@ -54,7 +55,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
             child: SizedBox(
               width: double.infinity,
               height: 50,
-              child: ElevatedButton.icon(
+              child: GradientButton.icon(
                 icon: const Icon(Icons.person_add),
                 label: const Text("Add New Student"),
                 style: ElevatedButton.styleFrom(
@@ -124,10 +125,10 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     _selectedClass = '';
     _selectedStatus = 'Active';
 
-    // Show loading state in roll number field while fetching
+   
     _rollController.text = 'Loading...';
 
-    // Fetch the next roll number (last max roll no + 1)
+   
     StudentService.fetchNextRollNo().then((nextRoll) {
       if (mounted) {
         _rollController.text = nextRoll ?? '';
@@ -255,7 +256,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                       onPressed: () => Navigator.pop(context),
                       child: const Text('Cancel'),
                     ),
-                    ElevatedButton(
+                    GradientButton(
                       onPressed: _submitForApproval,
                       child: const Text('Save'),
                     ),
@@ -287,7 +288,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       roll: _rollController.text.trim(),
       status: _selectedStatus,
 
-      //  never send "null" string
+    
       teacherId: teacherIdValue ?? '',
     );
 

@@ -23,7 +23,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
 
-    if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$').hasMatch(emailController.text)) {
+    if (!RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$')
+        .hasMatch(emailController.text)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter a valid email address")),
       );
@@ -31,7 +32,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
 
     setState(() => _isLoading = true);
-    final result = await PasswordResetService.forgotPassword(emailController.text.trim());
+    final result =
+        await PasswordResetService.forgotPassword(emailController.text.trim());
     setState(() => _isLoading = false);
 
     if (result['success']) {
@@ -67,7 +69,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               color: AppColors.surface,
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
-                BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, 10)),
+                BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10)),
               ],
             ),
             child: Column(
@@ -76,12 +81,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Icon(Icons.lock_reset, color: AppColors.primary, size: 40),
                 const SizedBox(height: 16),
                 Text("Forgot Password?",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: AppColors.textPrimary)),
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textPrimary)),
                 const SizedBox(height: 8),
-                Text("Enter your registered email and we'll send you a verification code",
+                Text(
+                    "Enter your registered email and we'll send you a verification code",
                     style: TextStyle(color: AppColors.textSecondary)),
                 const SizedBox(height: 25),
-                const Text("Email", style: TextStyle(fontWeight: FontWeight.w500)),
+                const Text("Email",
+                    style: TextStyle(fontWeight: FontWeight.w500)),
                 const SizedBox(height: 8),
                 TextField(
                   controller: emailController,
@@ -91,7 +101,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     prefixIcon: const Icon(Icons.email_outlined),
                     filled: true,
                     fillColor: AppColors.background,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide.none),
                   ),
                 ),
                 const SizedBox(height: 25),
@@ -102,11 +114,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onPressed: _isLoading ? null : _sendOtp,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primaryDark,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                     child: _isLoading
-                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text("Send Code", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2))
+                        : const Text("Send Code",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600)),
                   ),
                 ),
               ],

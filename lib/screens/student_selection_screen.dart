@@ -1,3 +1,4 @@
+import 'package:attendence_verification/widgets/gradient_button.dart';
 import 'package:flutter/material.dart';
 import '../core/services/session_service.dart';
 import '../core/theme/app_colors.dart';
@@ -81,8 +82,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
           backgroundColor: AppColors.success,
         ),
       );
-      // Roster saved — go straight into Mark Attendance for this session
-      // so the teacher can mark Present/Late/Absent right away.
+     
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -170,7 +170,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
             const SizedBox(height: 12),
             Text(error!, style: TextStyle(color: AppColors.danger)),
             const SizedBox(height: 16),
-            ElevatedButton(
+            GradientButton(
               onPressed: _loadStudents,
               style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.success),
@@ -334,7 +334,7 @@ class _StudentSelectionScreenState extends State<StudentSelectionScreen> {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: ElevatedButton(
+                child: GradientButton(
                   onPressed: isSaving ? null : _saveStudents,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: hasMinStudents ? AppColors.success : Colors.grey.shade400,

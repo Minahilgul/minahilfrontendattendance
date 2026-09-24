@@ -61,11 +61,11 @@ class ConfirmationService {
     }
   }
 
-  // Student: submit YES/NO
+  // student: submit yes/no
   static Future<Map<String, dynamic>> submitResponse({
     required int requestId,
     required int studentId,
-    required String response, // 'yes' or 'no'
+    required String response, 
   }) async {
     try {
       final token = await AuthService.getToken();
@@ -110,8 +110,7 @@ class ConfirmationService {
     }
   }
 
-  // ── NEW: Admin — overview of all sessions that have confirmation requests,
-  // with yes/no/pending counts and verdict per session ──
+  //  Admin: overview of all sessions
   static Future<Map<String, dynamic>> getAdminOverview() async {
     try {
       final token = await AuthService.getToken();

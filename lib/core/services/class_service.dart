@@ -3,10 +3,9 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class ClassService {
-  // ============================================================
-  // FETCH ALL CLASSES (subject-offerings: one entry per class+subject+teacher)
-  // Use this for: session creation, teacher's own class list.
-  // ============================================================
+  
+  // fetch all classes (subject-offerings: one entry per class+subject+teacher)
+  
 
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
     try {
@@ -43,14 +42,9 @@ class ClassService {
       return [];
     }
   }
-
-  // ============================================================
-  // FETCH ALL CLASS GROUPS (physical classes, e.g. "BS Zoology")
-  // Use this for: student enrollment / editing a student's class —
-  // NOT fetchClasses() above, since that returns one row per subject
-  // and would double-list the same physical class.
-  // ============================================================
-
+  
+  // fetch all class groups (physical classes, e.g. "BS Zoology")
+  
   static Future<List<Map<String, dynamic>>> fetchClassGroups() async {
     try {
       final token = await AuthService.getToken();
@@ -88,7 +82,7 @@ class ClassService {
   }
 
 
-  // FETCH ALL TEACHERS
+  // fetch all teachers
 
 
   static Future<List<Map<String, dynamic>>> fetchTeachers() async {
@@ -127,9 +121,9 @@ class ClassService {
     }
   }
 
-  // ============================================================
-  // CREATE CLASS
-  // ============================================================
+  
+  // create class
+  
 
   static Future<bool> createClass({
     required String name,
@@ -180,9 +174,9 @@ class ClassService {
     }
   }
 
-  // ============================================================
-  // UPDATE CLASS
-  // ============================================================
+  
+  // update class
+  
 
   static Future<bool> updateClass({
     required int id,
@@ -233,9 +227,9 @@ class ClassService {
     }
   }
 
-  // ============================================================
-  // DELETE CLASS
-  // ============================================================
+  
+  // delete class
+  
 
   static Future<bool> deleteClass(int id) async {
     try {

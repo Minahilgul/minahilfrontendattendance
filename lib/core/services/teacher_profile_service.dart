@@ -94,7 +94,7 @@ class TeacherProfileService {
     _handleError(response);
   }
 
-  // POST /api/teacher/profile/change-email
+  // POST /api/teacher/profile/change email
   Future<void> changeEmail({
     required String currentEmail,
     required String newEmail,
@@ -129,7 +129,7 @@ class TeacherProfileService {
     await _clearSession();
   }
 
-  // POST /api/teacher/logout-all
+  // POST /api/teacher/logout all
   Future<void> logoutAllDevices() async {
     final token = await _getToken();
     if (token == null) throw Exception('Not authenticated');

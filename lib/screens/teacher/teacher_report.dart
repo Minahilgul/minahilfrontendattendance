@@ -7,7 +7,7 @@ import '../../core/services/session_service.dart';
 import '../../core/services/confirmation_service.dart';
 import '../../widgets/base_scaffold.dart';
 
-// Data Models 
+// data models
 
 enum TeacherAuditStatus { suspicious, verified, flagged }
 
@@ -29,7 +29,7 @@ class TeacherAuditLog {
   });
 }
 
-//  Screen
+// screen
 
 class TeacherReportScreen extends StatefulWidget {
   const TeacherReportScreen({super.key});
@@ -88,9 +88,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
 
   final List<String> _chartDays = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
-  //  Bottom nav now matches Teacher Dashboard's nav exactly
-  // (Home / Reports / View Responses / Profile) instead of the
-  // admin-style Home/Classes/Settings labels.
+  
   final List<_NavItem> _navItems = const [
     _NavItem(icon: Icons.home_rounded, label: 'Home'),
     _NavItem(icon: Icons.bar_chart_rounded, label: 'Reports'),
@@ -98,10 +96,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
     _NavItem(icon: Icons.person_rounded, label: 'Profile'),
   ];
 
-  // Finds the teacher's currently active session, then shows the
-  // confirmation directory (who said yes/no/pending) for it. Same
-  // logic as TeacherDashboardScreen so "View Responses" behaves
-  // identically from either screen.
+  
   Future<void> _showResponseDirectory() async {
     final int? teacherId = AuthService.currentUser?['id'] is int
         ? AuthService.currentUser!['id'] as int
@@ -352,9 +347,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
         child: SafeArea(
           child: Column(
             children: [
-              // Sub-header (was the custom AppBar) — kept so the
-              // "TEACHER DASHBOARD" label and share action are still
-              // visible, now that BaseScaffold owns the real AppBar.
+              
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
@@ -582,9 +575,6 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
               return GestureDetector(
                 onTap: () {
                   setState(() => _navIndex = i);
-                  // index 0 = Home, 1 = Reports (current screen),
-                  // 2 = View Responses, 3 = Profile — matches Teacher
-                  // Dashboard's bottom nav exactly.
                   if (i == 0) {
                     Get.toNamed('/teacher-dashboard');
                   } else if (i == 2) {
@@ -630,7 +620,7 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
   }
 }
 
-// Line Chart 
+// line chart
 
 class _AttendanceLineChart extends StatelessWidget {
   final List<FlSpot> spots;
@@ -720,7 +710,7 @@ class _AttendanceLineChart extends StatelessWidget {
   }
 }
 
-//  Dropdown Filter 
+// dropdown filter
 
 class _DropdownFilter extends StatelessWidget {
   final String value;
