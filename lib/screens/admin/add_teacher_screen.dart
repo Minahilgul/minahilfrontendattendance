@@ -42,7 +42,7 @@ class _AddTeacherScreenState extends State<AddTeacherScreen> {
     emailController.dispose();
     passwordController.dispose();
     phoneController.dispose();
-    addressController.dispose(); // ADDED
+    addressController.dispose();
     deviceIdController.dispose();
     super.dispose();
   }

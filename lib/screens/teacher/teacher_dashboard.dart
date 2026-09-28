@@ -330,10 +330,6 @@ class _TeacherDashboardScreenState extends State<TeacherDashboardScreen> {
     );
   }
 
-  // Inline responsive helper: on desktop-sized widths (>=800), center the
-  // content in a max-width column instead of letting it stretch edge to
-  // edge; on mobile/tablet widths, return the child untouched (full width,
-  // exactly as before). No other logic is affected by this.
   Widget _responsive(BuildContext context, Widget child) {
     final width = MediaQuery.of(context).size.width;
     if (width < 800) return child;
@@ -823,10 +819,6 @@ class _NavItem {
   const _NavItem({required this.icon, required this.label});
 }
 
-// Purple "Welcome" card. Same gradient as the student dashboard's welcome
-// banner (primary -> primaryLight) for a consistent look across roles.
-// Four teacher-specific stats as compact single-line (icon + number +
-// label) entries in one row, separated by thin vertical dividers.
 class _WelcomeStatsCard extends StatelessWidget {
   final String teacherName;
   final bool loading;

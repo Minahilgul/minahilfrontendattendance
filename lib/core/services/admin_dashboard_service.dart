@@ -3,9 +3,6 @@ import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class DashboardService {
-  // GET /api/admin/dashboard-stats
-  // Returns: total_students, total_teachers, total_classes,
-  // active_classes, inactive_classes, pending_approvals
   static Future<Map<String, dynamic>> fetchAdminStats() async {
     try {
       final token = await AuthService.getToken();

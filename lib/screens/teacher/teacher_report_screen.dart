@@ -8,8 +8,7 @@ import '../../core/services/class_service.dart';
 import '../../core/services/teacher_report_service.dart';
 import '../../core/theme/app_colors.dart';
 
-// Inline responsive helper: on desktop-sized widths (>=800), center the
-// content in a max-width column; on mobile/tablet return the child as-is.
+
 Widget _responsive(BuildContext context, Widget child) {
   final width = MediaQuery.of(context).size.width;
   if (width < 800) return child;
@@ -425,9 +424,6 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
   bool _loadingStudents = true;
   bool _showAllStudents = false;
   String? _error;
-
-  // Guards against a slow, older response overwriting a newer one, and
-  // debounces typing so we don't fire 4 requests per keystroke.
   int _reqId = 0;
   Timer? _debounce;
 
@@ -460,8 +456,6 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
     try {
       final list = await ClassService.fetchClasses();
       final myId = _asInt(AuthService.currentUser?['id']);
-      // Keep only this teacher's classes when the list says who teaches them.
-      // (The server scopes the report data by teacher regardless.)
       final mine = list.where((c) {
         if (myId == null || !c.containsKey('teacher_id')) return true;
         return _asInt(c['teacher_id']) == myId;
@@ -1061,8 +1055,6 @@ class _TeacherReportScreenState extends State<TeacherReportScreen> {
 
   void _resetFilters() {
     _debounce?.cancel();
-    // Clear the text fields too, otherwise the old text stays on screen
-    // even though the filter behind it has been reset.
     _nameCtrl.clear();
     _sessionCtrl.clear();
     setState(() {

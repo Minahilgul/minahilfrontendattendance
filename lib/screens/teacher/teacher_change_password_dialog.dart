@@ -126,7 +126,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
     );
   }
 
-  // Icon reflects CURRENT state: hidden -> closed/crossed eye, visible -> open eye.
+  // Icon eye
   Widget _buildPasswordField(String label, TextEditingController controller, bool showPass, VoidCallback toggle, {String? Function(String?)? validator}) {
     return TextFormField(
       controller: controller,

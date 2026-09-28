@@ -66,7 +66,7 @@ class SessionReportScreenState extends State<SessionReportScreen> {
 
   
   Future<void> _toggleSession(int sessionId, bool newVal) async {
-    // 1. Instant UI update
+    //Instant UI update
     setState(() {
       final idx = _sessions.indexWhere((s) => (s['id'] as num?)?.toInt() == sessionId);
       if (idx != -1) {

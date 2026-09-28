@@ -110,7 +110,7 @@ class ConfirmationService {
     }
   }
 
-  //  Admin: overview of all sessions
+  //  Admin:overview of all sessions
   static Future<Map<String, dynamic>> getAdminOverview() async {
     try {
       final token = await AuthService.getToken();

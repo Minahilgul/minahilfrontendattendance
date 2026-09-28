@@ -9,8 +9,6 @@ import '../../core/theme/app_colors.dart';
 
 
 // models
-
-
 enum StudentStatus { good, warning, critical, noData }
 
 class StudentRecord {

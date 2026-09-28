@@ -4,7 +4,7 @@ import 'auth_service.dart';
 
 class ClassService {
   
-  // fetch all classes (subject-offerings: one entry per class+subject+teacher)
+  // fetch all classes (one entry per class+subject+teacher)
   
 
   static Future<List<Map<String, dynamic>>> fetchClasses() async {
@@ -229,7 +229,6 @@ class ClassService {
 
   
   // delete class
-  
 
   static Future<bool> deleteClass(int id) async {
     try {

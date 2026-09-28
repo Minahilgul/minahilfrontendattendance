@@ -32,8 +32,6 @@ class TeacherReportService {
     return null;
   }
 
-  // The summary endpoints share the admin controller's response shape.
-  // Accept a bare list, or a list under a common key, or the first list found.
   static List<Map<String, dynamic>> _extractList(dynamic body, List<String> keys) {
     List<Map<String, dynamic>> toList(List l) =>
         l.map((e) => Map<String, dynamic>.from(e as Map)).toList();
@@ -51,7 +49,7 @@ class TeacherReportService {
     return [];
   }
 
-  // GET /api/teacher/reports/stats
+  //teacher reports stats
   static Future<Map<String, dynamic>> getMyStats({
     int? classId,
     String? date,
@@ -80,7 +78,7 @@ class TeacherReportService {
     return {};
   }
 
-  // GET /api/teacher/reports/chart
+  //teacher reports chart
   static Future<List<Map<String, dynamic>>> getChartData({
     int? classId,
     String? date,
@@ -112,7 +110,7 @@ class TeacherReportService {
     return [];
   }
 
-  // GET /api/teacher/reports/students supports class_id, student_id, student_ids, date range
+  //teacher reports students supports class_id, student_id, student_ids, date range
   static Future<List<Map<String, dynamic>>> getMyStudents({
     int? classId,
     int? studentId,
@@ -147,8 +145,7 @@ class TeacherReportService {
     if (res.statusCode == 403) throw Exception('Unauthorized Access');
     return [];
   }
-
-  // GET /api/teacher/reports/student/{id}
+//get student report supports date range
   static Future<Map<String, dynamic>> getStudentReport(
     int studentId, {
     String? startDate,
@@ -167,7 +164,7 @@ class TeacherReportService {
     return {};
   }
 
-  // GET /api/teacher/reports/sessions-summary  (was missing on the Flutter side)
+  //Session summmary
   static Future<List<Map<String, dynamic>>> getSessionsSummary({
     int? classId,
     int? days,
@@ -187,7 +184,7 @@ class TeacherReportService {
     return _extractList(body, ['sessions', 'data', 'summary']);
   }
 
-  // GET /api/teacher/reports/classes-summary  (was missing on the Flutter side)
+  //teacher reports classes-summary
   static Future<List<Map<String, dynamic>>> getClassesSummary({
     int? days,
     String? date,
