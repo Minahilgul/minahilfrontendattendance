@@ -316,6 +316,7 @@ class _AdminVerificationScreenState extends State<AdminVerificationScreen> {
     return BaseScaffold(
       title: 'Verification Responses',
       role: 'admin',
+      showBackButton: true,
       body: Column(
         children: [
           _buildFilterBar(),

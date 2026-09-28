@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import '../core/services/auth_service.dart';
-
 import '../screens/splash_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/admin/admin_dashboard_screen.dart';
@@ -15,10 +14,9 @@ import '../screens/settings_screen.dart';
 import '../screens/student_directory_screen.dart';
 import '../screens/student/student_dashboard_screen.dart';
 import '../screens/admin/register_teacher_screen.dart';
-import '../screens/attendance_report_screen.dart';
+import '../screens/teacher/teacher_report_screen.dart';
 import '../screens/admin/admin_profile_screen.dart';
 import '../screens/teacher/teacher_profile_screen.dart';
-import '../screens/teacher/class_roaster.dart';
 import '../screens/teacher/mark_attendance.dart';
 
 import './auth_middleware.dart';
@@ -96,7 +94,7 @@ class AppRoutes {
     ),
     GetPage(
       name: '/teacher-report',
-      page: () => const AttendanceReportScreen(), 
+      page: () => const TeacherReportScreen(), 
       middlewares: [AuthMiddleware(allowedRoles:['teacher', 'admin'])],
     ),
     GetPage(
@@ -130,11 +128,6 @@ class AppRoutes {
         final int sessionId = args['sessionId'] ?? 0;
         return MarkAttendanceScreen(sessionId: sessionId);
       },
-      middlewares: [AuthMiddleware(allowedRoles: ['teacher', 'admin'])],
-    ),
-    GetPage(
-      name: '/roster',
-      page: () => const RosterScreen(),
       middlewares: [AuthMiddleware(allowedRoles: ['teacher', 'admin'])],
     ),
     // Legacy support

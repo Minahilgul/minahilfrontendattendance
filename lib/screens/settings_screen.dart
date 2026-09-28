@@ -81,6 +81,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return BaseScaffold(
       title: 'System Settings',
       role: 'admin',
+      showBackButton: true,
       body: isLoading
       ? Center(child: CircularProgressIndicator(color: AppColors.success))
         : settings.isEmpty

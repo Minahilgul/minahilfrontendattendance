@@ -17,6 +17,21 @@ import 'student_change_password_dialog.dart';
 // Constants
 const String _baseUrl = Environment.apiBaseUrl;
 
+// Inline responsive helper: on desktop-sized widths (>=800), center the
+// content in a max-width column instead of letting it stretch edge to
+// edge; on mobile/tablet widths, return the child untouched (full width,
+// exactly as before). No other logic is affected by this.
+Widget _responsive(BuildContext context, Widget child) {
+  final width = MediaQuery.of(context).size.width;
+  if (width < 800) return child;
+  return Center(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 900),
+      child: child,
+    ),
+  );
+}
+
 // Model
 class AttendanceRecord {
   final String subject;
@@ -658,137 +673,140 @@ Map<String, dynamic>? _studentInfo;
       color: AppColors.background,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome Banner
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.primary, AppColors.primaryLight],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        child: _responsive(
+          context,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Welcome Banner
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryLight],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                        color: AppColors.primary.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4))
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4))
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Welcome, $name! 👋',
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  const Text('Student Portal • Attendance Verification System',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _BannerStat(
-                          label: "Today's Status",
-                          value: todayStatus == 'present'
-                              ? '✅ Present'
-                              : todayStatus == 'absent'
-                                  ? '❌ Absent'
-                                  : todayStatus == 'late'
-                                      ? '⏱ Late'
-                                      : '⏳ Not Marked',
-                        ),
-                      ),
-                      Container(width: 1, height: 40, color: Colors.white30),
-                      Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Welcome, $name! 👋',
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    const Text('Student Portal • Attendance Verification System',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
                           child: _BannerStat(
-                              label: 'Overall', value: '$pct%', center: true)),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Listening indicator
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.sensors_rounded,
-                      color: AppColors.primary, size: 18),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'Listening for teacher confirmation requests…',
-                      style: TextStyle(
-                          color: AppColors.primary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500),
+                            label: "Today's Status",
+                            value: todayStatus == 'present'
+                                ? '✅ Present'
+                                : todayStatus == 'absent'
+                                    ? '❌ Absent'
+                                    : todayStatus == 'late'
+                                        ? '⏱ Late'
+                                        : '⏳ Not Marked',
+                          ),
+                        ),
+                        Container(width: 1, height: 40, color: Colors.white30),
+                        Expanded(
+                            child: _BannerStat(
+                                label: 'Overall', value: '$pct%', center: true)),
+                      ],
                     ),
-                  ),
-                  TweenAnimationBuilder<double>(
-                    tween: Tween(begin: 0.3, end: 1.0),
-                    duration: const Duration(seconds: 1),
-                    builder: (_, val, __) => Opacity(
-                      opacity: val,
-                      child: const Icon(Icons.circle,
-                          size: 8, color: AppColors.primary),
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-            _SectionCard(
-              icon: Icons.info_outline,
-              title: 'ACCOUNT DETAILS',
-              child: Column(children: [
-                _InfoRow(label: 'User ID', value: '#$userId'),
-                _InfoRow(label: 'Role', value: role.toUpperCase()),
-                _InfoRow(
-                    label: 'Status',
-                    value: 'Active',
-                    valueColor: AppColors.success),
-              ]),
-            ),
-            const SizedBox(height: 16),
-            _SectionCard(
-              icon: Icons.calendar_month_rounded,
-              title: 'THIS MONTH',
-              child: Row(children: [
-                _StatBox(
-                    label: 'Present',
-                    value: present,
-                    color: AppColors.success,
-                    bg: const Color(0xFFDCFCE7)),
-                const SizedBox(width: 10),
-                _StatBox(
-                    label: 'Late',
-                    value: late,
-                    color: AppColors.warning,
-                    bg: const Color(0xFFFEF3C7)),
-                const SizedBox(width: 10),
-                _StatBox(
-                    label: 'Absent',
-                    value: absent,
-                    color: AppColors.danger,
-                    bg: const Color(0xFFFEE2E2)),
-              ]),
-            ),
-          ],
+              // Listening indicator
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.sensors_rounded,
+                        color: AppColors.primary, size: 18),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Listening for teacher confirmation requests…',
+                        style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.3, end: 1.0),
+                      duration: const Duration(seconds: 1),
+                      builder: (_, val, __) => Opacity(
+                        opacity: val,
+                        child: const Icon(Icons.circle,
+                            size: 8, color: AppColors.primary),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              _SectionCard(
+                icon: Icons.info_outline,
+                title: 'ACCOUNT DETAILS',
+                child: Column(children: [
+                  _InfoRow(label: 'User ID', value: '#$userId'),
+                  _InfoRow(label: 'Role', value: role.toUpperCase()),
+                  _InfoRow(
+                      label: 'Status',
+                      value: 'Active',
+                      valueColor: AppColors.success),
+                ]),
+              ),
+              const SizedBox(height: 16),
+              _SectionCard(
+                icon: Icons.calendar_month_rounded,
+                title: 'THIS MONTH',
+                child: Row(children: [
+                  _StatBox(
+                      label: 'Present',
+                      value: present,
+                      color: AppColors.success,
+                      bg: const Color(0xFFDCFCE7)),
+                  const SizedBox(width: 10),
+                  _StatBox(
+                      label: 'Late',
+                      value: late,
+                      color: AppColors.warning,
+                      bg: const Color(0xFFFEF3C7)),
+                  const SizedBox(width: 10),
+                  _StatBox(
+                      label: 'Absent',
+                      value: absent,
+                      color: AppColors.danger,
+                      bg: const Color(0xFFFEE2E2)),
+                ]),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -830,139 +848,142 @@ class _ReportsPageState extends State<_ReportsPage> {
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                        color: Colors.black.withOpacity(0.06),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3))
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 80,
-                      height: 80,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          CircularProgressIndicator(
-                            value: pct / 100,
-                            strokeWidth: 8,
-                            backgroundColor: AppColors.border,
-                            valueColor: AlwaysStoppedAnimation(pct >= 75
-                                ? AppColors.success
-                                : AppColors.danger),
-                          ),
-                          Text('$pct%',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w800,
-                                color: pct >= 75
-                                    ? AppColors.success
-                                    : AppColors.danger,
-                              )),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Overall Attendance',
-                              style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary)),
-                          const SizedBox(height: 4),
-                          Text('$present present out of $total classes',
-                              style: const TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary)),
-                          if (pct < 75) ...[
-                            const SizedBox(height: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                  color: const Color(0xFFFEE2E2),
-                                  borderRadius: BorderRadius.circular(8)),
-                              child: const Text('⚠ Below 75% threshold',
-                                  style: TextStyle(
-                                      fontSize: 11,
-                                      color: AppColors.danger,
-                                      fontWeight: FontWeight.w700)),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: subjects.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 8),
-                  itemBuilder: (_, i) {
-                    final s = subjects[i];
-                    final active = _filter == s;
-                    return GestureDetector(
-                      onTap: () => setState(() => _filter = s),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: active ? AppColors.primary : AppColors.surface,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              color: active
-                                  ? AppColors.primary
-                                  : AppColors.border),
-                        ),
-                        child: Text(s,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: active
-                                  ? Colors.white
-                                  : AppColors.textSecondary,
-                            )),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (filtered.isEmpty)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(top: 40),
-                    child: Column(
-                      children: [
-                        Icon(Icons.history_edu_rounded,
-                            size: 48, color: AppColors.textLight),
-                        SizedBox(height: 12),
-                        Text('No attendance records yet',
-                            style: TextStyle(color: AppColors.textSecondary)),
-                      ],
-                    ),
+          child: _responsive(
+            context,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3))
+                    ],
                   ),
-                )
-              else
-                ...filtered.map((r) => _AttendanceTile(record: r)),
-            ],
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            CircularProgressIndicator(
+                              value: pct / 100,
+                              strokeWidth: 8,
+                              backgroundColor: AppColors.border,
+                              valueColor: AlwaysStoppedAnimation(pct >= 75
+                                  ? AppColors.success
+                                  : AppColors.danger),
+                            ),
+                            Text('$pct%',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  color: pct >= 75
+                                      ? AppColors.success
+                                      : AppColors.danger,
+                                )),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Overall Attendance',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary)),
+                            const SizedBox(height: 4),
+                            Text('$present present out of $total classes',
+                                style: const TextStyle(
+                                    fontSize: 12,
+                                    color: AppColors.textSecondary)),
+                            if (pct < 75) ...[
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
+                                    color: const Color(0xFFFEE2E2),
+                                    borderRadius: BorderRadius.circular(8)),
+                                child: const Text('⚠ Below 75% threshold',
+                                    style: TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.danger,
+                                        fontWeight: FontWeight.w700)),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  height: 36,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: subjects.length,
+                    separatorBuilder: (_, __) => const SizedBox(width: 8),
+                    itemBuilder: (_, i) {
+                      final s = subjects[i];
+                      final active = _filter == s;
+                      return GestureDetector(
+                        onTap: () => setState(() => _filter = s),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: active ? AppColors.primary : AppColors.surface,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color: active
+                                    ? AppColors.primary
+                                    : AppColors.border),
+                          ),
+                          child: Text(s,
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: active
+                                    ? Colors.white
+                                    : AppColors.textSecondary,
+                              )),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (filtered.isEmpty)
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: Column(
+                        children: [
+                          Icon(Icons.history_edu_rounded,
+                              size: 48, color: AppColors.textLight),
+                          SizedBox(height: 12),
+                          Text('No attendance records yet',
+                              style: TextStyle(color: AppColors.textSecondary)),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  ...filtered.map((r) => _AttendanceTile(record: r)),
+              ],
+            ),
           ),
         ),
       ),
@@ -1224,122 +1245,125 @@ class _ProfilePageState extends State<_ProfilePage> {
       color: AppColors.background,
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            // Avatar
-            Container(
-              width: 80,
-              height: 80,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryLight]),
+        child: _responsive(
+          context,
+          Column(
+            children: [
+              // Avatar
+              Container(
+                width: 80,
+                height: 80,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryLight]),
+                ),
+                child: Center(
+                  child: Text(initials,
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800)),
+                ),
               ),
-              child: Center(
-                child: Text(initials,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800)),
+              const SizedBox(height: 12),
+              Text(widget.name,
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary)),
+              Text(rollNo != '—' ? rollNo : 'Student',
+                  style: const TextStyle(
+                      color: AppColors.textSecondary, fontSize: 13)),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(10)),
+                child: const Text('● Active',
+                    style: TextStyle(
+                        color: AppColors.success,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700)),
               ),
-            ),
-            const SizedBox(height: 12),
-            Text(widget.name,
-                style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.textPrimary)),
-            Text(rollNo != '—' ? rollNo : 'Student',
-                style: const TextStyle(
-                    color: AppColors.textSecondary, fontSize: 13)),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(
-                  color: const Color(0xFFDCFCE7),
-                  borderRadius: BorderRadius.circular(10)),
-              child: const Text('● Active',
-                  style: TextStyle(
-                      color: AppColors.success,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700)),
-            ),
-            const SizedBox(height: 24),
+              const SizedBox(height: 24),
 
-            // Personal Info
-            _SectionCard(
-              icon: Icons.person_outline,
-              title: 'PERSONAL INFO',
-              child: Column(children: [
-                _InfoRow(label: 'Full Name', value: widget.name),
-                _InfoRow(label: 'Email', value: email),
-                _InfoRow(label: 'Phone', value: phone),
-                _InfoRow(label: 'Class', value: className),
-                _InfoRow(label: 'Roll No', value: rollNo),
-                _InfoRow(label: 'Role', value: widget.role.toUpperCase()),
-                _InfoRow(
-                    label: 'Status',
-                    value: 'Active',
-                    valueColor: AppColors.success),
-              ]),
-            ),
-            const SizedBox(height: 16),
-
-            // Actions Card
-            Card(
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: AppColors.border),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
+              // Personal Info
+              _SectionCard(
+                icon: Icons.person_outline,
+                title: 'PERSONAL INFO',
                 child: Column(children: [
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.lock_outline,
-                          color: AppColors.primary, size: 22),
-                    ),
-                    title: const Text('Change Password',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600, fontSize: 14)),
-                    subtitle: const Text('Update your password',
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary)),
-                    trailing: const Icon(Icons.chevron_right,
-                        color: AppColors.textSecondary),
-                    onTap: _openChangePassword,
-                  ),
-                  const Divider(height: 1, indent: 56),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                          color: AppColors.danger.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8)),
-                      child: const Icon(Icons.logout,
-                          color: AppColors.danger, size: 22),
-                    ),
-                    title: const Text('Logout',
-                        style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: AppColors.danger)),
-                    subtitle: const Text('Sign out from this device',
-                        style: TextStyle(
-                            fontSize: 12, color: AppColors.textSecondary)),
-                    trailing: const Icon(Icons.chevron_right,
-                        color: AppColors.textSecondary),
-                    onTap: _logout,
-                  ),
+                  _InfoRow(label: 'Full Name', value: widget.name),
+                  _InfoRow(label: 'Email', value: email),
+                  _InfoRow(label: 'Phone', value: phone),
+                  _InfoRow(label: 'Class', value: className),
+                  _InfoRow(label: 'Roll No', value: rollNo),
+                  _InfoRow(label: 'Role', value: widget.role.toUpperCase()),
+                  _InfoRow(
+                      label: 'Status',
+                      value: 'Active',
+                      valueColor: AppColors.success),
                 ]),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              // Actions Card
+              Card(
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: const BorderSide(color: AppColors.border),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Column(children: [
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            color: AppColors.primary.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: const Icon(Icons.lock_outline,
+                            color: AppColors.primary, size: 22),
+                      ),
+                      title: const Text('Change Password',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, fontSize: 14)),
+                      subtitle: const Text('Update your password',
+                          style: TextStyle(
+                              fontSize: 12, color: AppColors.textSecondary)),
+                      trailing: const Icon(Icons.chevron_right,
+                          color: AppColors.textSecondary),
+                      onTap: _openChangePassword,
+                    ),
+                    const Divider(height: 1, indent: 56),
+                    ListTile(
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            color: AppColors.danger.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8)),
+                        child: const Icon(Icons.logout,
+                            color: AppColors.danger, size: 22),
+                      ),
+                      title: const Text('Logout',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              color: AppColors.danger)),
+                      subtitle: const Text('Sign out from this device',
+                          style: TextStyle(
+                              fontSize: 12, color: AppColors.textSecondary)),
+                      trailing: const Icon(Icons.chevron_right,
+                          color: AppColors.textSecondary),
+                      onTap: _logout,
+                    ),
+                  ]),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

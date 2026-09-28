@@ -633,6 +633,7 @@ void _showDownloadOptions() {
     return BaseScaffold(
       title: 'Reports & Audit',
       role: 'admin',
+      showBackButton: true,
       actions: [
         IconButton(icon: const Icon(Icons.download_outlined, color: Colors.white, size: 20), onPressed: _showDownloadOptions),
       ],

@@ -251,6 +251,7 @@ class _CreateSessionPageState extends State<CreateSessionPage> {
     return BaseScaffold(
       title: "Create Session",
       role: _userRole ?? "admin",
+      showBackButton: true,
       body: Container(
         color: AppColors.background,
         child: SingleChildScrollView(

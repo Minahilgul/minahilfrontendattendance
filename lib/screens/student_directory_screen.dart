@@ -909,6 +909,7 @@ class _StudentDirectoryScreenState extends State<StudentDirectoryScreen> {
     return BaseScaffold(
       title: 'Student Directory',
       role: _currentRole,
+      showBackButton: true,
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddStudentDialog,
         backgroundColor: AppColors.primary,

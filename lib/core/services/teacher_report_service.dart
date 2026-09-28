@@ -22,6 +22,35 @@ class TeacherReportService {
     return p;
   }
 
+  // Generic GET used by the summary endpoints below.
+  static Future<dynamic> _getJson(String path, Map<String, dynamic> params) async {
+    final uri = Uri.parse('$_baseUrl$path')
+        .replace(queryParameters: _cleanParams(params));
+    final res = await http.get(uri, headers: _headers());
+    if (res.statusCode == 200) return jsonDecode(res.body);
+    if (res.statusCode == 403) throw Exception('Unauthorized Access');
+    return null;
+  }
+
+  // The summary endpoints share the admin controller's response shape.
+  // Accept a bare list, or a list under a common key, or the first list found.
+  static List<Map<String, dynamic>> _extractList(dynamic body, List<String> keys) {
+    List<Map<String, dynamic>> toList(List l) =>
+        l.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+
+    if (body is List) return toList(body);
+    if (body is Map) {
+      for (final k in keys) {
+        final v = body[k];
+        if (v is List) return toList(v);
+      }
+      for (final v in body.values) {
+        if (v is List) return toList(v);
+      }
+    }
+    return [];
+  }
+
   // GET /api/teacher/reports/stats
   static Future<Map<String, dynamic>> getMyStats({
     int? classId,
@@ -30,6 +59,8 @@ class TeacherReportService {
     String? endDate,
     int? days,
     String? status,
+    int? sessionId,
+    String? studentName,
   }) async {
     final uri = Uri.parse('$_baseUrl/teacher/reports/stats').replace(
       queryParameters: _cleanParams({
@@ -39,6 +70,8 @@ class TeacherReportService {
         'end_date': endDate,
         'days': days,
         'status': status,
+        'session_id': sessionId,
+        'student_name': studentName,
       }),
     );
     final res = await http.get(uri, headers: _headers());
@@ -55,6 +88,8 @@ class TeacherReportService {
     String? endDate,
     int? days,
     String? status,
+    int? sessionId,
+    String? studentName,
   }) async {
     final uri = Uri.parse('$_baseUrl/teacher/reports/chart').replace(
       queryParameters: _cleanParams({
@@ -64,6 +99,8 @@ class TeacherReportService {
         'end_date': endDate,
         'days': days,
         'status': status,
+        'session_id': sessionId,
+        'student_name': studentName,
       }),
     );
     final res = await http.get(uri, headers: _headers());
@@ -86,6 +123,7 @@ class TeacherReportService {
     String? endDate,
     int? days,
     String? status,
+    int? sessionId,
   }) async {
     final uri = Uri.parse('$_baseUrl/teacher/reports/students').replace(
       queryParameters: _cleanParams({
@@ -98,6 +136,7 @@ class TeacherReportService {
         'end_date': endDate,
         'days': days,
         'status': status,
+        'session_id': sessionId,
       }),
     );
     final res = await http.get(uri, headers: _headers());
@@ -109,7 +148,7 @@ class TeacherReportService {
     return [];
   }
 
-  
+  // GET /api/teacher/reports/student/{id}
   static Future<Map<String, dynamic>> getStudentReport(
     int studentId, {
     String? startDate,
@@ -126,5 +165,41 @@ class TeacherReportService {
     if (res.statusCode == 200) return jsonDecode(res.body);
     if (res.statusCode == 403) throw Exception('Unauthorized Access');
     return {};
+  }
+
+  // GET /api/teacher/reports/sessions-summary  (was missing on the Flutter side)
+  static Future<List<Map<String, dynamic>>> getSessionsSummary({
+    int? classId,
+    int? days,
+    String? date,
+    String? startDate,
+    String? endDate,
+    String? status,
+  }) async {
+    final body = await _getJson('/teacher/reports/sessions-summary', {
+      'class_id': classId,
+      'days': days,
+      'date': date,
+      'start_date': startDate,
+      'end_date': endDate,
+      'status': status,
+    });
+    return _extractList(body, ['sessions', 'data', 'summary']);
+  }
+
+  // GET /api/teacher/reports/classes-summary  (was missing on the Flutter side)
+  static Future<List<Map<String, dynamic>>> getClassesSummary({
+    int? days,
+    String? date,
+    String? startDate,
+    String? endDate,
+  }) async {
+    final body = await _getJson('/teacher/reports/classes-summary', {
+      'days': days,
+      'date': date,
+      'start_date': startDate,
+      'end_date': endDate,
+    });
+    return _extractList(body, ['classes', 'data', 'summary']);
   }
 }

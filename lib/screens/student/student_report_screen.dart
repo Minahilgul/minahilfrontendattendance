@@ -185,11 +185,12 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
         ),
         body: bodyContent,
       );
-    }
+    } 
 
     return BaseScaffold(
       title: 'My Attendance Report',
       role: 'student',
+      showBackButton: true,
       actions: [
         IconButton(
           icon: const Icon(Icons.download_outlined, color: Colors.white, size: 20),

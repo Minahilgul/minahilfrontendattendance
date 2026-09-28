@@ -710,6 +710,7 @@ class _TeacherDirectoryScreenState extends State<TeacherDirectoryScreen> {
     return BaseScaffold(
       title: 'Teacher Directory',
       role: 'admin',
+      showBackButton: true,
       floatingActionButton: FloatingActionButton(
         onPressed: _openAddTeacherDialog,
         backgroundColor: AppColors.primary,

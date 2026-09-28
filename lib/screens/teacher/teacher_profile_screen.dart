@@ -111,7 +111,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       appBar: AppBar(
         
         title: const Text('My Profile', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-        backgroundColor: AppColors.success,
+        backgroundColor: AppColors.primary,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [
@@ -123,7 +123,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: AppColors.success))
+          ? Center(child: CircularProgressIndicator(color: AppColors.primary))
           : _error != null
               ? _buildErrorState()
               : _buildProfileBody(),
@@ -159,7 +159,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
 
     return RefreshIndicator(
       onRefresh: _loadProfile,
-      color: AppColors.success,
+      color: AppColors.primary,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
@@ -168,7 +168,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: AppColors.success,
+                color: AppColors.primary,
                 borderRadius: const BorderRadius.only(
                   bottomLeft:  Radius.circular(32),
                   bottomRight: Radius.circular(32),
@@ -253,7 +253,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Profile Information',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const Divider(height: 20),
             _buildInfoRow(Icons.email_outlined, 'Email', email),
             if (phone.isNotEmpty) ...[
@@ -279,7 +279,7 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Assigned Classes',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.success)),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.primary)),
             const Divider(height: 20),
             if (assignedClasses.isEmpty)
               Text('No classes assigned yet.',
@@ -296,10 +296,10 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: AppColors.success.withOpacity(0.08),
+                            color: AppColors.primary.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Icon(Icons.class_outlined, size: 20, color: AppColors.success),
+                          child: Icon(Icons.class_outlined, size: 20, color: AppColors.primary),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -331,10 +331,10 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.success.withOpacity(0.08),
+            color: AppColors.primary.withOpacity(0.08),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 20, color: AppColors.success),
+          child: Icon(icon, size: 20, color: AppColors.primary),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -425,10 +425,10 @@ class _TeacherProfileScreenState extends State<TeacherProfileScreen> {
       leading: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: AppColors.success.withOpacity(0.08),
+          color: AppColors.primary.withOpacity(0.08),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: AppColors.success, size: 22),
+        child: Icon(icon, color: AppColors.primary, size: 22),
       ),
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
       subtitle: Text(subtitle, style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),

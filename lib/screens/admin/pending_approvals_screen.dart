@@ -450,6 +450,7 @@ class _ApprovalsScreenState extends State<ApprovalsScreen>
     return BaseScaffold(
       title: 'Pending Approvals',
       role: 'admin',
+      showBackButton: true,
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),

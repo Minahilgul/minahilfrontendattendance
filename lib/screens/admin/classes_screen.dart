@@ -433,8 +433,9 @@ class _ClassesScreenState extends State<ClassesScreen>
   @override
   Widget build(BuildContext context) {
     return BaseScaffold(
-      title: 'Classes',
+      title: 'Manage Classes',
       role: _currentRole,
+      showBackButton: true,
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddClassDialog,
         backgroundColor: AppColors.primary,

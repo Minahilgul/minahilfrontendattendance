@@ -18,6 +18,7 @@ class BaseScaffold extends StatelessWidget {
   final Function(int)? onDrawerNavTap;
   
   final String? displayName;
+  final bool showBackButton;
 
   const BaseScaffold({
     super.key,
@@ -29,6 +30,7 @@ class BaseScaffold extends StatelessWidget {
     this.floatingActionButton,
     this.onDrawerNavTap,
     this.displayName,
+    this.showBackButton = false,
   });
 
   Future<int?> _findActiveSessionId() async {
@@ -318,9 +320,26 @@ class BaseScaffold extends StatelessWidget {
     return Scaffold(
        backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(title,
-            style: const TextStyle(
-                fontWeight: FontWeight.w800, fontSize: 20, color: Colors.white)),
+        automaticallyImplyLeading: !showBackButton,
+        leading: showBackButton
+            ? IconButton(
+                icon: const Icon(
+                  Icons.arrow_back,
+                  color: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              )
+            : null,
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -524,7 +543,12 @@ class BaseScaffold extends StatelessWidget {
         ),
       ),
       body: body,
-      bottomNavigationBar: bottomNav,
+      bottomNavigationBar: bottomNav == null
+          ? null
+          : Material(
+              type: MaterialType.transparency,
+              child: bottomNav!,
+            ),
       floatingActionButton: floatingActionButton,
     );
   }
