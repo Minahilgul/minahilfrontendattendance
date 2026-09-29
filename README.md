@@ -1,124 +1,139 @@
 ![DAVS Logo](https://raw.githubusercontent.com/Minahilgul/minahilfrontendattendance/main/assets/images/davs_logo.jpg)
 # 1. Project Title
-Distributed Attendance Verification System (DAVS)
-Final Year Project (FYP)
 
-A secure attendance verification system designed to prevent proxy attendance by combining teacher device verification, campus geo-fencing and student confirmation.
-## 2. Installation
+A Flutter-based mobile application for secure and reliable attendance verification. The DAVS frontend provides separate interfaces for Admin, Teachers and Students and communicates with the Laravel backend through REST APIs.
 
-Clone Repository
+## 2. Problem Statement
+Traditional attendance systems may allow proxy attendance, inaccurate attendance records and attendance marking without verifying classroom or campus presence.
+The DAVS frontend addresses these problems by providing interfaces for location verification, active attendance sessions, teacher verification, student confirmation, and attendance reporting.
+## 3. Application Workflow
+
+    Application Start
+
+       |
+       v
+    Login Screen
+
+       |
+       v
+    Authentication
+
+       |
+       v
+    Check User Role
+
+       |
+    +---+---+
+
+    |       |       |
+
+    Admin  Teacher  Student
+ 
+ 
+    |       |       |
+    v       v       v
+
+    Dashboard  Dashboard  Dashboard
+
+           |
+           v
+
+    Create Attendance Session
+           |
+           v
+    Location Verification
+           |
+           v
+    Active Session
+           |
+           v
+    Student Marks Attendance
+           |
+           v
+    Teacher Verification
+           |
+           v
+    Attendance Record
+           |
+           v
+    Reports   
+
+## Project Structure
 
 
-  
-  https://github.com/atiyatariqali-droid/attiabackened.git
+    minahilfrontendattendance/
+    │
+    ├── android/                         
+    │
+    ├── ios/                             
+    │
+    ├── linux/                           
+    │
+    ├── macos/                           
+    │
+    ├── windows/                         
+    │
+    ├── web/                             
+    │
+    ├── assets/                          
+    │   └── images/
+    │
+    ├── lib/                             
+    │   ├── core/
+    │   │   └── config/
+    │   │       └── environment.dart
+    │   │
+    │   ├── models/                      
+    │   │
+    │   ├── services/                  
+    │   │
+    │   ├── screens/                 
+    │   │   ├── Admin/
+    │   │   ├── Teacher/
+    │   │   ├── Student/
+    │   │   └── Authentication/               
+    │   │
+    │   ├── widgets/                     
+    │   │
+    │   └── main.dart......
 
-  Backend Dependencies
+## 5. Installation
 
-    composer install
-Environment Setup
+    git clone
+ https://github.com/Minahilgul/minahilfrontendattendance.git
 
-    cp .env.example .env
-    php artisan key:generate
-Database Configuration
+    cd minahilfrontendattendance
 
-    DB_CONNECTION=mysql
-    DB_HOST=127.0.0.1
-    DB_PORT=3306
-    DB_DATABASE=backend
-    DB_USERNAME=root
-    DB_PASSWORD=
-Run Migrations
+    flutter pub get
 
-    php artisan migrate
-Start Laravel Server
-
-    php artisan serve
-    
+    flutter run
+##  6. Screenshots
 
 
-## 3. Folder Structure
+### Splash Screen
+
+![Splash Screen](https://raw.githubusercontent.com/Minahilgul/minahilfrontendattendance/main/assets/images/splash.jpeg)
+
+### Login Screen
+
+![Login Screen](https://raw.githubusercontent.com/Minahilgul/minahilfrontendattendance/main/assets/images/login.jpeg)
+
+### Admin Dashboard
+
+![Admin Dashboard](https://raw.githubusercontent.com/Minahilgul/minahilfrontendattendance/main/assets/images/adminDashboard.jpeg)
+
+### Teacher Dashboard
+
+![Teacher Dashboard](https://raw.githubusercontent.com/Minahilgul/minahilfrontendattendance/main/assets/images/teacherDashboard.jpeg)
+
+### Student Dashboard
+
+![Student Dashboard](https://raw.githubusercontent.com/Minahilgul/minahilfrontendattendance/main/assets/images/studentDashboard.jpeg)
 
 
-backend/
-├── app/
-├── routes/
-├── database/
-├── config/
-└── ...
 
+## 7. License
 
-## 4. Attendance Verification Flow
-
-Admin
-  |
-  |-- Register Teachers & Students
-  |
-  v
-Teacher
-  |
-  |-- Login from Registered Device
-  |-- Location Verification
-  |-- Create Attendance Session
-  |
-  v
-Student
-  |
-  |-- Join Active Session
-  |-- Location Verification
-  |-- Mark Attendance
-  |
-  v
-Random 20% Verification
-  |
-  |-- Student receives notification
-  |-- Student responds Yes / No
-  |
-  v
-Attendance Records
-  |
-  v
-Reports
-## 5. Future Improvements
-
-- QR-based classroom verification
-- Biometric verification
-- Multi-campus support
-- Advanced attendance analytics
-
-##  6. Project Structure / Modules
-
-Admin Panel
-
-    |
-    |-- Teacher Management
-    |-- Student Management
-    |-- Class Management
-    |-- Attendance Analytics
-    |-- Reports
-    |
-
-Teacher Module
-
-    |
-    |-- Device Verification
-    |-- Location Verification
-    |-- Session Management
-    |-- Attendance Monitoring
-    |
-
-Student Module
-
-    |
-    |-- Active Sessions
-    |-- Location Verification
-    |-- Attendance Marking
-    |-- Teacher Verification
-    |-- Attendance Reports
-## 7. Author
-Distributed Attendance Verification System (DAVS)
-
-Developed with Flutter, Laravel & MySQL.
-
-Final Year Project (FYP)
-## 8. License
 This project is developed for educational purposes as a Final Year Project (FYP).
+
+Distributed Attendance Verification System (DAVS)
