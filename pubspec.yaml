@@ -39,7 +39,7 @@ flutter:
 
   assets:
     - assets/images/davs_logo.jpg
-    - assets/images/profile.jpg
+    
 
 flutter_launcher_icons:
   android: true
